@@ -15,4 +15,4 @@ add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR})
 
 # Link dependencies
-target_link_libraries(${PROJECT_NAME} PUBLIC MarketOrder)
+target_link_libraries(${PROJECT_NAME} PUBLIC MarketOrder MemoryPool Utilities)
