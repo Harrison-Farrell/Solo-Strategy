@@ -25,6 +25,11 @@
 #include "market-orders/marketorder.h"
 
 class MarketOrderBook final {
+    public: 
+      MarketOrderBook(TickerId ticker_id);
+
+      auto onMarketUpdate()
+
     private:
     const TickerId mTicker_id;
 
