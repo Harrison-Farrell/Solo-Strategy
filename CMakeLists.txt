@@ -20,8 +20,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native")
 # Add subdirectories (each should contain its own CMakeLists.txt for a static library)
 add_subdirectory(utilities)
 add_subdirectory(memory-pool)
+add_subdirectory(lock-free-queue)
 add_subdirectory(order-book)
 
 # Optional: Create an overall target that depends on all libraries (for convenience)
 # This allows building all libs with a single command like 'make all_libs'
-add_custom_target(all_libs DEPENDS Utilities MemoryPool OrderBook)
+add_custom_target(all_libs DEPENDS Utilities MemoryPool LockFreeQueue OrderBook)

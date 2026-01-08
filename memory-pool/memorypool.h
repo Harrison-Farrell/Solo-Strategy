@@ -40,6 +40,7 @@ class MemoryPool final {
             return element_ptr;
         }
 
+        // using the element block pointer. Simply resets the is_free flag.
         auto deallocate(const T *element) noexcept {
         const auto elem_index = 
             (reinterpret_cast<const ElementBlock*>(element) - &mStore[0]);
@@ -62,6 +63,7 @@ class MemoryPool final {
 
     private:
 
+    // find the next free index to be written over with new information
     auto updateNextFreeIndex() noexcept {
         const auto free_index = mNext_free_index;
         while(!mStore[mNext_free_index].is_free){
