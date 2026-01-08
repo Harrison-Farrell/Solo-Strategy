@@ -2,11 +2,11 @@
 
 #include <sstream>
 
-#include "utilities/types.h"
 #include "lock-free-queue/lockfreequeue.h"
+#include "utilities/types.h"
 
-  /// Represents the type / action in the market update message.
-  enum class MarketUpdateType : uint8_t {
+/// Represents the type / action in the market update message.
+enum class MarketUpdateType : uint8_t {
     INVALID = 0,
     CLEAR = 1,
     ADD = 2,
@@ -15,35 +15,36 @@
     TRADE = 5,
     SNAPSHOT_START = 6,
     SNAPSHOT_END = 7
-  };
+};
 
-  inline std::string marketUpdateTypeToString(MarketUpdateType type) {
+inline std::string marketUpdateTypeToString(MarketUpdateType type) {
     switch (type) {
-      case MarketUpdateType::CLEAR:
-        return "CLEAR";
-      case MarketUpdateType::ADD:
-        return "ADD";
-      case MarketUpdateType::MODIFY:
-        return "MODIFY";
-      case MarketUpdateType::CANCEL:
-        return "CANCEL";
-      case MarketUpdateType::TRADE:
-        return "TRADE";
-      case MarketUpdateType::SNAPSHOT_START:
-        return "SNAPSHOT_START";
-      case MarketUpdateType::SNAPSHOT_END:
-        return "SNAPSHOT_END";
-      case MarketUpdateType::INVALID:
-        return "INVALID";
+        case MarketUpdateType::CLEAR:
+            return "CLEAR";
+        case MarketUpdateType::ADD:
+            return "ADD";
+        case MarketUpdateType::MODIFY:
+            return "MODIFY";
+        case MarketUpdateType::CANCEL:
+            return "CANCEL";
+        case MarketUpdateType::TRADE:
+            return "TRADE";
+        case MarketUpdateType::SNAPSHOT_START:
+            return "SNAPSHOT_START";
+        case MarketUpdateType::SNAPSHOT_END:
+            return "SNAPSHOT_END";
+        case MarketUpdateType::INVALID:
+            return "INVALID";
     }
     return "UNKNOWN";
-  }
+}
 
-/// These structures go over the wire / network, so the binary structures are packed to remove system dependent extra padding.
+/// These structures go over the wire / network, so the binary structures are
+/// packed to remove system dependent extra padding.
 #pragma pack(push, 1)
 
-  /// Market update structure used internally by the matching engine.
-  struct MEMarketUpdate {
+/// Market update structure used internally by the matching engine.
+struct MEMarketUpdate {
     MarketUpdateType type_ = MarketUpdateType::INVALID;
 
     OrderId order_id_ = OrderId_INVALID;
@@ -54,40 +55,38 @@
     Priority priority_ = Priority_INVALID;
 
     auto toString() const {
-      std::stringstream ss;
-      ss << "MEMarketUpdate"
-         << " ["
-         << " type:" << marketUpdateTypeToString(type_)
-         << " ticker:" << tickerIdToString(ticker_id_)
-         << " oid:" << orderIdToString(order_id_)
-         << " side:" << sideToString(side_)
-         << " qty:" << qtyToString(qty_)
-         << " price:" << priceToString(price_)
-         << " priority:" << priorityToString(priority_)
-         << "]";
-      return ss.str();
+        std::stringstream ss;
+        ss << "MEMarketUpdate"
+           << " ["
+           << " type:" << marketUpdateTypeToString(type_)
+           << " ticker:" << tickerIdToString(ticker_id_)
+           << " oid:" << orderIdToString(order_id_)
+           << " side:" << sideToString(side_) << " qty:" << qtyToString(qty_)
+           << " price:" << priceToString(price_)
+           << " priority:" << priorityToString(priority_) << "]";
+        return ss.str();
     }
-  };
+};
 
-  /// Market update structure published over the network by the market data publisher.
-  struct MDPMarketUpdate {
+/// Market update structure published over the network by the market data
+/// publisher.
+struct MDPMarketUpdate {
     size_t seq_num_ = 0;
     MEMarketUpdate me_market_update_;
 
     auto toString() const {
-      std::stringstream ss;
-      ss << "MDPMarketUpdate"
-         << " ["
-         << " seq:" << seq_num_
-         << " " << me_market_update_.toString()
-         << "]";
-      return ss.str();
+        std::stringstream ss;
+        ss << "MDPMarketUpdate"
+           << " ["
+           << " seq:" << seq_num_ << " " << me_market_update_.toString() << "]";
+        return ss.str();
     }
-  };
+};
 
 // Undo the packed binary structure directive moving forward.
-#pragma pack(pop) 
+#pragma pack(pop)
 
-  /// Lock free queues of matching engine market update messages and market data publisher market updates messages respectively.
-  typedef LockFreeQueue<MEMarketUpdate> MEMarketUpdateLFQueue;
-  typedef LockFreeQueue<MDPMarketUpdate> MDPMarketUpdateLFQueue;
+/// Lock free queues of matching engine market update messages and market data
+/// publisher market updates messages respectively.
+typedef LockFreeQueue<MEMarketUpdate> MEMarketUpdateLFQueue;
+typedef LockFreeQueue<MDPMarketUpdate> MDPMarketUpdateLFQueue;
