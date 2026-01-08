@@ -4,5 +4,6 @@ This checklist outlines the key topics to master when building a foundational un
 
 
 * [ ] **[Memory Pool](memory-pool/readme.md):** Pre-allocated block of memory to reduce allocation overhead and ensure deterministic performance in low-latency HFT systems.
-* [ ] **[Order Book](order-book/readme.md):** Electronic list of buy (bid) and sell (ask) orders for a financial instrument organized by price level.
 * [ ] **[Lock Free Queue](lock-free-queue/readme.md):** A concurrent data structure designed to facilitate communication between different threads
+* [ ] **[Market Orders](market-orders):** The structures used to contain the information for each order. To be consumed by the Order books
+* [ ] **[Order Book](order-book/readme.md):** Electronic list of buy (bid) and sell (ask) orders for a financial instrument organized by price level.

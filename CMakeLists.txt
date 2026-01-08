@@ -21,8 +21,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native")
 add_subdirectory(utilities)
 add_subdirectory(memory-pool)
 add_subdirectory(lock-free-queue)
+add_subdirectory(market-orders)
 add_subdirectory(order-book)
 
 # Optional: Create an overall target that depends on all libraries (for convenience)
 # This allows building all libs with a single command like 'make all_libs'
-add_custom_target(all_libs DEPENDS Utilities MemoryPool LockFreeQueue OrderBook)
+add_custom_target(all_libs DEPENDS Utilities MemoryPool LockFreeQueue MarketOrder OrderBook)
