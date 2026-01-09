@@ -86,5 +86,5 @@ auto MarketOrderBook::onMarketUpdate(
             break;
     }
 
-    // updateBBO(bid_updated, ask_updated);
+    updateBestBidOffer(bid_updated, ask_updated);
 }

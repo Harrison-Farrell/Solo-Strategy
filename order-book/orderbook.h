@@ -34,6 +34,51 @@ class MarketOrderBook final {
     /// \return void
     auto onMarketUpdate(const MEMarketUpdate *market_update) noexcept -> void;
 
+    /// \brief Update the BestBidOffer abstraction, the two boolean parameters
+    /// represent if the buy or the sekk (or both) sides or both need to be
+    /// updated.
+    /// \param update_bid flag to update the bid parameters
+    /// \param update_ask flag to update the ask parameters
+    auto updateBestBidOffer(bool update_bid, bool update_ask) noexcept {
+        if (update_bid) {
+            if (mBids_by_price) {
+                mBest_bid_offer.mBid_price = mBids_by_price->mPrice;
+                mBest_bid_offer.mBid_qty =
+                    mBids_by_price->mFirst_market_order->mQty;
+                for (auto order =
+                         mBids_by_price->mFirst_market_order->mNext_order;
+                     order != mBids_by_price->mFirst_market_order;
+                     order = order->mNext_order)
+                    mBest_bid_offer.mBid_qty += order->mQty;
+            } else {
+                // There is no head the the mBids_by_price is nullptr
+                mBest_bid_offer.mBid_price = Price_INVALID;
+                mBest_bid_offer.mAsk_qty = Qty_INVALID;
+            }
+        }
+
+        if (update_ask) {
+            if (mAsks_by_price) {
+                mBest_bid_offer.mAsk_price = mAsks_by_price->mPrice;
+                mBest_bid_offer.mAsk_qty =
+                    mAsks_by_price->mFirst_market_order->mQty;
+                for (auto order =
+                         mAsks_by_price->mFirst_market_order->mNext_order;
+                     order != mAsks_by_price->mFirst_market_order;
+                     order = order->mNext_order)
+                    mBest_bid_offer.mAsk_qty += order->mQty;
+            } else {
+                // There is no head the the mAsks_by_price is nullptr
+                mBest_bid_offer.mAsk_price = Price_INVALID;
+                mBest_bid_offer.mAsk_qty = Qty_INVALID;
+            }
+        }
+    }
+
+    auto getBestBidOffer() const noexcept -> const BestBidOffer * {
+        return &mBest_bid_offer;
+    }
+
    private:
     /// \brief The ticker id for the instrument.
     const TickerId mTicker_id;
@@ -52,7 +97,7 @@ class MarketOrderBook final {
     MemoryPool<MarketOrder> mOrder_pool;
 
     /// \brief Best bid and offer for the order book.
-    BestBidOffer mBestBidOffer;
+    BestBidOffer mBest_bid_offer;
     /// \brief Time string for the order book.
     std::string mtime_str;
 
