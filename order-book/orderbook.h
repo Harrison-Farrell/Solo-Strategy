@@ -1,68 +1,67 @@
 #pragma once
 
-// The important data members in this class are the following:
-// Two mem pools, order_pool for MarketOrder objects and orders_at_price_pool
-// for MarketOrdersAtPrice objects, are to be used to allocate and deallocate
-// these objects as needed. The first pool, order_pool, is used to allocate and
-// deallocate MarketOrder objects. The second pool, orders_at_price_pool, is
-// used to allocate and deallocate MarketOrdersAtPrice objects. Remember that a
-// single MemPool instance is tied to a specific object type provided to it as a
-// template parameter.
-
-// A bbo variable of the BBO type, which will be used to compute and maintain a
-// BBO-view of the order book when there are updates and provided to any
-// components that require it.
-
-// An oid_to_order variable of the OrderHashMap type will be used to track
-// MarketOrder objects by OrderId.
-
-// A price_orders_at_price_ variable of the OrdersAtPriceHashMap type to track
-// OrdersAtPrice objects by Price.
-
 #include "market-orders/marketorder.h"
 #include "market-orders/marketupdate.h"
 #include "memory-pool/memorypool.h"
 #include "utilities/macros.h"
 #include "utilities/types.h"
 
+/// \brief Represents the order book for a single trading instrument.
 class MarketOrderBook final {
    public:
+    /// \brief Constructs a MarketOrderBook for the given ticker.
+    /// \param ticker_id The ticker id for the instrument.
     MarketOrderBook(TickerId ticker_id);
 
+    /// \brief Destructor for MarketOrderBook.
     ~MarketOrderBook();
 
+    /// \brief Processes a market update message.
+    /// \param market_update Pointer to the market update.
+    /// \return void
     auto onMarketUpdate(const MEMarketUpdate *market_update) noexcept -> void;
 
    private:
-    // the ticker id to for the instructment
+    /// \brief The ticker id for the instrument.
     const TickerId mTicker_id;
 
-    // an array of orders The indexed by their order id
-    OrderHashMap mOrder_id_to_oder;
-    // memory pool to allocate orders at a particular price
+    /// \brief Array of orders indexed by their order id.
+    OrderArray mOrder_id_to_oder;
+    /// \brief Memory pool to allocate MarketOrderAtPrice objects.
     MemoryPool<MarketOrderAtPrice> mOrders_at_price_pool;
-    // Head of the bids
+    /// \brief Head of the bids linked list.
     MarketOrderAtPrice *mBids_by_price = nullptr;
-    // head of the asks
+    /// \brief Head of the asks linked list.
     MarketOrderAtPrice *mAsks_by_price = nullptr;
-    // an array of orders at a price indexed by their price
-    OrdersAtPriceHashMap mPrice_orders_at_price;
-    // memory pool to allocate singular market orders
+    /// \brief Array of orders at a price indexed by their price.
+    OrdersAtPriceArray mPrice_orders_at_price;
+    /// \brief Memory pool to allocate MarketOrder objects.
     MemoryPool<MarketOrder> mOrder_pool;
 
+    /// \brief Best bid and offer for the order book.
     BestBidOffer mBestBidOffer;
+    /// \brief Time string for the order book.
     std::string mtime_str;
 
    private:
-    // Price-to-index Mapping "O(1)" lookup. Using Module as a "Circular Map"
+    /// \brief Maps a price to an index for O(1) lookup.
+    /// \param price The price to map.
+    /// \return Index value.
     inline auto priceToIndex(Price price) const noexcept {
-        return price % ME_MAX_PRICE_LEVELS
+        return price % ME_MAX_PRICE_LEVELS;
     }
-    // Fetch and return the MarketOrdersAtPrice corresponding to a price
+
+    /// \brief Fetches the MarketOrdersAtPrice corresponding to a price.
+    /// \param price The price to look up.
+    /// \return Pointer to MarketOrderAtPrice.
     auto getOrdersAtPrice(Price price) const noexcept -> MarketOrderAtPrice * {
         return mPrice_orders_at_price.at(priceToIndex(price));
     }
+
+    // TODO Page 303 / 304
+    // https://github.com/PacktPublishing/Building-Low-Latency-Applications-with-CPP/blob/main/Chapter12/trading/strategy/market_order_book.h
 };
 
-/// Hash map from TickerId -> MarketOrderBook.
+/// \typedef MarketOrderBookHashMap
+/// \brief Hash map from TickerId to MarketOrderBook.
 typedef std::array<MarketOrderBook *, ME_MAX_TICKERS> MarketOrderBookHashMap;

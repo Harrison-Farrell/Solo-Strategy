@@ -5,7 +5,8 @@
 #include "lock-free-queue/lockfreequeue.h"
 #include "utilities/types.h"
 
-/// Represents the type / action in the market update message.
+/// \enum MarketUpdateType
+/// \brief Represents the type / action in the market update message.
 enum class MarketUpdateType : uint8_t {
     INVALID = 0,
     CLEAR = 1,
@@ -17,6 +18,9 @@ enum class MarketUpdateType : uint8_t {
     SNAPSHOT_END = 7
 };
 
+/// \brief Converts a MarketUpdateType enum to a string.
+/// \param type The MarketUpdateType to convert.
+/// \return String representation of the MarketUpdateType.
 inline std::string marketUpdateTypeToString(MarketUpdateType type) {
     switch (type) {
         case MarketUpdateType::CLEAR:
@@ -39,14 +43,14 @@ inline std::string marketUpdateTypeToString(MarketUpdateType type) {
     return "UNKNOWN";
 }
 
-/// These structures go over the wire / network, so the binary structures are
-/// packed to remove system dependent extra padding.
+/// \brief These structures go over the wire / network, so the binary structures
+/// are packed to remove system dependent extra padding.
 #pragma pack(push, 1)
 
-/// Market update structure used internally by the matching engine.
+/// \struct MEMarketUpdate
+/// \brief Market update structure used internally by the matching engine.
 struct MEMarketUpdate {
     MarketUpdateType type_ = MarketUpdateType::INVALID;
-
     OrderId order_id_ = OrderId_INVALID;
     TickerId ticker_id_ = TickerId_INVALID;
     Side side_ = Side::INVALID;
@@ -54,6 +58,8 @@ struct MEMarketUpdate {
     Qty qty_ = Qty_INVALID;
     Priority priority_ = Priority_INVALID;
 
+    /// \brief Converts the MEMarketUpdate to a string representation.
+    /// \return String representation of the MEMarketUpdate.
     auto toString() const {
         std::stringstream ss;
         ss << "MEMarketUpdate"
@@ -68,12 +74,15 @@ struct MEMarketUpdate {
     }
 };
 
-/// Market update structure published over the network by the market data
+/// \struct MDPMarketUpdate
+/// \brief Market update structure published over the network by the market data
 /// publisher.
 struct MDPMarketUpdate {
     size_t seq_num_ = 0;
     MEMarketUpdate me_market_update_;
 
+    /// \brief Converts the MDPMarketUpdate to a string representation.
+    /// \return String representation of the MDPMarketUpdate.
     auto toString() const {
         std::stringstream ss;
         ss << "MDPMarketUpdate"
@@ -83,10 +92,13 @@ struct MDPMarketUpdate {
     }
 };
 
-// Undo the packed binary structure directive moving forward.
+/// \brief Undo the packed binary structure directive moving forward.
 #pragma pack(pop)
 
-/// Lock free queues of matching engine market update messages and market data
-/// publisher market updates messages respectively.
+/// \typedef MEMarketUpdateLFQueue
+/// \brief Lock free queue of matching engine market update messages.
 typedef LockFreeQueue<MEMarketUpdate> MEMarketUpdateLFQueue;
+
+/// \typedef MDPMarketUpdateLFQueue
+/// \brief Lock free queue of market data publisher market update messages.
 typedef LockFreeQueue<MDPMarketUpdate> MDPMarketUpdateLFQueue;
