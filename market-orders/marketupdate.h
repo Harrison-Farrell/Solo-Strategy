@@ -50,13 +50,13 @@ inline std::string marketUpdateTypeToString(MarketUpdateType type) {
 /// \struct MEMarketUpdate
 /// \brief Market update structure used internally by the matching engine.
 struct MEMarketUpdate {
-    MarketUpdateType type_ = MarketUpdateType::INVALID;
-    OrderId order_id_ = OrderId_INVALID;
-    TickerId ticker_id_ = TickerId_INVALID;
-    Side side_ = Side::INVALID;
-    Price price_ = Price_INVALID;
-    Qty qty_ = Qty_INVALID;
-    Priority priority_ = Priority_INVALID;
+    MarketUpdateType type = MarketUpdateType::INVALID;
+    OrderId order_id = OrderId_INVALID;
+    TickerId ticker_id = TickerId_INVALID;
+    Side side = Side::INVALID;
+    Price price = Price_INVALID;
+    Qty qty = Qty_INVALID;
+    Priority priority = Priority_INVALID;
 
     /// \brief Converts the MEMarketUpdate to a string representation.
     /// \return String representation of the MEMarketUpdate.
@@ -64,12 +64,12 @@ struct MEMarketUpdate {
         std::stringstream ss;
         ss << "MEMarketUpdate"
            << " ["
-           << " type:" << marketUpdateTypeToString(type_)
-           << " ticker:" << tickerIdToString(ticker_id_)
-           << " oid:" << orderIdToString(order_id_)
-           << " side:" << sideToString(side_) << " qty:" << qtyToString(qty_)
-           << " price:" << priceToString(price_)
-           << " priority:" << priorityToString(priority_) << "]";
+           << " type:" << marketUpdateTypeToString(type)
+           << " ticker:" << tickerIdToString(ticker_id)
+           << " oid:" << orderIdToString(order_id)
+           << " side:" << sideToString(side) << " qty:" << qtyToString(qty)
+           << " price:" << priceToString(price)
+           << " priority:" << priorityToString(priority) << "]";
         return ss.str();
     }
 };
