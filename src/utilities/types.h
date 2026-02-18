@@ -148,15 +148,12 @@ inline auto sideToString(Side side) -> std::string {
         case Side::MAX:
             return "MAX";
     }
-
     return "UNKNOWN";
 }
 
 /// \brief Converts Side to an index for use in arrays.
 /// \param side The Side to convert.
 /// \return Index value corresponding to the Side.
-inline constexpr auto sideToIndex(Side side) noexcept {
-    return static_cast<size_t>(side) + 1;
-}
+inline constexpr auto sideToIndex(Side side) noexcept { return static_cast<size_t>(side) + 1; }
 
 #endif  // SOLO_STRATEGY_SRC_UTILITIES_TYPES_H_

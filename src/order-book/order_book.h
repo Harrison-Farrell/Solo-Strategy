@@ -44,12 +44,9 @@ class MarketOrderBook final {
         if (update_bid) {
             if (mBids_by_price) {
                 mBest_bid_offer.mBid_price = mBids_by_price->mPrice;
-                mBest_bid_offer.mBid_qty =
-                    mBids_by_price->mFirst_market_order->mQty;
-                for (auto order =
-                         mBids_by_price->mFirst_market_order->mNext_order;
-                     order != mBids_by_price->mFirst_market_order;
-                     order = order->mNext_order)
+                mBest_bid_offer.mBid_qty = mBids_by_price->mFirst_market_order->mQty;
+                for (auto order = mBids_by_price->mFirst_market_order->mNext_order;
+                     order != mBids_by_price->mFirst_market_order; order = order->mNext_order)
                     mBest_bid_offer.mBid_qty += order->mQty;
             } else {
                 // There is no head the the mBids_by_price is nullptr
@@ -61,12 +58,9 @@ class MarketOrderBook final {
         if (update_ask) {
             if (mAsks_by_price) {
                 mBest_bid_offer.mAsk_price = mAsks_by_price->mPrice;
-                mBest_bid_offer.mAsk_qty =
-                    mAsks_by_price->mFirst_market_order->mQty;
-                for (auto order =
-                         mAsks_by_price->mFirst_market_order->mNext_order;
-                     order != mAsks_by_price->mFirst_market_order;
-                     order = order->mNext_order)
+                mBest_bid_offer.mAsk_qty = mAsks_by_price->mFirst_market_order->mQty;
+                for (auto order = mAsks_by_price->mFirst_market_order->mNext_order;
+                     order != mAsks_by_price->mFirst_market_order; order = order->mNext_order)
                     mBest_bid_offer.mAsk_qty += order->mQty;
             } else {
                 // There is no head the the mAsks_by_price is nullptr
@@ -76,9 +70,7 @@ class MarketOrderBook final {
         }
     }
 
-    auto getBestBidOffer() const noexcept -> const BestBidOffer * {
-        return &mBest_bid_offer;
-    }
+    auto getBestBidOffer() const noexcept -> const BestBidOffer * { return &mBest_bid_offer; }
 
    private:
     /// \brief The ticker id for the instrument.
@@ -114,15 +106,12 @@ class MarketOrderBook final {
     /// domain.
     /// \param price The price to map.
     /// \return Index value in the range [0, ME_MAX_PRICE_LEVELS).
-    inline auto priceToIndex(Price price) const noexcept {
-        return price % ME_MAX_PRICE_LEVELS;
-    }
+    inline auto priceToIndex(Price price) const noexcept { return price % ME_MAX_PRICE_LEVELS; }
 
     /// \brief Fetches the MarketOrdersAtPrice corresponding to a price.
     /// \param price The price to look up.
     /// \return Pointer to MarketOrderAtPrice.
-    inline auto getOrdersAtPrice(Price price) const noexcept
-        -> MarketOrderAtPrice * {
+    inline auto getOrdersAtPrice(Price price) const noexcept -> MarketOrderAtPrice * {
         return mPrice_orders_at_price.at(priceToIndex(price));
     }
 
@@ -140,23 +129,20 @@ class MarketOrderBook final {
     auto addOrdersAtPrice(MarketOrderAtPrice *new_orders_at_price) noexcept {
         // Map the price to an index and store the new price level in the hash
         // map
-        mPrice_orders_at_price.at(priceToIndex(new_orders_at_price->mPrice)) =
-            new_orders_at_price;
+        mPrice_orders_at_price.at(priceToIndex(new_orders_at_price->mPrice)) = new_orders_at_price;
 
         // Get the current best price level (head of the linked list) for this
         // side
         const auto best_orders_by_price =
-            (new_orders_at_price->mSide == Side::BUY ? mBids_by_price
-                                                     : mAsks_by_price);
+            (new_orders_at_price->mSide == Side::BUY ? mBids_by_price : mAsks_by_price);
 
         // If this is the first price level, initialize the circular linked list
         if (!best_orders_by_price) [[unlikely]] {
-            (new_orders_at_price->mSide == Side::BUY ? mBids_by_price
-                                                     : mAsks_by_price) =
+            (new_orders_at_price->mSide == Side::BUY ? mBids_by_price : mAsks_by_price) =
                 new_orders_at_price;
             // Point to itself as it's the only element in the circular list
-            new_orders_at_price->mPrev_entry =
-                new_orders_at_price->mNext_entry = new_orders_at_price;
+            new_orders_at_price->mPrev_entry = new_orders_at_price->mNext_entry =
+                new_orders_at_price;
         } else {
             // Start with the best price level
             auto target = best_orders_by_price;
@@ -210,19 +196,15 @@ class MarketOrderBook final {
                 // For BUY: better price is higher
                 // For SELL: better price is lower
                 if ((new_orders_at_price->mSide == Side::BUY &&
-                     new_orders_at_price->mPrice >
-                         best_orders_by_price->mPrice) ||
+                     new_orders_at_price->mPrice > best_orders_by_price->mPrice) ||
                     (new_orders_at_price->mSide == Side::SELL &&
-                     new_orders_at_price->mPrice <
-                         best_orders_by_price->mPrice)) {
+                     new_orders_at_price->mPrice < best_orders_by_price->mPrice)) {
                     target->mNext_entry =
-                        (target->mNext_entry == best_orders_by_price
-                             ? new_orders_at_price
-                             : target->mNext_entry);
+                        (target->mNext_entry == best_orders_by_price ? new_orders_at_price
+                                                                     : target->mNext_entry);
                     // Update the head pointer to point to the new best price
                     // level
-                    (new_orders_at_price->mSide == Side::BUY ? mBids_by_price
-                                                             : mAsks_by_price) =
+                    (new_orders_at_price->mSide == Side::BUY ? mBids_by_price : mAsks_by_price) =
                         new_orders_at_price;
                 }
             }
@@ -248,16 +230,14 @@ class MarketOrderBook final {
             order->mNext_order = order->mPrev_order = order;
 
             // Allocate a new MarketOrderAtPrice container for this price level
-            auto new_orders_at_price = mOrders_at_price_pool.allocate(
-                order->mSide, order->mPrice, order, nullptr, nullptr);
+            auto new_orders_at_price = mOrders_at_price_pool.allocate(order->mSide, order->mPrice,
+                                                                      order, nullptr, nullptr);
             // Add the new price level to the price-level linked list
             addOrdersAtPrice(new_orders_at_price);
         } else {
             // Price level already exists, append order to the FIFO queue at
             // this price
-            auto first_order =
-                (orders_at_price ? orders_at_price->mFirst_market_order
-                                 : nullptr);
+            auto first_order = (orders_at_price ? orders_at_price->mFirst_market_order : nullptr);
 
             // Insert the order at the end of the circular doubly-linked list
             first_order->mPrev_order->mNext_order = order;

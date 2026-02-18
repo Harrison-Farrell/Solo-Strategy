@@ -20,10 +20,8 @@ class MemoryPool final {
     /// \brief Constructs a MemoryPool with a fixed number of elements.
     /// \param element_size The number of elements to pre-allocate.
     explicit MemoryPool(std::size_t num_elems)
-        : mStore(num_elems,
-                 {T(), true}) /* pre-allocation of vector storage. */ {
-        ASSERT(reinterpret_cast<const ElementBlock *>(&(mStore[0].element)) ==
-                   &(mStore[0]),
+        : mStore(num_elems, {T(), true}) /* pre-allocation of vector storage. */ {
+        ASSERT(reinterpret_cast<const ElementBlock *>(&(mStore[0].element)) == &(mStore[0]),
                "T object should be first member of ElementBlock.");
     }
 
@@ -37,8 +35,8 @@ class MemoryPool final {
     template <typename... Args>
     T *allocate(Args... args) noexcept {
         auto obj_block = &(mStore[mNext_free_index]);
-        ASSERT(obj_block->is_free, "Expected free ObjectBlock at index:" +
-                                       std::to_string(mNext_free_index));
+        ASSERT(obj_block->is_free,
+               "Expected free ObjectBlock at index:" + std::to_string(mNext_free_index));
         T *ret = &(obj_block->element);
         ret = new (ret) T(args...);  // placement new.
         obj_block->is_free = false;
@@ -51,14 +49,11 @@ class MemoryPool final {
     /// \brief Deallocates an object, marking its block as free.
     /// \param element Pointer to the object to deallocate.
     auto deallocate(const T *elem) noexcept {
-        const auto elem_index =
-            (reinterpret_cast<const ElementBlock *>(elem) - &mStore[0]);
-        ASSERT(
-            elem_index >= 0 && static_cast<size_t>(elem_index) < mStore.size(),
-            "Element being deallocated does not belong to this Memory pool.");
+        const auto elem_index = (reinterpret_cast<const ElementBlock *>(elem) - &mStore[0]);
+        ASSERT(elem_index >= 0 && static_cast<size_t>(elem_index) < mStore.size(),
+               "Element being deallocated does not belong to this Memory pool.");
         ASSERT(!mStore[elem_index].is_free,
-               "Expected in-use ObjectBlock at index:" +
-                   std::to_string(elem_index));
+               "Expected in-use ObjectBlock at index:" + std::to_string(elem_index));
         mStore[elem_index].is_free = true;
     }
 
@@ -76,24 +71,18 @@ class MemoryPool final {
         const auto initial_free_index = mNext_free_index;
         while (!mStore[mNext_free_index].is_free) {
             ++mNext_free_index;
-            if (mNext_free_index == mStore.size())
-                [[unlikely]] {  // hardware branch predictor
-                                // should almost always predict
-                                // this to be false any ways.
+            if (mNext_free_index == mStore.size()) [[unlikely]] {
                 mNext_free_index = 0;
             }
             if (initial_free_index == mNext_free_index) [[unlikely]] {
-                ASSERT(initial_free_index != mNext_free_index,
-                       "Memory Pool out of space.");
+                ASSERT(initial_free_index != mNext_free_index, "Memory Pool out of space.");
             }
         }
     }
 
     /// \brief Structure for each element within the memory pool.
     struct ElementBlock {
-        /// \brief The actual object.
         T element;
-        /// \brief Indicates if the block is free.
         bool is_free = true;
     };
 
