@@ -3,6 +3,9 @@ build/
 cmake-build-*/
 out/
 
+# Large Sample Resources
+test/sample_set/large_sets
+
 # CMake generated files
 CMakeCache.txt
 CMakeFiles/

@@ -10,5 +10,16 @@ Prices are integer fields, supplied with an associated precision. When converted
  ITCH is 200,000.0000 (decimal,77359400 hex). Timestamps are represented as 
 nanoseconds since midnight
 
+
+The ITCH Messages are wrapped within the moldupd64 packet
+
+Message Block
+{
+    Message Length  (2 Bytes)
+    Message Data    (Length Bytes)
+}
+
 1.3 Add Order Message
 1.4 Modify Order Messages
+
+
