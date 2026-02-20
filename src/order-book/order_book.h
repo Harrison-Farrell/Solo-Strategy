@@ -7,39 +7,34 @@
 #include "utilities/macros.h"
 #include "utilities/types.h"
 
-/// \brief Represents the order book for a single trading instrument.
+/**
+ * @brief Represents the limit order book for a single trading instrument.
+ */
 class MarketOrderBook final {
    public:
-    /// \brief Constructs a MarketOrderBook for the given ticker.
-    /// \param ticker_id The ticker id for the instrument.
+    /**
+     * @brief Constructs a MarketOrderBook for the given ticker.
+     * @param ticker_id The ticker identifier for the instrument.
+     */
     MarketOrderBook(TickerId ticker_id);
 
-    /// \brief Destructor for MarketOrderBook.
+    /**
+     * @brief Destructor for MarketOrderBook.
+     */
     ~MarketOrderBook();
 
-    /// \brief Processes a market update and updates the limit order book
-    /// accordingly.
-    ///
-    /// This method handles different types of market updates:
-    /// - ADD: Allocates and adds a new order to the book.
-    /// - MODIFY: Modifies an existing order's quantity.
-    /// - CANCEL: Removes an order from the book and deallocates it.
-    /// - TRADE: No action is taken (handled elsewhere).
-    /// - CLEAR: Clears the entire order book, deallocating all orders and price
-    /// levels.
-    /// - INVALID, SNAPSHOT_START, SNAPSHOT_END: No action is taken.
-    ///
-    /// The method also determines if the best bid or ask has been updated and
-    /// (optionally) updates the best bid/offer view.
-    /// \param market_update Pointer to the market update message.
-    /// \return void
+    /**
+     * @brief Processes a market update and updates the order book accordingly.
+     * Handles ADD, MODIFY, CANCEL, and CLEAR operations.
+     * @param market_update Pointer to the market update message.
+     */
     auto onMarketUpdate(const MEMarketUpdate *market_update) noexcept -> void;
 
-    /// \brief Update the BestBidOffer abstraction, the two boolean parameters
-    /// represent if the buy or the sekk (or both) sides or both need to be
-    /// updated.
-    /// \param update_bid flag to update the bid parameters
-    /// \param update_ask flag to update the ask parameters
+    /**
+     * @brief Updates the BestBidOffer view based on the current state of the book.
+     * @param update_bid Flag to update the bid side.
+     * @param update_ask Flag to update the ask side.
+     */
     auto updateBestBidOffer(bool update_bid, bool update_ask) noexcept {
         if (update_bid) {
             if (mBids_by_price) {
@@ -70,62 +65,55 @@ class MarketOrderBook final {
         }
     }
 
+    /**
+     * @brief Returns the current BestBidOffer view.
+     * @return Pointer to the BestBidOffer structure.
+     */
     auto getBestBidOffer() const noexcept -> const BestBidOffer * { return &mBest_bid_offer; }
 
    private:
-    /// \brief The ticker id for the instrument.
+    /** @brief The ticker identifier for the instrument. */
     const TickerId mTicker_id;
 
-    /// \brief Array of orders indexed by their order id.
+    /** @brief Array of orders indexed by their order id. */
     OrderArray mOrder_id_to_order;
-    /// \brief Memory pool to allocate MarketOrderAtPrice objects.
+    /** @brief Memory pool for allocating MarketOrderAtPrice objects. */
     MemoryPool<MarketOrderAtPrice> mOrders_at_price_pool;
-    /// \brief Head of the bids linked list.
+    /** @brief Head of the bids linked list (highest price first). */
     MarketOrderAtPrice *mBids_by_price = nullptr;
-    /// \brief Head of the asks linked list.
+    /** @brief Head of the asks linked list (lowest price first). */
     MarketOrderAtPrice *mAsks_by_price = nullptr;
-    /// \brief Array of orders at a price indexed by their price.
+    /** @brief Array of price levels indexed by hashed price. */
     OrdersAtPriceArray mPrice_orders_at_price;
-    /// \brief Memory pool to allocate MarketOrder objects.
+    /** @brief Memory pool for allocating MarketOrder objects. */
     MemoryPool<MarketOrder> mOrder_pool;
 
-    /// \brief Best bid and offer for the order book.
+    /** @brief current best bid and offer for the book. */
     BestBidOffer mBest_bid_offer;
-    /// \brief Time string for the order book.
+    /** @brief Last update time string. */
     std::string mtime_str;
 
    private:
-    /// \brief Maps a price to an index for O(1) lookup in the price-level
-    /// array.
-    ///
-    /// This function uses the modulo operator to map a potentially large or
-    /// sparse price value into a valid index within the fixed-size price-level
-    /// array. This enables constant-time access to price levels, but assumes
-    /// that price collisions (different prices mapping to the same index) are
-    /// either handled elsewhere or are not possible in the application's price
-    /// domain.
-    /// \param price The price to map.
-    /// \return Index value in the range [0, ME_MAX_PRICE_LEVELS).
+    /**
+     * @brief Maps a price to an index for constant-time lookup.
+     * @param price The price value to map.
+     * @return Index in the range [0, ME_MAX_PRICE_LEVELS).
+     */
     inline auto priceToIndex(Price price) const noexcept { return price % ME_MAX_PRICE_LEVELS; }
 
-    /// \brief Fetches the MarketOrdersAtPrice corresponding to a price.
-    /// \param price The price to look up.
-    /// \return Pointer to MarketOrderAtPrice.
+    /**
+     * @brief Retrieves the price level container for a given price.
+     * @param price The price to look up.
+     * @return Pointer to MarketOrderAtPrice, or nullptr if none exists.
+     */
     inline auto getOrdersAtPrice(Price price) const noexcept -> MarketOrderAtPrice * {
         return mPrice_orders_at_price.at(priceToIndex(price));
     }
 
-    /// \brief Adds a new MarketOrderAtPrice entry to the price-level linked
-    /// list.
-    ///
-    /// This function inserts a new MarketOrderAtPrice node into the circular
-    /// doubly-linked list of price levels for either bids or asks, maintaining
-    /// the correct order based on price and side (BUY or SELL). If the list is
-    /// empty, the new entry becomes the head. Otherwise, it is inserted in the
-    /// appropriate position to keep the price levels sorted.
-    /// The function also updates the price-to-index mapping for fast lookup.
-    /// \param new_orders_at_price Pointer to the MarketOrderAtPrice to add.
-    /// \return void
+    /**
+     * @brief Adds a new price level to the sorted linked list.
+     * @param new_orders_at_price Pointer to the new price level container.
+     */
     auto addOrdersAtPrice(MarketOrderAtPrice *new_orders_at_price) noexcept {
         // Map the price to an index and store the new price level in the hash
         // map
@@ -211,15 +199,10 @@ class MarketOrderBook final {
         }
     }
 
-    /// \brief Add a single order at the end of the FIFO queue at the price
-    /// level that this order belongs in.
-    ///
-    /// If there is no existing price level for the order's price, a new
-    /// MarketOrderAtPrice is allocated and added. Otherwise, the order is
-    /// inserted at the end of the circular doubly-linked list of orders at that
-    /// price. The order is also tracked in the order id array for fast lookup.
-    /// \param order Pointer to the MarketOrder to add.
-    /// \return void
+    /**
+     * @brief Adds an order to the book, creating a new price level if necessary.
+     * @param order Pointer to the MarketOrder to add.
+     */
     auto addOrder(MarketOrder *order) noexcept -> void {
         // Look up the existing price level for this order's price
         const auto orders_at_price = getOrdersAtPrice(order->mPrice);

@@ -22,95 +22,207 @@
     // Windows
     #define __WINDOWS_OS__
     #include <windows.h>
-typedef unsigned __int64 uint64_t;
 #endif
 
+#include <cstdint>
+#include <filesystem>
+#include <stdexcept>
 #include <string>
+
+#include "itch-parser/endian_utils.h"
 
 class MemoryMappedFile {
    public:
     /// tweak performance
     enum CacheHint {
-        Normal,          ///< good overall performance
-        SequentialScan,  ///< read file only once with few seeks
-        RandomAccess     ///< jump around
+        Normal,
+        SequentialScan,
+        RandomAccess
     };
-    /// do nothing, must use open()
+
+    /**
+     * @brief Default constructor. Must use open() to map a file.
+     */
     MemoryMappedFile();
 
-    /// open file, mappedBytes = 0 maps the whole file
-    MemoryMappedFile(const std::string& filename, size_t mappedBytes = WholeFile,
+    /**
+     * @brief Opens a file and maps its contents into memory.
+     * @param filename Path to the file.
+     * @param mappedBytes Number of bytes to map. 0 maps the entire file.
+     * @param hint Cache hint for performance tuning.
+     */
+    MemoryMappedFile(const std::filesystem::path& filename, size_t mappedBytes = WholeFile,
                      CacheHint hint = Normal);
 
-    /// close file (see close() )
+    /**
+     * @brief Closes the file and unmaps the memory (destructor).
+     */
     ~MemoryMappedFile();
 
     /// how much should be mappend
     enum MapRange { WholeFile = 0 };
 
-    /// open file, mappedBytes = 0 maps the whole file
-    bool open(const std::string& filename, size_t mappedBytes = WholeFile, CacheHint hint = Normal);
+    /**
+     * @brief Opens a file and maps its contents into memory.
+     * @param filename Path to the file.
+     * @param mappedBytes Number of bytes to map. 0 maps the entire file.
+     * @param hint Cache hint for performance tuning.
+     * @return true if successful, false otherwise.
+     */
+    [[nodiscard]] bool open(const std::filesystem::path& filename, size_t mappedBytes = WholeFile,
+                            CacheHint hint = Normal);
 
-    /// close file
+    /**
+     * @brief Closes the file and unmaps the memory.
+     */
     void close();
 
-    /// access position, no range checking (faster)
-    unsigned char operator[](size_t offset) const;
-    /// access position, including range checking
-    unsigned char at(size_t offset) const;
+    /**
+     * @brief Accesses the data at the specified offset without range checking.
+     * @param offset Offset from the beginning of the file.
+     * @return The byte at the specified offset.
+     */
+    [[nodiscard]] uint8_t operator[](size_t offset) const;
 
-    /// raw access
-    const unsigned char* getData() const;
+    /**
+     * @brief Accesses the data at the specified offset with range checking.
+     * @param offset Offset from the beginning of the file.
+     * @return The byte at the specified offset.
+     * @throws std::out_of_range if the offset is beyond the file size.
+     */
+    [[nodiscard]] uint8_t at(size_t offset) const;
 
-    // Iterator interface
-    /// Begin interface pointer
-    const char* begin() const;
+    /**
+     * @brief Provides raw access to the mapped data.
+     * @return A pointer to the beginning of the mapped data.
+     */
+    [[nodiscard]] const uint8_t* getData() const;
 
-    /// End interface pointer
-    const char* end() const;
+    /**
+     * @brief Iterator to the beginning of the file content.
+     */
+    [[nodiscard]] const uint8_t* begin() const;
 
-    /// true, if file successfully opened
-    bool isValid() const;
+    /**
+     * @brief Iterator to the end of the file content.
+     */
+    [[nodiscard]] const uint8_t* end() const;
 
-    /// get file size
-    uint64_t size() const;
+    /**
+     * @brief Checks if a file is successfully opened and mapped.
+     */
+    [[nodiscard]] bool isValid() const;
 
-    /// get number of actually mapped bytes
-    size_t mappedSize() const;
+    /**
+     * @brief Returns the total size of the file.
+     */
+    [[nodiscard]] uint64_t size() const;
 
-    /// replace mapping by a new one of the same file, offset MUST be a multiple of the page size
-    bool remap(uint64_t offset, size_t mappedBytes);
+    /**
+     * @brief Returns the number of bytes currently mapped into memory.
+     */
+    [[nodiscard]] size_t mappedSize() const;
+
+    /**
+     * @brief Replaces the current mapping with a new one from the same file.
+     * @param offset Start offset in the file. Must be a multiple of the page size.
+     * @param mappedBytes Number of bytes to map.
+     * @return true if successful, false otherwise.
+     */
+    [[nodiscard]] bool remap(uint64_t offset, size_t mappedBytes);
+
+    // Generic read function for 8, 16, 32, or 64-bit values
+    /**
+     * @brief Reads a value of type T from the current cursor position.
+     * @return The value read.
+     * @throws std::out_of_range if reading past the end of the file.
+     */
+    template <typename T>
+    T read() {
+        if (mCursor + sizeof(T) > mFilesize) {
+            throw std::out_of_range("Attempted to read past end of file.");
+        }
+
+        // Direct memory access via pointer casting
+        T value = *reinterpret_cast<const T*>(static_cast<const uint8_t*>(mMappedView) + mCursor);
+        mCursor += sizeof(T);
+        return value;
+    }
+
+    /**
+     * @brief Reads a Big-Endian value and converts it to host endianness.
+     */
+    template <typename T>
+    T readBE() {
+        return endian::from_big_endian(read<T>());
+    }
+
+    /**
+     * @brief Reads a Little-Endian value and converts it to host endianness.
+     */
+    template <typename T>
+    T readLE() {
+        return endian::from_little_endian(read<T>());
+    }
+
+    // Specific helpers for your request
+    // Specific helpers for ITCH (Big-Endian)
+    uint8_t read8() { return read<uint8_t>(); }
+    uint16_t read16() { return readBE<uint16_t>(); }
+    uint32_t read32() { return readBE<uint32_t>(); }
+    uint64_t read64() { return readBE<uint64_t>(); }
+
+    /**
+     * @brief Seeks to a specific position in the file.
+     */
+    void seek(size_t pos) { mCursor = pos; }
+
+    /**
+     * @brief Returns the current cursor position.
+     */
+    [[nodiscard]] size_t tell() const { return mCursor; }
 
    private:
-    /// don't copy object
-    MemoryMappedFile(const MemoryMappedFile&);
-    /// don't copy object
-    MemoryMappedFile& operator=(const MemoryMappedFile&);
+    /** @brief Prevents copying. */
+    MemoryMappedFile(const MemoryMappedFile&) = delete;
+    /** @brief Prevents assignment. */
+    MemoryMappedFile& operator=(const MemoryMappedFile&) = delete;
 
-    /// get OS page size (for remap)
-    static int getpagesize();
+    /** @brief Internal OS-specific helpers. */
+    [[nodiscard]] bool osOpen(const std::filesystem::path& filename);
+    void osClose();
+    [[nodiscard]] bool osMap(uint64_t offset, size_t mappedBytes);
+    void osUnmap();
+    [[nodiscard]] uint64_t osGetFileSize() const;
 
-    /// file name
-    std::string _filename;
-    /// file size
-    uint64_t _filesize;
-    /// caching strategy
-    CacheHint _hint;
-    /// mapped size
-    size_t _mappedBytes;
+    /** @brief Returns OS page size. */
+    [[nodiscard]] static uint32_t getPageSize();
 
-/// define handle
+    /** @brief Current file name. */
+    std::filesystem::path mFilename;
+    /** @brief Total file size in bytes. */
+    uint64_t mFilesize = 0;
+    /** @brief Current read cursor position. */
+    size_t mCursor = 0;
+    /** @brief Caching hint. */
+    CacheHint mHint = Normal;
+    /** @brief Number of currently mapped bytes. */
+    size_t mMappedBytes = 0;
+
 #ifdef __WINDOWS_OS__
-    typedef void* FileHandle;
-    /// Windows handle to memory mapping of _file
-    void* _mappedFile;
+    using FileHandle = void*;
+    /** @brief Windows handle to the underlying file. */
+    FileHandle mFileHandle = nullptr;
+    /** @brief Windows handle to the memory mapping object. */
+    FileHandle mMappingHandle = nullptr;
 #else
-    typedef int FileHandle;
+    using FileHandle = int;
+    /** @brief Unix file descriptor. */
+    FileHandle mFileHandle = -1;
 #endif
-    /// file handle
-    FileHandle _file;
-    /// pointer to the file contents mapped into memory
-    void* _mappedView;
+
+    /** @brief Pointer to the mapped content. */
+    void* mMappedView = nullptr;
 };
 
 #endif  // SOLO_STRATEGY_SRC_ITCH_PARSER_MEMORY_MAP_FILE_H_

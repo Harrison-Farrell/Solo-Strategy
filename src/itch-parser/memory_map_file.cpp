@@ -3,254 +3,239 @@
 #include <cstdio>
 #include <stdexcept>
 
-/// do nothing, must use open()
-MemoryMappedFile::MemoryMappedFile()
-    : _filename(),
-      _filesize(0),
-      _hint(Normal),
-      _mappedBytes(0),
-      _file(0),
 #ifdef __WINDOWS_OS__
-      _mappedFile(NULL),
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#else
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #endif
-      _mappedView(NULL) {
-}
 
-/// open file, mappedBytes = 0 maps the whole file
-MemoryMappedFile::MemoryMappedFile(const std::string& filename, size_t mappedBytes, CacheHint hint)
-    : _filename(filename),
-      _filesize(0),
-      _hint(hint),
-      _mappedBytes(mappedBytes),
-      _file(0),
-#ifdef __WINDOWS_OS__
-      _mappedFile(NULL),
-#endif
-      _mappedView(NULL) {
+MemoryMappedFile::MemoryMappedFile() = default;
+
+MemoryMappedFile::MemoryMappedFile(const std::filesystem::path& filename, size_t mappedBytes,
+                                   CacheHint hint) {
     open(filename, mappedBytes, hint);
 }
 
-/// close file (see close() )
-MemoryMappedFile::~MemoryMappedFile() { close(); }
+MemoryMappedFile::~MemoryMappedFile() {
+    close();
+}
 
-const char* MemoryMappedFile::begin() const { return static_cast<const char*>(_mappedView); }
+bool MemoryMappedFile::open(const std::filesystem::path& filename, size_t mappedBytes,
+                            CacheHint hint) {
+    close();
 
-const char* MemoryMappedFile::end() const { return begin() + _filesize; }
-
-/// open file
-bool MemoryMappedFile::open(const std::string& filename, size_t mappedBytes, CacheHint hint) {
-    // already open ?
-    if (isValid()) return false;
-
-    _file = 0;
-    _filesize = 0;
-    _hint = hint;
-#ifdef __WIN32
-    _mappedFile = NULL;
-#endif
-    _mappedView = NULL;
-
-#ifdef __WINDOWS_OS__
-    // Windows
-
-    DWORD winHint = 0;
-    switch (_hint) {
-        case Normal:
-            winHint = FILE_ATTRIBUTE_NORMAL;
-            break;
-        case SequentialScan:
-            winHint = FILE_FLAG_SEQUENTIAL_SCAN;
-            break;
-        case RandomAccess:
-            winHint = FILE_FLAG_RANDOM_ACCESS;
-            break;
-        default:
-            break;
-    }
-
-    // open file
-    _file = ::CreateFileA(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
-                          winHint, NULL);
-    if (!_file) return false;
-
-    // file size
-    LARGE_INTEGER result;
-    if (!GetFileSizeEx(_file, &result)) return false;
-    _filesize = static_cast<uint64_t>(result.QuadPart);
-
-    // convert to mapped mode
-    _mappedFile = ::CreateFileMapping(_file, NULL, PAGE_READONLY, 0, 0, NULL);
-    if (!_mappedFile) return false;
-
-#else
-
-    // Linux
-
-    // open file
-    _file = ::open(filename.c_str(), O_RDONLY | O_LARGEFILE);
-    if (_file == -1) {
-        _file = 0;
+    if (!osOpen(filename)) {
         return false;
     }
 
-    // file size
-    struct stat64 statInfo;
-    if (fstat64(_file, &statInfo) < 0) return false;
+    mFilename = filename;
+    mHint = hint;
+    mFilesize = osGetFileSize();
 
-    _filesize = statInfo.st_size;
-#endif
+    if (mFilesize == 0) {
+        osClose();
+        return false;
+    }
 
-    // initial mapping
-    remap(0, mappedBytes);
+    if (!osMap(0, mappedBytes)) {
+        osClose();
+        return false;
+    }
 
-    if (!_mappedView) return false;
-
-    // everything's fine
     return true;
 }
 
-/// close file
 void MemoryMappedFile::close() {
-    // kill pointer
-    if (_mappedView) {
-#ifdef __WINDOWS_OS__
-        ::UnmapViewOfFile(_mappedView);
-#else
-        ::munmap(_mappedView, _filesize);
-#endif
-        _mappedView = NULL;
-    }
+    osUnmap();
+    osClose();
 
-#ifdef __WINDOWS_OS__
-    if (_mappedFile) {
-        ::CloseHandle(_mappedFile);
-        _mappedFile = NULL;
-    }
-#endif
-
-    // close underlying file
-    if (_file) {
-#ifdef __WINDOWS_OS__
-        ::CloseHandle(_file);
-#else
-        ::close(_file);
-#endif
-        _file = 0;
-    }
-
-    _filesize = 0;
+    mFilename.clear();
+    mFilesize = 0;
+    mMappedBytes = 0;
+    mCursor = 0;
 }
 
-/// access position, no range checking (faster)
-unsigned char MemoryMappedFile::operator[](size_t offset) const {
-    return ((unsigned char*)_mappedView)[offset];
+bool MemoryMappedFile::remap(uint64_t offset, size_t mappedBytes) {
+    if (!isValid()) {
+        return false;
+    }
+
+    if (offset + mappedBytes > mFilesize && mappedBytes != WholeFile) {
+        return false;
+    }
+
+    osUnmap();
+    return osMap(offset, mappedBytes);
 }
 
-/// access position, including range checking
-unsigned char MemoryMappedFile::at(size_t offset) const {
-    // checks
-    if (!_mappedView) throw std::invalid_argument("No view mapped");
-    if (offset >= _filesize) throw std::out_of_range("View is not large enough");
+uint8_t MemoryMappedFile::operator[](size_t offset) const {
+    return static_cast<const uint8_t*>(mMappedView)[offset];
+}
 
+uint8_t MemoryMappedFile::at(size_t offset) const {
+    if (offset >= mMappedBytes) {
+        throw std::out_of_range("MemoryMappedFile::at() : offset out of range");
+    }
     return operator[](offset);
 }
 
-/// raw access
-const unsigned char* MemoryMappedFile::getData() const { return (const unsigned char*)_mappedView; }
+const uint8_t* MemoryMappedFile::getData() const {
+    return static_cast<const uint8_t*>(mMappedView);
+}
 
-/// true, if file successfully opened
-bool MemoryMappedFile::isValid() const { return _mappedView != NULL; }
+const uint8_t* MemoryMappedFile::begin() const {
+    return getData();
+}
 
-/// get file size
-uint64_t MemoryMappedFile::size() const { return _filesize; }
+const uint8_t* MemoryMappedFile::end() const {
+    return getData() + mMappedBytes;
+}
 
-/// get number of actually mapped bytes
-size_t MemoryMappedFile::mappedSize() const { return _mappedBytes; }
+bool MemoryMappedFile::isValid() const {
+    return mMappedView != nullptr;
+}
 
-/// replace mapping by a new one of the same file, offset MUST be a multiple of the page size
-bool MemoryMappedFile::remap(uint64_t offset, size_t mappedBytes) {
-    if (!_file) return false;
+uint64_t MemoryMappedFile::size() const {
+    return mFilesize;
+}
 
-    if (mappedBytes == WholeFile) mappedBytes = _filesize;
+size_t MemoryMappedFile::mappedSize() const {
+    return mMappedBytes;
+}
 
-    // close old mapping
-    if (_mappedView) {
+// OS-specific implementations
+
 #ifdef __WINDOWS_OS__
-        ::UnmapViewOfFile(_mappedView);
-#else
-        ::munmap(_mappedView, _mappedBytes);
-#endif
-        _mappedView = NULL;
+
+bool MemoryMappedFile::osOpen(const std::filesystem::path& filename) {
+    mFileHandle = ::CreateFileW(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+                                OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+
+    return mFileHandle != INVALID_HANDLE_VALUE;
+}
+
+void MemoryMappedFile::osClose() {
+    if (mFileHandle && mFileHandle != INVALID_HANDLE_VALUE) {
+        ::CloseHandle(mFileHandle);
+        mFileHandle = nullptr;
+    }
+}
+
+bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
+    if (mappedBytes == WholeFile) {
+        mappedBytes = static_cast<size_t>(mFilesize - offset);
     }
 
-    // don't go further than end of file
-    if (offset > _filesize) return false;
-    if (offset + mappedBytes > _filesize) mappedBytes = size_t(_filesize - offset);
-
-#ifdef __WINDOWS_OS__
-    // Windows
-
-    DWORD offsetLow = DWORD(offset & 0xFFFFFFFF);
-    DWORD offsetHigh = DWORD(offset >> 32);
-    _mappedBytes = mappedBytes;
-
-    // get memory address
-    _mappedView = ::MapViewOfFile(_mappedFile, FILE_MAP_READ, offsetHigh, offsetLow, mappedBytes);
-
-    if (_mappedView == NULL) {
-        _mappedBytes = 0;
-        _mappedView = NULL;
+    mMappingHandle = ::CreateFileMappingW(mFileHandle, nullptr, PAGE_READONLY, 0, 0, nullptr);
+    if (!mMappingHandle) {
         return false;
     }
 
-    return true;
+    const DWORD offsetHigh = static_cast<DWORD>(offset >> 32);
+    const DWORD offsetLow = static_cast<DWORD>(offset & 0xFFFFFFFF);
 
-#else
+    mMappedView = ::MapViewOfFile(mMappingHandle, FILE_MAP_READ, offsetHigh, offsetLow, mappedBytes);
 
-    // Linux
-    // new mapping
-    _mappedView = ::mmap64(NULL, mappedBytes, PROT_READ, MAP_SHARED, _file, offset);
-    if (_mappedView == MAP_FAILED) {
-        _mappedBytes = 0;
-        _mappedView = NULL;
+    if (!mMappedView) {
+        ::CloseHandle(mMappingHandle);
+        mMappingHandle = nullptr;
         return false;
     }
 
-    _mappedBytes = mappedBytes;
-
-    // tweak performance
-    int linuxHint = 0;
-    switch (_hint) {
-        case Normal:
-            linuxHint = MADV_NORMAL;
-            break;
-        case SequentialScan:
-            linuxHint = MADV_SEQUENTIAL;
-            break;
-        case RandomAccess:
-            linuxHint = MADV_RANDOM;
-            break;
-        default:
-            break;
-    }
-    // assume that file will be accessed soon
-    // linuxHint |= MADV_WILLNEED;
-    // assume that file will be large
-    // linuxHint |= MADV_HUGEPAGE;
-
-    ::madvise(_mappedView, _mappedBytes, linuxHint);
-
+    mMappedBytes = mappedBytes;
     return true;
-#endif
 }
 
-/// get OS page size (for remap)
-int MemoryMappedFile::getpagesize() {
-#ifdef __WINDOWS_OS__
-    SYSTEM_INFO sysInfo;
-    GetSystemInfo(&sysInfo);
-    return sysInfo.dwAllocationGranularity;
-#else
-    return sysconf(_SC_PAGESIZE);  //::getpagesize();
-#endif
+void MemoryMappedFile::osUnmap() {
+    if (mMappedView) {
+        ::UnmapViewOfFile(mMappedView);
+        mMappedView = nullptr;
+    }
+    if (mMappingHandle) {
+        ::CloseHandle(mMappingHandle);
+        mMappingHandle = nullptr;
+    }
 }
+
+uint64_t MemoryMappedFile::osGetFileSize() const {
+    LARGE_INTEGER size;
+    if (::GetFileSizeEx(mFileHandle, &size)) {
+        return static_cast<uint64_t>(size.QuadPart);
+    }
+    return 0;
+}
+
+uint32_t MemoryMappedFile::getPageSize() {
+    SYSTEM_INFO si;
+    ::GetSystemInfo(&si);
+    return si.dwAllocationGranularity;
+}
+
+#else  // Unix
+
+bool MemoryMappedFile::osOpen(const std::filesystem::path& filename) {
+    mFileHandle = ::open(filename.c_str(), O_RDONLY);
+    return mFileHandle != -1;
+}
+
+void MemoryMappedFile::osClose() {
+    if (mFileHandle != -1) {
+        ::close(mFileHandle);
+        mFileHandle = -1;
+    }
+}
+
+bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
+    if (mappedBytes == WholeFile) {
+        mappedBytes = static_cast<size_t>(mFilesize - offset);
+    }
+
+    int flags = MAP_SHARED;
+#ifdef MAP_POPULATE
+    if (mHint == Sequential) {
+        flags |= MAP_POPULATE;
+    }
+#endif
+
+    mMappedView = ::mmap(nullptr, mappedBytes, PROT_READ, flags, mFileHandle, offset);
+
+    if (mMappedView == MAP_FAILED) {
+        mMappedView = nullptr;
+        return false;
+    }
+
+#ifdef MADV_SEQUENTIAL
+    if (mHint == Sequential) {
+        ::madvise(mMappedView, mappedBytes, MADV_SEQUENTIAL);
+    }
+#endif
+
+    mMappedBytes = mappedBytes;
+    return true;
+}
+
+void MemoryMappedFile::osUnmap() {
+    if (mMappedView) {
+        ::munmap(mMappedView, mMappedBytes);
+        mMappedView = nullptr;
+    }
+}
+
+uint64_t MemoryMappedFile::osGetFileSize() const {
+    struct stat st;
+    if (::fstat(mFileHandle, &st) == 0) {
+        return static_cast<uint64_t>(st.st_size);
+    }
+    return 0;
+}
+
+uint32_t MemoryMappedFile::getPageSize() {
+    return static_cast<uint32_t>(::sysconf(_SC_PAGESIZE));
+}
+
+#endif

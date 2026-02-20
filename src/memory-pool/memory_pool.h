@@ -7,31 +7,31 @@
 
 #include "utilities/macros.h"
 
-/// \brief MemoryPool pre-allocates objects to memory to avoid dynamic
-/// allocation.
-///
-/// Offers significant time advantages (10x to 100x faster than dynamic
-/// allocation). For example, allocating 1,000 objects via new might take
-/// ~50-500 μs, while pre-allocated access could be <5 μs.
-/// \tparam T The type of objects managed by the pool.
+/**
+ * @brief Pre-allocates objects in memory to avoid the overhead of dynamic allocation.
+ * Offers significantly better performance than standard heap allocation.
+ * @tparam T The type of objects managed by the pool.
+ */
 template <typename T>
 class MemoryPool final {
    public:
-    /// \brief Constructs a MemoryPool with a fixed number of elements.
-    /// \param element_size The number of elements to pre-allocate.
+    /**
+     * @brief Constructs a MemoryPool with a fixed capacity.
+     * @param num_elems The number of elements to pre-allocate.
+     */
     explicit MemoryPool(std::size_t num_elems)
         : mStore(num_elems, {T(), true}) /* pre-allocation of vector storage. */ {
         ASSERT(reinterpret_cast<const ElementBlock *>(&(mStore[0].element)) == &(mStore[0]),
                "T object should be first member of ElementBlock.");
     }
 
-    /// \brief Allocates an object in-place from the pool.
-    ///
-    /// Finds the next free block, constructs the object in-place, and returns a
-    /// pointer.
-    /// \tparam Args Constructor argument types.
-    /// \param args Arguments to forward to the object's constructor.
-    /// \return Pointer to the allocated object.
+    /**
+     * @brief Allocates an object in-place from the pool.
+     * Finds the next free block and constructs the object using placement new.
+     * @tparam Args Constructor argument types.
+     * @param args Arguments to forward to the object's constructor.
+     * @return Pointer to the allocated and constructed object.
+     */
     template <typename... Args>
     T *allocate(Args... args) noexcept {
         auto obj_block = &(mStore[mNext_free_index]);
@@ -46,8 +46,10 @@ class MemoryPool final {
         return ret;
     }
 
-    /// \brief Deallocates an object, marking its block as free.
-    /// \param element Pointer to the object to deallocate.
+    /**
+     * @brief Deallocates an object, marking its block as free for reuse.
+     * @param elem Pointer to the object to deallocate.
+     */
     auto deallocate(const T *elem) noexcept {
         const auto elem_index = (reinterpret_cast<const ElementBlock *>(elem) - &mStore[0]);
         ASSERT(elem_index >= 0 && static_cast<size_t>(elem_index) < mStore.size(),
@@ -65,8 +67,9 @@ class MemoryPool final {
     MemoryPool &operator=(const MemoryPool &&) = delete;
 
    private:
-    /// \brief Updates the next free index to be written over with new
-    /// information.
+    /**
+     * @brief Updates the next free index for subsequent allocations.
+     */
     auto updateNextFreeIndex() noexcept {
         const auto initial_free_index = mNext_free_index;
         while (!mStore[mNext_free_index].is_free) {
@@ -80,16 +83,18 @@ class MemoryPool final {
         }
     }
 
-    /// \brief Structure for each element within the memory pool.
+    /**
+     * @brief Internal structure for each element block in the pool.
+     */
     struct ElementBlock {
         T element;
         bool is_free = true;
     };
 
-    /// \brief Index to track the next free element.
+    /** @brief Index tracking the next free element. */
     size_t mNext_free_index = 0;
 
-    /// \brief Underlying storage for the pool elements.
+    /** @brief Underlying storage for the pool elements. */
     std::vector<ElementBlock> mStore;
 };
 
