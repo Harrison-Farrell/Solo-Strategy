@@ -11,6 +11,11 @@
  * --------------------------------------------------------------------------
  */
 
+/**
+ * @file types.h
+ * @brief Global type definitions and constants for the Solo-Strategy project.
+ */
+
 #ifndef SOLO_STRATEGY_SRC_UTILITIES_TYPES_H_
 #define SOLO_STRATEGY_SRC_UTILITIES_TYPES_H_
 

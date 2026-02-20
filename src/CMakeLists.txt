@@ -9,6 +9,12 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # --------------------------------------------------------------------------
 
+# Document the source code
+if(BUILD_DOXYGEN)
+    include(Doxygen)
+    Doxygen(src "${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
+
 # Add subdirectories
 add_subdirectory(utilities)
 add_subdirectory(memory-pool)

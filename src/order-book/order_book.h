@@ -11,6 +11,11 @@
  * --------------------------------------------------------------------------
  */
 
+/**
+ * @file order_book.h
+ * @brief Core LOB (Limit Order Book) implementation for the trading system.
+ */
+
 #ifndef SOLO_STRATEGY_SRC_ORDER_BOOK_ORDER_BOOK_H_
 #define SOLO_STRATEGY_SRC_ORDER_BOOK_ORDER_BOOK_H_
 

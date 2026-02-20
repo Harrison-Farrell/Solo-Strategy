@@ -15,7 +15,7 @@ project(LockFreeQueueExample)
 add_executable(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE 
-    ${CURRENT_CMAKE_DIR}example_lock_free_queue.cpp
+    example_lock_free_queue.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE LockFreeQueue)

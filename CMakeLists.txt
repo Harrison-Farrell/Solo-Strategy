@@ -19,12 +19,27 @@ project(SoloStrategy VERSION 1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+# Build options
+option(BUILD_DOXYGEN "Build Doxygen documentation" ON)
+option(BUILD_TESTS "Build unit tests" ON)
+option(BUILD_BENCHMARKS "Build benchmarks" ON)
+option(BUILD_EXAMPLES "Build examples" ON)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Optional: Global compiler flags for optimization
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native")
 
 add_subdirectory(src)
-add_subdirectory(theory_src)
-add_subdirectory(test)
+
+if(BUILD_TESTS)
+    add_subdirectory(test)
+endif()
+
+if(BUILD_BENCHMARKS)
+    add_subdirectory(theory_src)
+endif()
+
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()

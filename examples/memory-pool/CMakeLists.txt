@@ -15,7 +15,7 @@ project(MemoryPoolExample)
 add_executable(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE
-${CURRENT_CMAKE_DIR}example_memory_pool.cpp
+    example_memory_pool.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE MemoryPool)

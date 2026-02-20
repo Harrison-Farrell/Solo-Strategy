@@ -9,9 +9,7 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # --------------------------------------------------------------------------
 
-# Project name
-project(LockFreeQueue)
-
-add_library(${PROJECT_NAME} INTERFACE)
-
-target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_SOURCE_DIR}/src)
+# Add example subdirectories
+add_subdirectory(lock-free-queue)
+add_subdirectory(memory-pool)
+add_subdirectory(memory-map)

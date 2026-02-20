@@ -11,17 +11,35 @@
  * --------------------------------------------------------------------------
  */
 
+/**
+ * @file endian_utils.h
+ * @brief Utilities for cross-platform endian conversion.
+ * 
+ * Provides template-based functions to safely swap bytes and convert
+ * big/little-endian data to host-native format.
+ */
+
 #ifndef SOLO_STRATEGY_SRC_ITCH_PARSER_ENDIAN_UTILS_H_
 #define SOLO_STRATEGY_SRC_ITCH_PARSER_ENDIAN_UTILS_H_
 
 #include <bit>
 #include <concepts>
 
+/**
+ * @namespace endian
+ * @brief Tools for handling different binary data orderings.
+ */
 namespace endian {
 
 /**
  * @brief Swaps the byte order of the given value.
- * Uses std::byteswap if C++23 is available, otherwise provides a fallback.
+ * 
+ * Uses `std::byteswap` if C++23 is available, otherwise provides a robust
+ * manual implementation using bitwise operations.
+ * 
+ * @tparam T An integral type (uint16_t, uint32_t, etc.).
+ * @param value The value to swap.
+ * @return The value with reversed byte order.
  */
 template <std::integral T>
 constexpr T swap(T value) noexcept {
@@ -41,6 +59,8 @@ constexpr T swap(T value) noexcept {
         uint64_t v = static_cast<uint64_t>(value);
         v = ((v << 8) & 0xFF00FF00FF00FF00ULL) | ((v >> 8) & 0x00FF00FF00FF00FFULL);
         v = ((v << 16) & 0xFFFF0000FFFF0000ULL) | ((v >> 16) & 0x0000FFFF0000FFFFULL);
+        v = ((v << 16) & 0xFFFF0000FFFF0000ULL) | ((v >> 16) & 0x0000FFFF0000FFFFULL);
+        v = ((v << 32) & 0xFFFFFFFF00000000ULL) | ((v >> 32) & 0x00000000FFFFFFFFULL);
         return static_cast<T>((v << 32) | (v >> 32));
     } else {
         return value;
@@ -49,7 +69,11 @@ constexpr T swap(T value) noexcept {
 }
 
 /**
- * @brief Converts a Big-Endian value to host endianness.
+ * @brief Converts a Big-Endian value to the host's native endianness.
+ * 
+ * @tparam T An integral type.
+ * @param value Big-endian input value.
+ * @return Host-native representation.
  */
 template <std::integral T>
 constexpr T from_big_endian(T value) noexcept {
@@ -61,7 +85,11 @@ constexpr T from_big_endian(T value) noexcept {
 }
 
 /**
- * @brief Converts a Little-Endian value to host endianness.
+ * @brief Converts a Little-Endian value to the host's native endianness.
+ * 
+ * @tparam T An integral type.
+ * @param value Little-endian input value.
+ * @return Host-native representation.
  */
 template <std::integral T>
 constexpr T from_little_endian(T value) noexcept {

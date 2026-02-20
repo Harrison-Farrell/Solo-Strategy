@@ -11,6 +11,15 @@
  * --------------------------------------------------------------------------
  */
 
+/**
+ * @file memory_map_file.h
+ * @brief High-performance memory-mapped file wrapper with cross-platform support.
+ *
+ * This file provides the MemoryMappedFile class, which abstracts platform-specific
+ * memory mapping APIs (mmap on Unix, CreateFileMapping on Windows) into a
+ * consistent, easy-to-use C++ interface.
+ */
+
 #ifndef SOLO_STRATEGY_SRC_ITCH_PARSER_MEMORY_MAP_FILE_H_
 #define SOLO_STRATEGY_SRC_ITCH_PARSER_MEMORY_MAP_FILE_H_
 
@@ -42,113 +51,133 @@
 #include <stdexcept>
 #include <string>
 
-#include "itch-parser/endian_utils.h"
+#include "Utilities/endian_utils.h"
 
+/**
+ * @class MemoryMappedFile
+ * @brief Provides a high-performance, read-only memory mapping of a file.
+ *
+ * Memory-mapped files allow applications to access file content as if it were 
+ * in-memory arrays. This is often faster than traditional I/O for large files
+ * and large-scale data processing like ITCH parsing.
+ *
+ * The class supports both Windows and Unix-like operating systems and provides
+ * safe cursor-based reading with automatic endian conversion.
+ */
 class MemoryMappedFile {
    public:
-    /// tweak performance
+    /**
+     * @brief Performance hints for the OS memory manager.
+     */
     enum CacheHint {
-        Normal,
-        SequentialScan,
-        RandomAccess
+        Normal,         ///< Default OS behavior.
+        SequentialScan, ///< Optimizes for sequential reading.
+        RandomAccess    ///< Disables aggressive prefetching.
     };
 
     /**
-     * @brief Default constructor. Must use open() to map a file.
+     * @brief Default constructor. File must be opened using open().
      */
     MemoryMappedFile();
 
     /**
-     * @brief Opens a file and maps its contents into memory.
+     * @brief Constructs and immediately maps a file.
      * @param filename Path to the file.
-     * @param mappedBytes Number of bytes to map. 0 maps the entire file.
-     * @param hint Cache hint for performance tuning.
+     * @param mappedBytes Number of bytes to map. Use WholeFile (0) for the entire file.
+     * @param hint Performance hint for the operating system.
+     * @throws std::runtime_error If the file fails to open or map.
      */
     MemoryMappedFile(const std::filesystem::path& filename, size_t mappedBytes = WholeFile,
                      CacheHint hint = Normal);
 
     /**
-     * @brief Closes the file and unmaps the memory (destructor).
+     * @brief Unmaps the memory and closes the file handles.
      */
     ~MemoryMappedFile();
 
-    /// how much should be mappend
+    /** @brief Value used to represent the entire file length in mapping calls. */
     enum MapRange { WholeFile = 0 };
 
     /**
-     * @brief Opens a file and maps its contents into memory.
+     * @brief Opens a file and maps it into memory.
      * @param filename Path to the file.
-     * @param mappedBytes Number of bytes to map. 0 maps the entire file.
-     * @param hint Cache hint for performance tuning.
-     * @return true if successful, false otherwise.
+     * @param mappedBytes Bytes to map. 0 means map everything.
+     * @param hint Performance hint for the OS.
+     * @return true if successful.
      */
     [[nodiscard]] bool open(const std::filesystem::path& filename, size_t mappedBytes = WholeFile,
-                            CacheHint hint = Normal);
+                             CacheHint hint = Normal);
 
     /**
-     * @brief Closes the file and unmaps the memory.
+     * @brief Unmaps the memory and closes all handles. Safe to call multiple times.
      */
     void close();
 
     /**
-     * @brief Accesses the data at the specified offset without range checking.
-     * @param offset Offset from the beginning of the file.
-     * @return The byte at the specified offset.
+     * @brief Fast, unchecked array-style access to the mapped data.
+     * @param offset Byte offset from the start of the mapping.
+     * @return Byte value at the specified offset.
+     * @warning No bounds checking for performance. Ensure offset < size().
      */
     [[nodiscard]] uint8_t operator[](size_t offset) const;
 
     /**
-     * @brief Accesses the data at the specified offset with range checking.
-     * @param offset Offset from the beginning of the file.
-     * @return The byte at the specified offset.
-     * @throws std::out_of_range if the offset is beyond the file size.
+     * @brief Checked access to the mapped data.
+     * @param offset Byte offset from the start of the mapping.
+     * @return Byte value at the specified offset.
+     * @throws std::out_of_range If offset is >= size().
      */
     [[nodiscard]] uint8_t at(size_t offset) const;
 
     /**
-     * @brief Provides raw access to the mapped data.
-     * @return A pointer to the beginning of the mapped data.
+     * @brief Returns a raw pointer to the start of the memory mapping.
+     * @return Continuous memory pointer to the file content.
      */
     [[nodiscard]] const uint8_t* getData() const;
 
     /**
-     * @brief Iterator to the beginning of the file content.
+     * @brief STL-compatible iterator to the start of the mapped data.
+     * @return Constant pointer to the beginning.
      */
     [[nodiscard]] const uint8_t* begin() const;
 
     /**
-     * @brief Iterator to the end of the file content.
+     * @brief STL-compatible iterator to the byte after the last mapped byte.
+     * @return Constant pointer to the end.
      */
     [[nodiscard]] const uint8_t* end() const;
 
     /**
-     * @brief Checks if a file is successfully opened and mapped.
+     * @brief Checks if the file is currently validly mapped.
+     * @return true if mapping is active.
      */
     [[nodiscard]] bool isValid() const;
 
     /**
-     * @brief Returns the total size of the file.
+     * @brief Gets the total size of the underlying file on disk.
+     * @return File size in bytes.
      */
     [[nodiscard]] uint64_t size() const;
 
     /**
-     * @brief Returns the number of bytes currently mapped into memory.
+     * @brief Gets the number of bytes currently mapped into the process's address space.
+     * @return Number of mapped bytes.
      */
     [[nodiscard]] size_t mappedSize() const;
 
     /**
-     * @brief Replaces the current mapping with a new one from the same file.
-     * @param offset Start offset in the file. Must be a multiple of the page size.
-     * @param mappedBytes Number of bytes to map.
-     * @return true if successful, false otherwise.
+     * @brief Shifts the memory mapping window.
+     * @param offset New start offset in the file. Must be a multiple of OS page size.
+     * @param mappedBytes Number of bytes to map from the new offset.
+     * @return true on success.
      */
     [[nodiscard]] bool remap(uint64_t offset, size_t mappedBytes);
 
-    // Generic read function for 8, 16, 32, or 64-bit values
     /**
-     * @brief Reads a value of type T from the current cursor position.
-     * @return The value read.
-     * @throws std::out_of_range if reading past the end of the file.
+     * @brief Reads a value of type T from the current cursor and advances it.
+     * @tparam T Type to read (e.g., uint32_t, char).
+     * @return Value read from the stream.
+     * @throws std::out_of_range If reading past end of mapped region.
      */
     template <typename T>
     T read() {
@@ -163,7 +192,9 @@ class MemoryMappedFile {
     }
 
     /**
-     * @brief Reads a Big-Endian value and converts it to host endianness.
+     * @brief Reads Big-Endian data and converts to host endianness.
+     * @tparam T Integer type to read.
+     * @return Host-endian value.
      */
     template <typename T>
     T readBE() {
@@ -171,71 +202,72 @@ class MemoryMappedFile {
     }
 
     /**
-     * @brief Reads a Little-Endian value and converts it to host endianness.
+     * @brief Reads Little-Endian data and converts to host endianness.
+     * @tparam T Integer type to read.
+     * @return Host-endian value.
      */
     template <typename T>
     T readLE() {
         return endian::from_little_endian(read<T>());
     }
 
-    // Specific helpers for your request
-    // Specific helpers for ITCH (Big-Endian)
+    /** @brief Reads a single byte. @return uint8_t value. */
     uint8_t read8() { return read<uint8_t>(); }
+    /** @brief Reads a 16-bit big-endian value. @return uint16_t value. */
     uint16_t read16() { return readBE<uint16_t>(); }
+    /** @brief Reads a 32-bit big-endian value. @return uint32_t value. */
     uint32_t read32() { return readBE<uint32_t>(); }
+    /** @brief Reads a 64-bit big-endian value. @return uint64_t value. */
     uint64_t read64() { return readBE<uint64_t>(); }
 
     /**
-     * @brief Seeks to a specific position in the file.
+     * @brief Sets the internal cursor for the read() functions.
+     * @param pos New byte offset from the start of the file.
      */
     void seek(size_t pos) { mCursor = pos; }
 
     /**
-     * @brief Returns the current cursor position.
+     * @brief Gets current byte position of the cursor.
+     * @return Cursor offset in bytes.
      */
     [[nodiscard]] size_t tell() const { return mCursor; }
 
    private:
-    /** @brief Prevents copying. */
+    /** @brief Prevents creating duplicates of the mapping object. */
     MemoryMappedFile(const MemoryMappedFile&) = delete;
-    /** @brief Prevents assignment. */
+    /** @brief Prevents assignment, as handles are managed uniquely. */
     MemoryMappedFile& operator=(const MemoryMappedFile&) = delete;
 
-    /** @brief Internal OS-specific helpers. */
+    /** @brief Implementation detail for OS-specific file opening. */
     [[nodiscard]] bool osOpen(const std::filesystem::path& filename);
+    /** @brief Implementation detail for OS-specific handle closing. */
     void osClose();
+    /** @brief Implementation detail for OS-specific mapping. */
     [[nodiscard]] bool osMap(uint64_t offset, size_t mappedBytes);
+    /** @brief Implementation detail for OS-specific unmapping. */
     void osUnmap();
+    /** @brief Implementation detail for OS-specific file size retrieval. */
     [[nodiscard]] uint64_t osGetFileSize() const;
 
-    /** @brief Returns OS page size. */
+    /** @brief Helper to retrieve the granularity required for mmap offsets. */
     [[nodiscard]] static uint32_t getPageSize();
 
-    /** @brief Current file name. */
-    std::filesystem::path mFilename;
-    /** @brief Total file size in bytes. */
-    uint64_t mFilesize = 0;
-    /** @brief Current read cursor position. */
-    size_t mCursor = 0;
-    /** @brief Caching hint. */
-    CacheHint mHint = Normal;
-    /** @brief Number of currently mapped bytes. */
-    size_t mMappedBytes = 0;
+    std::filesystem::path mFilename;    ///< Canonical path of the opened file.
+    uint64_t mFilesize = 0;             ///< Cached size of the file in bytes.
+    size_t mCursor = 0;                 ///< Current stream position for sequential reads.
+    CacheHint mHint = Normal;           ///< Active performance hint.
+    size_t mMappedBytes = 0;            ///< Actual bytes currently accessible in memory.
 
 #ifdef __WINDOWS_OS__
     using FileHandle = void*;
-    /** @brief Windows handle to the underlying file. */
-    FileHandle mFileHandle = nullptr;
-    /** @brief Windows handle to the memory mapping object. */
-    FileHandle mMappingHandle = nullptr;
+    FileHandle mFileHandle = nullptr;    ///< Native Windows file handle.
+    FileHandle mMappingHandle = nullptr; ///< Native Windows mapping object handle.
 #else
     using FileHandle = int;
-    /** @brief Unix file descriptor. */
-    FileHandle mFileHandle = -1;
+    FileHandle mFileHandle = -1;         ///< POSIX file descriptor.
 #endif
 
-    /** @brief Pointer to the mapped content. */
-    void* mMappedView = nullptr;
+    void* mMappedView = nullptr;         ///< Pointer to shared memory region.
 };
 
 #endif  // SOLO_STRATEGY_SRC_ITCH_PARSER_MEMORY_MAP_FILE_H_

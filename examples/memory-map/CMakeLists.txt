@@ -9,9 +9,9 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # --------------------------------------------------------------------------
 
-set(MEMORY_MAP test_memory_map_file)
+set(MEMORY_MAP example_memory_map_file)
 
-add_executable(${MEMORY_MAP} test_memory_map_file.cpp)
+add_executable(${MEMORY_MAP} example_memory_map_file.cpp)
 
 target_include_directories(${MEMORY_MAP} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
@@ -19,7 +19,7 @@ target_link_libraries(${MEMORY_MAP} PUBLIC ITCH-PARSER)
 
 set_target_properties(${MEMORY_MAP}
     PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/test"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/test"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/test"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/example"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/example"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
 )

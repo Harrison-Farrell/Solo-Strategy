@@ -11,6 +11,11 @@
  * --------------------------------------------------------------------------
  */
 
+/**
+ * @file macros.h
+ * @brief Utility macros for error handling and assertions.
+ */
+
 #ifndef SOLO_STRATEGY_SRC_UTILITIES_MACROS_H_
 #define SOLO_STRATEGY_SRC_UTILITIES_MACROS_H_
 

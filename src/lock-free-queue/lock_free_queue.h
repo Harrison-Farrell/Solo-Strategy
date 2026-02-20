@@ -11,6 +11,11 @@
  * --------------------------------------------------------------------------
  */
 
+/**
+ * @file lock_free_queue.h
+ * @brief Thread-safe, lock-free circular buffer for low-latency data passing.
+ */
+
 #ifndef SOLO_STRATEGY_SRC_LOCK_FREE_QUEUE_LOCK_FREE_QUEUE_H_
 #define SOLO_STRATEGY_SRC_LOCK_FREE_QUEUE_LOCK_FREE_QUEUE_H_
 

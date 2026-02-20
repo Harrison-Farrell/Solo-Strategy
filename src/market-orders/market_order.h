@@ -11,6 +11,11 @@
  * --------------------------------------------------------------------------
  */
 
+/**
+ * @file market_order.h
+ * @brief Definitions for market orders, price levels, and best bid/offer views.
+ */
+
 #ifndef SOLO_STRATEGY_SRC_MARKET_ORDERS_MARKET_ORDER_H_
 #define SOLO_STRATEGY_SRC_MARKET_ORDERS_MARKET_ORDER_H_
 

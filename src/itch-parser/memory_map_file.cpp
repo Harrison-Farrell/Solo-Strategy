@@ -31,7 +31,9 @@ MemoryMappedFile::MemoryMappedFile() = default;
 
 MemoryMappedFile::MemoryMappedFile(const std::filesystem::path& filename, size_t mappedBytes,
                                    CacheHint hint) {
-    open(filename, mappedBytes, hint);
+    if (!open(filename, mappedBytes, hint)) {
+        throw std::runtime_error("MemoryMappedFile::MemoryMappedFile() : failed to open file");
+    }
 }
 
 MemoryMappedFile::~MemoryMappedFile() {

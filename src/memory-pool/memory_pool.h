@@ -11,6 +11,11 @@
  * --------------------------------------------------------------------------
  */
 
+/**
+ * @file memory_pool.h
+ * @brief High-performance object pool for avoiding dynamic memory allocation.
+ */
+
 #ifndef SOLO_STRATEGY_SRC_MEMORY_POOL_MEMORY_POOL_H_
 #define SOLO_STRATEGY_SRC_MEMORY_POOL_MEMORY_POOL_H_
 
