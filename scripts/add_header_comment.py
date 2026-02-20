@@ -1,6 +1,13 @@
-# This is a standard header for Solo-Strategy.
-# It contains license information and ownership.
-# 2026 Harrison Farrell.
+# --------------------------------------------------------------------------
+# Author:      Harrison Farrell
+# Project:     Solo-Strategy Trading System
+# Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
+#
+# Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
+# This program is distributed WITHOUT ANY WARRANTY; without even the 
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
+# --------------------------------------------------------------------------
 
 #!/usr/bin/env python3
 import os
@@ -59,8 +66,8 @@ def main():
     target_filenames = {'CMakeLists.txt'}
 
     for root, dirs, files in os.walk(root_path):
-        # Skip hidden directories like .git
-        dirs[:] = [d for d in dirs if not d.startswith('.')]
+        # Skip hidden directories like .git and the build directory
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d != 'build']
         
         for name in files:
             file_path = Path(root) / name
