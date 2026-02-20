@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#ifdef _WIN32
+#ifdef __WIN32
     #include <direct.h>
     #define mkdir(path, mode) _mkdir(path)
 #endif

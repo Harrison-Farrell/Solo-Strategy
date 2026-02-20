@@ -16,12 +16,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native")
 
 add_subdirectory(src)
 add_subdirectory(theory_src)
-
-add_executable(itch_c_parser test/resources/itch_c_parser.c)
-
-set_target_properties(itch_c_parser
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/test"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/test"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/test"
-)
+add_subdirectory(test)
