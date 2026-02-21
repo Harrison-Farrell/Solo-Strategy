@@ -85,13 +85,13 @@ struct SystemEventMessage {
  */
 struct StockDirectoryMessage {
     MessageHeader header{MessageType::StockDirectoryMessage, 0, 0, 0};  ///< Message header
-    const char stock[8];                  ///< Stock symbol, right-padded with spaces
+    char stock[8];                        ///< Stock symbol, right-padded with spaces
     char market_category;                 ///< Listing market category
     char financial_status_indicator;      ///< Financial status of the issuer
     uint32_t round_lot_size;              ///< Standard round lot size
     char round_lots_only;                 ///< 'Y' if only round lots are allowed
     char issue_classification;            ///< Type of issue
-    const char issue_sub_type[2];         ///< More granular issue type
+    char issue_sub_type[2];               ///< More granular issue type
     char authenticity;                    ///< 'P' for production, 'T' for test
     char short_sale_threshold_indicator;  ///< Threshold status
     char ipo_flag;                        ///< 'Y' if new IPO

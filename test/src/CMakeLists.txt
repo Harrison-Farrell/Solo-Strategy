@@ -10,3 +10,4 @@
 # --------------------------------------------------------------------------
 
 add_subdirectory(itch-parser)
+add_subdirectory(lock-free-queue)

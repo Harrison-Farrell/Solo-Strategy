@@ -9,17 +9,10 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # --------------------------------------------------------------------------
 
-set(MEMORY_MAP example_memory_map_file)
+add_executable(lock-free-queue-test lock_free_queue_test.cpp)
 
-add_executable(${MEMORY_MAP} example_memory_map_file.cpp)
-
-target_include_directories(${MEMORY_MAP} PRIVATE ${CMAKE_SOURCE_DIR}/src)
-
-target_link_libraries(${MEMORY_MAP} PUBLIC ITCH-PARSER)
-
-set_target_properties(${MEMORY_MAP}
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
+target_link_libraries(lock-free-queue-test PRIVATE
+        LockFreeQueue
 )
+
+AddTests(lock-free-queue-test)
