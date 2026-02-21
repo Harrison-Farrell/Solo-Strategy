@@ -16,7 +16,7 @@
 #include <sstream>
 #include <string>
 
-#include "itch-parser/memory_map_file.h"
+#include "itch-parser/memory-map/memory_map_file.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2 || argc > 3) {

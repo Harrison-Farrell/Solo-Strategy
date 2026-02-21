@@ -5,7 +5,7 @@
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
- * This program is distributed WITHOUT ANY WARRANTY; without even the 
+ * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
  * --------------------------------------------------------------------------
@@ -47,6 +47,7 @@
 #endif
 
 #include <cstdint>
+#include <cstring>
 #include <filesystem>
 #include <stdexcept>
 #include <string>
@@ -57,7 +58,7 @@
  * @class MemoryMappedFile
  * @brief Provides a high-performance, read-only memory mapping of a file.
  *
- * Memory-mapped files allow applications to access file content as if it were 
+ * Memory-mapped files allow applications to access file content as if it were
  * in-memory arrays. This is often faster than traditional I/O for large files
  * and large-scale data processing like ITCH parsing.
  *
@@ -70,9 +71,9 @@ class MemoryMappedFile {
      * @brief Performance hints for the OS memory manager.
      */
     enum CacheHint {
-        Normal,         ///< Default OS behavior.
-        SequentialScan, ///< Optimizes for sequential reading.
-        RandomAccess    ///< Disables aggressive prefetching.
+        Normal,          ///< Default OS behavior.
+        SequentialScan,  ///< Optimizes for sequential reading.
+        RandomAccess     ///< Disables aggressive prefetching.
     };
 
     /**
@@ -106,7 +107,7 @@ class MemoryMappedFile {
      * @return true if successful.
      */
     [[nodiscard]] bool open(const std::filesystem::path& filename, size_t mappedBytes = WholeFile,
-                             CacheHint hint = Normal);
+                            CacheHint hint = Normal);
 
     /**
      * @brief Unmaps the memory and closes all handles. Safe to call multiple times.
@@ -181,10 +182,6 @@ class MemoryMappedFile {
      */
     template <typename T>
     T read() {
-        if (mCursor + sizeof(T) > mFilesize) {
-            throw std::out_of_range("Attempted to read past end of file.");
-        }
-
         // Direct memory access via pointer casting
         T value = *reinterpret_cast<const T*>(static_cast<const uint8_t*>(mMappedView) + mCursor);
         mCursor += sizeof(T);
@@ -211,21 +208,69 @@ class MemoryMappedFile {
         return endian::from_little_endian(read<T>());
     }
 
-    /** @brief Reads a single byte. @return uint8_t value. */
+    /**
+     * @brief Reads a single byte.
+     * @return uint8_t value.
+     * @warning No bounds checking for performance. Ensure offset < size().
+     */
     uint8_t read8() { return read<uint8_t>(); }
-    /** @brief Reads a 16-bit big-endian value. @return uint16_t value. */
+    /**
+     * @brief Reads a single byte.
+     * @return char value.
+     * @warning No bounds checking for performance. Ensure offset < size().
+     */
+    char readChar() { return read<char>(); }
+    /**
+     * @brief Reads a 16-bit big-endian value.
+     * @return uint16_t value.
+     * @warning No bounds checking for performance. Ensure offset < size().
+     */
     uint16_t read16() { return readBE<uint16_t>(); }
-    /** @brief Reads a 32-bit big-endian value. @return uint32_t value. */
+    /**
+     * @brief Reads a 32-bit big-endian value.
+     * @return uint32_t value.
+     * @warning No bounds checking for performance. Ensure offset < size().
+     */
     uint32_t read32() { return readBE<uint32_t>(); }
-    /** @brief Reads a 64-bit big-endian value. @return uint64_t value. */
+    /**
+     * @brief Reads a 48-bit big-endian value.
+     * @return uint64_t value.
+     * @warning No bounds checking for performance. Ensure offset < size().
+     */
+    uint64_t read48();
+    /**
+     * @brief Reads a 64-bit big-endian value.
+     * @return uint64_t value.
+     * @warning No bounds checking for performance. Ensure offset < size().
+     */
     uint64_t read64() { return readBE<uint64_t>(); }
+    /**
+     * @brief Reads a fixed-length string and advances the cursor.
+     * @param length Number of characters to read.
+     * @return std::string containing the characters.
+     */
+    std::string readString(size_t length);
 
+    /**
+     * @brief Copies a fixed-length string and advances the cursor.
+     * @param dentation of the string copy.
+     * @param length Number of characters to read.
+     */
+    inline auto copyString(char* destination, size_t length) -> void {
+        std::memcpy(destination, static_cast<const char*>(mMappedView) + mCursor, length);
+        mCursor += length;
+    }
+
+    /**
+     * @brief Memory-mapped reading of an 8-character symbol.
+     * @return std::string containing 8 characters.
+     */
+    std::string readSymbol() { return readString(8); }
     /**
      * @brief Sets the internal cursor for the read() functions.
      * @param pos New byte offset from the start of the file.
      */
     void seek(size_t pos) { mCursor = pos; }
-
     /**
      * @brief Gets current byte position of the cursor.
      * @return Cursor offset in bytes.
@@ -252,22 +297,22 @@ class MemoryMappedFile {
     /** @brief Helper to retrieve the granularity required for mmap offsets. */
     [[nodiscard]] static uint32_t getPageSize();
 
-    std::filesystem::path mFilename;    ///< Canonical path of the opened file.
-    uint64_t mFilesize = 0;             ///< Cached size of the file in bytes.
-    size_t mCursor = 0;                 ///< Current stream position for sequential reads.
-    CacheHint mHint = Normal;           ///< Active performance hint.
-    size_t mMappedBytes = 0;            ///< Actual bytes currently accessible in memory.
+    std::filesystem::path mFilename;  ///< Canonical path of the opened file.
+    uint64_t mFilesize = 0;           ///< Cached size of the file in bytes.
+    size_t mCursor = 0;               ///< Current stream position for sequential reads.
+    CacheHint mHint = Normal;         ///< Active performance hint.
+    size_t mMappedBytes = 0;          ///< Actual bytes currently accessible in memory.
 
 #ifdef __WINDOWS_OS__
     using FileHandle = void*;
-    FileHandle mFileHandle = nullptr;    ///< Native Windows file handle.
-    FileHandle mMappingHandle = nullptr; ///< Native Windows mapping object handle.
+    FileHandle mFileHandle = nullptr;     ///< Native Windows file handle.
+    FileHandle mMappingHandle = nullptr;  ///< Native Windows mapping object handle.
 #else
     using FileHandle = int;
-    FileHandle mFileHandle = -1;         ///< POSIX file descriptor.
+    FileHandle mFileHandle = -1;  ///< POSIX file descriptor.
 #endif
 
-    void* mMappedView = nullptr;         ///< Pointer to shared memory region.
+    void* mMappedView = nullptr;  ///< Pointer to shared memory region.
 };
 
 #endif  // SOLO_STRATEGY_SRC_ITCH_PARSER_MEMORY_MAP_FILE_H_

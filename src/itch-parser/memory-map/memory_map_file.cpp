@@ -5,26 +5,26 @@
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
- * This program is distributed WITHOUT ANY WARRANTY; without even the 
+ * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
  * --------------------------------------------------------------------------
  */
 
-#include "itch-parser/memory_map_file.h"
+#include "itch-parser/memory-map/memory_map_file.h"
 
 #include <cstdio>
 #include <stdexcept>
 
 #ifdef __WINDOWS_OS__
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
 #else
-#include <errno.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
+    #include <errno.h>
+    #include <fcntl.h>
+    #include <sys/mman.h>
+    #include <sys/stat.h>
+    #include <unistd.h>
 #endif
 
 MemoryMappedFile::MemoryMappedFile() = default;
@@ -36,9 +36,7 @@ MemoryMappedFile::MemoryMappedFile(const std::filesystem::path& filename, size_t
     }
 }
 
-MemoryMappedFile::~MemoryMappedFile() {
-    close();
-}
+MemoryMappedFile::~MemoryMappedFile() { close(); }
 
 bool MemoryMappedFile::open(const std::filesystem::path& filename, size_t mappedBytes,
                             CacheHint hint) {
@@ -103,24 +101,31 @@ const uint8_t* MemoryMappedFile::getData() const {
     return static_cast<const uint8_t*>(mMappedView);
 }
 
-const uint8_t* MemoryMappedFile::begin() const {
-    return getData();
+const uint8_t* MemoryMappedFile::begin() const { return getData(); }
+
+const uint8_t* MemoryMappedFile::end() const { return getData() + mMappedBytes; }
+
+bool MemoryMappedFile::isValid() const { return mMappedView != nullptr; }
+
+uint64_t MemoryMappedFile::size() const { return mFilesize; }
+
+size_t MemoryMappedFile::mappedSize() const { return mMappedBytes; }
+
+uint64_t MemoryMappedFile::read48() {
+    const uint8_t* ptr = static_cast<const uint8_t*>(mMappedView) + mCursor;
+    uint64_t value = (static_cast<uint64_t>(ptr[0]) << 40) | (static_cast<uint64_t>(ptr[1]) << 32) |
+                     (static_cast<uint64_t>(ptr[2]) << 24) | (static_cast<uint64_t>(ptr[3]) << 16) |
+                     (static_cast<uint64_t>(ptr[4]) << 8) | (static_cast<uint64_t>(ptr[5]));
+
+    mCursor += 6;
+    return value;
 }
 
-const uint8_t* MemoryMappedFile::end() const {
-    return getData() + mMappedBytes;
-}
-
-bool MemoryMappedFile::isValid() const {
-    return mMappedView != nullptr;
-}
-
-uint64_t MemoryMappedFile::size() const {
-    return mFilesize;
-}
-
-size_t MemoryMappedFile::mappedSize() const {
-    return mMappedBytes;
+std::string MemoryMappedFile::readString(size_t length) {
+    std::string str(
+        reinterpret_cast<const char*>(static_cast<const uint8_t*>(mMappedView) + mCursor), length);
+    mCursor += length;
+    return str;
 }
 
 // OS-specific implementations
@@ -154,7 +159,8 @@ bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
     const DWORD offsetHigh = static_cast<DWORD>(offset >> 32);
     const DWORD offsetLow = static_cast<DWORD>(offset & 0xFFFFFFFF);
 
-    mMappedView = ::MapViewOfFile(mMappingHandle, FILE_MAP_READ, offsetHigh, offsetLow, mappedBytes);
+    mMappedView =
+        ::MapViewOfFile(mMappingHandle, FILE_MAP_READ, offsetHigh, offsetLow, mappedBytes);
 
     if (!mMappedView) {
         ::CloseHandle(mMappingHandle);
@@ -211,11 +217,11 @@ bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
     }
 
     int flags = MAP_SHARED;
-#ifdef MAP_POPULATE
+    #ifdef MAP_POPULATE
     if (mHint == Sequential) {
         flags |= MAP_POPULATE;
     }
-#endif
+    #endif
 
     mMappedView = ::mmap(nullptr, mappedBytes, PROT_READ, flags, mFileHandle, offset);
 
@@ -224,11 +230,11 @@ bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
         return false;
     }
 
-#ifdef MADV_SEQUENTIAL
+    #ifdef MADV_SEQUENTIAL
     if (mHint == Sequential) {
         ::madvise(mMappedView, mappedBytes, MADV_SEQUENTIAL);
     }
-#endif
+    #endif
 
     mMappedBytes = mappedBytes;
     return true;
@@ -249,8 +255,6 @@ uint64_t MemoryMappedFile::osGetFileSize() const {
     return 0;
 }
 
-uint32_t MemoryMappedFile::getPageSize() {
-    return static_cast<uint32_t>(::sysconf(_SC_PAGESIZE));
-}
+uint32_t MemoryMappedFile::getPageSize() { return static_cast<uint32_t>(::sysconf(_SC_PAGESIZE)); }
 
 #endif

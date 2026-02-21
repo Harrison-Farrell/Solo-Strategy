@@ -9,4 +9,4 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # --------------------------------------------------------------------------
 
-add_subdirectory(resources)
+add_subdirectory(src)

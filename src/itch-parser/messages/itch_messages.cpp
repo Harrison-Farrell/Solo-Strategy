@@ -1,0 +1,195 @@
+/*
+ * --------------------------------------------------------------------------
+ * Author:      Harrison Farrell
+ * Project:     Solo-Strategy Trading System
+ * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
+ * This program is distributed WITHOUT ANY WARRANTY; without even the 
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
+ * --------------------------------------------------------------------------
+ */
+
+#include "itch-parser/messages/itch_messages.h"
+
+namespace ITCH {
+
+auto print_impl(std::ostream& out, const SystemEventMessage& msg) {
+    out << "System Event:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Event Code: " << msg.event_code;
+}
+
+auto print_impl(std::ostream& out, const StockDirectoryMessage& msg) {
+    out << "Stock Directory:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+}
+
+auto print_impl(std::ostream& out, const StockTradingActionMessage& msg) {
+    out << "Stock Trading Action:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN) << "\n"
+        << "  State: " << msg.trading_state;
+}
+
+auto print_impl(std::ostream& out, const RegSHOMessage& msg) {
+    out << "Reg SHO Message:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+}
+
+auto print_impl(std::ostream& out, const MarketParticipantPositionMessage& msg) {
+    out << "Market Participant Position:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  MPID: " << to_string(msg.mpid, 4) << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+}
+
+auto print_impl(std::ostream& out, const MWCBDeclineLevelMessage& msg) {
+    out << "MWCB Decline Level:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Level 1: " << static_cast<double>(msg.level1) / MWCB_PRICE_DIVISOR;
+}
+
+auto print_impl(std::ostream& out, const MWCBStatusMessage& msg) {
+    out << "MWCB Status:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Level: " << msg.breached_level;
+}
+
+auto print_impl(std::ostream& out, const IPOQuotingPeriodUpdateMessage& msg) {
+    out << "IPO Quoting Period Update:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+}
+
+auto print_impl(std::ostream& out, const LULDAuctionCollarMessage& msg) {
+    out << "LULD Auction Collar:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+}
+
+auto print_impl(std::ostream& out, const OperationalHaltMessage& msg) {
+    out << "Operational Halt:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+}
+
+auto print_impl(std::ostream& out, const AddOrderMessage& msg) {
+    out << "Add Order:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN) << "\n"
+        << "  Side: " << msg.buy_sell_indicator << "\n"
+        << "  Shares: " << msg.shares << "\n"
+        << "  Price: " << msg.price / PRICE_DIVISOR;
+}
+
+auto print_impl(std::ostream& out, const AddOrderMPIDAttributionMessage& msg) {
+    out << "Add Order (MPID):\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN) << "\n"
+        << "  MPID: " << to_string(msg.attribution, 4) << "\n"
+        << "  Side: " << msg.buy_sell_indicator << "\n"
+        << "  Shares: " << msg.shares << "\n"
+        << "  Price: " << msg.price / PRICE_DIVISOR;
+}
+
+auto print_impl(std::ostream& out, const OrderExecutedMessage& msg) {
+    out << "Order Executed:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Ref#: " << msg.order_reference_number << "\n"
+        << "  Shares: " << msg.executed_shares;
+}
+
+auto print_impl(std::ostream& out, const OrderExecutedWithPriceMessage& msg) {
+    out << "Order Executed w/ Price:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Ref#: " << msg.order_reference_number << "\n"
+        << "  Price: " << msg.execution_price / PRICE_DIVISOR;
+}
+
+auto print_impl(std::ostream& out, const OrderCancelMessage& msg) {
+    out << "Order Cancel:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Ref#: " << msg.order_reference_number << "\n"
+        << "  Cancelled Shares: " << msg.cancelled_shares;
+}
+
+auto print_impl(std::ostream& out, const OrderDeleteMessage& msg) {
+    out << "Order Delete:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Ref#: " << msg.order_reference_number;
+}
+
+auto print_impl(std::ostream& out, const OrderReplaceMessage& msg) {
+    out << "Order Replace:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Original Ref#: " << msg.original_order_reference_number << "\n"
+        << "  New Ref#: " << msg.new_order_reference_number << "\n"
+        << "  Shares: " << msg.shares << "\n"
+        << "  Price: " << msg.price / PRICE_DIVISOR;
+}
+
+auto print_impl(std::ostream& out, const NonCrossTradeMessage& msg) {
+    out << "Non-Cross Trade:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN) << "\n"
+        << "  Side: " << msg.buy_sell_indicator << "\n"
+        << "  Shares: " << msg.shares << "\n"
+        << "  Price: " << msg.price / PRICE_DIVISOR;
+}
+
+auto print_impl(std::ostream& out, const CrossTradeMessage& msg) {
+    out << "Cross Trade:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN) << "\n"
+        << "  Shares: " << msg.shares << "\n"
+        << "  Cross Price: " << msg.cross_price / PRICE_DIVISOR << "\n"
+        << "  Match#: " << msg.match_number << "\n"
+        << "  Cross Type: " << msg.cross_type;
+}
+
+auto print_impl(std::ostream& out, const BrokenTradeMessage& msg) {
+    out << "Broken Trade:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Match#: " << msg.match_number;
+}
+
+auto print_impl(std::ostream& out, const NOIIMessage& msg) {
+    out << "NOII Message:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN) << "\n"
+        << "  Paired Shares: " << msg.paired_shares << "\n"
+        << "  Imbalance Shares: " << msg.imbalance_shares << "\n"
+        << "  Imbalance Direction: " << msg.imbalance_direction << "\n"
+        << "  Far Price: " << msg.far_price / PRICE_DIVISOR << "\n"
+        << "  Near Price: " << msg.near_price / PRICE_DIVISOR << "\n"
+        << "  Reference Price: " << msg.current_reference_price / PRICE_DIVISOR << "\n"
+        << "  Cross Type: " << msg.cross_type << "\n"
+        << "  Price Variation Indicator: " << msg.price_variation_indicator;
+}
+
+auto print_impl(std::ostream& out, const RetailPriceImprovementIndicatorMessage& msg) {
+    out << "RPII Message:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+}
+
+auto print_impl(std::ostream& out, const DLCRMessage& msg) {
+    out << "DLCR Message:\n"
+        << "  Timestamp: " << msg.header.timestamp << "\n"
+        << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+}
+
+auto print_message(std::ostream& out, const Message& msg) -> void{
+    std::visit([&out](auto&& arg) { print_impl(out, arg); }, msg);
+}
+
+std::ostream& operator<<(std::ostream& out, const Message& msg) {
+    print_message(out, msg);
+    return out;
+}
+
+}  // namespace itch

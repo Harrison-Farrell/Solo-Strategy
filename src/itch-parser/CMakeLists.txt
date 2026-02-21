@@ -16,9 +16,13 @@ add_library(${PROJECT_NAME} STATIC)
 
 target_sources(${PROJECT_NAME} PRIVATE
     ${CURRENT_CMAKE_DIR}itch_parser.cpp
-    ${CURRENT_CMAKE_DIR}memory_map_file.cpp
+    ${CURRENT_CMAKE_DIR}memory-map/memory_map_file.cpp
+    ${CURRENT_CMAKE_DIR}messages/itch_messages.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Utilities)
+target_link_libraries(${PROJECT_NAME} PUBLIC 
+    Utilities
+    LockFreeQueue
+)

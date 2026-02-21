@@ -75,6 +75,51 @@ class LockFreeQueue final {
     }
 
     /**
+     * @brief Pushes an element onto the queue using move semantics.
+     * @param value The element to push.
+     * @return true if successful, false if the queue is full.
+     */
+    bool push(T &&value) noexcept {
+        if (size() >= mStore.size()) {
+            return false;
+        }
+
+        mStore[mNext_write] = std::move(value);
+        updateWriteIndex();
+        return true;
+    }
+
+    /**
+     * @brief Pushes an element onto the queue using copy semantics.
+     * @param value The element to push.
+     * @return true if successful, false if the queue is full.
+     */
+    bool push(const T &value) noexcept {
+        if (size() >= mStore.size()) {
+            return false;
+        }
+
+        mStore[mNext_write] = value;
+        updateWriteIndex();
+        return true;
+    }
+
+    /**
+     * @brief Pops an element from the queue.
+     * @param value Reference to store the popped element.
+     * @return true if successful, false if the queue is empty.
+     */
+    bool pop(T &value) noexcept {
+        if (size() == 0) {
+            return false;
+        }
+
+        value = std::move(mStore[mNext_read]);
+        updateReadIndex();
+        return true;
+    }
+
+    /**
      * @brief Returns the current number of elements in the queue.
      * @return The number of elements currently stored in the queue.
      */
