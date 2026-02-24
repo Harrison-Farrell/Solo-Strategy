@@ -392,7 +392,6 @@ inline std::string to_string(const char* arr, size_t size) {
     return std::string{arr, len};
 }
 
-// Low-level print handlers for each message type
 auto print_impl(std::ostream& out, const SystemEventMessage& msg);
 auto print_impl(std::ostream& out, const StockDirectoryMessage& msg);
 auto print_impl(std::ostream& out, const StockTradingActionMessage& msg);

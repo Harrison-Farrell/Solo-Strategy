@@ -2,7 +2,20 @@
 
 ## Project Summary
 
-Solo-Strategy is a high-performance, low-latency trading system ecosystem designed for high-frequency trading (HFT) applications. This project serves a dual purpose: it is a practical platform for learning the intricacies of High-Frequency Trading systems and an exercise to improve and master C++ development skills.
+Solo-Strategy is a high-performance, low-latency trading system ecosystem designed for high-frequency trading (HFT) applications. This project serves a dual purpose: it is a practical platform for learning the intricacies of High-Frequency Trading systems and an exercise to improve and master C++ development skills. This includes with aligning to core C++ Software principles and IDIOMs such as 'SOLID', 'DRY', 'Coupling & Cohesion' principles and the RAII IDIOM.
+
+- S: Single Responsibility Principle
+- O: Open-closed Principle
+- L: Liskov Substitution Principle
+- I: Interface Segregation Principle
+- D: Dependency Inversion Principle
+----- ----- ----- ----- -----
+The 'DRY' 
+- D: Don't
+- R: Repeat
+- Y: Yourself
+----- ----- ----- ----- -----
+- Coupling and Cohesion
 
 ### Core Components
 

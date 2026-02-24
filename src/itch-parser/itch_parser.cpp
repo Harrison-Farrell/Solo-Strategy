@@ -150,6 +150,8 @@ auto ITCH_Parser::RetailPriceImprovementIndicatorMessage(const ITCH::MessageHead
 bool ITCH_Parser::execute() {
     bool success_flag = true;
     while (mReader.tell() < mReader.size() && success_flag) {
+        // The first two bytes are message length as per moldupd64
+        // can skip, jumping to the message type char
         mReader.seek(mReader.tell() + 2);
 
         ITCH::MessageHeader header = {.message_type = (ITCH::MessageType)mReader.readChar(),
