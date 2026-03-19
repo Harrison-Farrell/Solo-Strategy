@@ -1,0 +1,48 @@
+---
+SystemHeaders: false
+HeaderFilterRegex: '^(?!.*[\\/]VC[\\/]|.*[\\/]Windows Kits[\\/]).*|googletest|gmock|gtest|benchmark'
+ExcludeHeaderFilterRegex: 'llvm|clang|googletest|gmock|gtest|benchmark'
+FormatStyle: "file"
+WarningsAsErrors: ''
+Checks:
+    '
+    -*,
+    bugprone-*,
+    clang-analyzer-*,
+    clang-diagnostic-*,
+    concurrency-*,
+    cppcoreguidelines-*,
+    misc-*,
+    modernize-*,
+    -modernize-concat-nested-namespaces,
+    -modernize-return-braced-init-list,
+    -modernize-use-nodiscard,
+    -modernize-use-trailing-return-type,
+    performance-*,
+    portability-*,
+    readability-*
+    '
+HeaderFileExtensions:
+  - ''
+  - h
+  - hh
+  - hpp
+  - hxx
+ImplementationFileExtensions:
+  - c
+  - cc
+  - cpp
+  - cxx
+CheckOptions:
+  readability-identifier-naming.PrivateMemberPrefix: 'm_'
+  readability-identifier-naming.PrivateMemberCase: 'CamelBack'
+  readability-identifier-naming.ClassMemberCase: 'CamelCase'
+  readability-identifier-naming.ClassMethodCase: 'CamelCase'
+  readability-identifier-naming.FunctionCase: 'CamelCase' 
+  readability-identifier-naming.LocalVariableCase: 'lower_case'
+  readability-identifier-naming.ParameterCase: 'lower_case'
+  readability-identifier-naming.StaticConstexprVariablePrefix: 'k'
+  readability-identifier-naming.StaticConstantCase: 'CamelCase'
+  readability-identifier-naming.ClassConstantCase: 'UPPER_CASE'
+...
+

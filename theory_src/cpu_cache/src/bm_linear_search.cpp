@@ -1,58 +1,59 @@
 /*
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  * Author:      Harrison Farrell
  * Project:     Solo-Strategy Trading System
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
- * This program is distributed WITHOUT ANY WARRANTY; without even the 
+ * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  */
-
-#include <algorithm>
-#include <random>
-#include <vector>
 
 #include <benchmark/benchmark.h>
 
+#include <algorithm>
+#include <numeric>
+#include <random>
+#include <vector>
+
 // simple linear search function
-bool linearSearch(std::vector<int> &data_set, int target) {
-  if (std::find(data_set.begin(), data_set.end(), target) != data_set.end()) {
-    return true;
-  }
-  return false;
+bool linearSearch(std::vector<int>& data_set, int target) {
+    if (std::find(data_set.begin(), data_set.end(), target) != data_set.end()) {
+        return true;
+    }
+    return false;
 }
 
 std::vector<int> setup_latencies(int size) {
-  std::vector<int> indices(size);
-  std::iota(indices.begin(), indices.end(), 0);
+    std::vector<int> indices(size);
+    std::iota(indices.begin(), indices.end(), 0);
 
-  std::random_device rd;
-  std::mt19937 g(rd());
-  std::shuffle(indices.begin(), indices.end(), g);
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(indices.begin(), indices.end(), g);
 
-  return indices;
+    return indices;
 }
 
 // benchmark for linear search
-static void linear(benchmark::State &state) {
-  // construct an intial vector of the correct size
-  auto set = setup_latencies(state.range());
+static void linear(benchmark::State& state) {
+    // construct an intial vector of the correct size
+    auto set = setup_latencies(state.range());
 
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> distr(0, state.range());
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr(0, state.range());
 
-  // randomly set the target
-  int target = distr(gen);
+    // randomly set the target
+    int target = distr(gen);
 
-  for (auto _ : state) {
-    // code inside this loop is benchmarked
-    bool result = linearSearch(set, target);
-    benchmark::DoNotOptimize(result);
-  }
+    for (auto _ : state) {
+        // code inside this loop is benchmarked
+        bool result = linearSearch(set, target);
+        benchmark::DoNotOptimize(result);
+    }
 }
 
 // register the benchmark

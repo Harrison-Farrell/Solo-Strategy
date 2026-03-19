@@ -1,5 +1,5 @@
 /*
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  * Author:      Harrison Farrell
  * Project:     Solo-Strategy Trading System
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
@@ -8,7 +8,7 @@
  * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  */
 
 /**
@@ -61,7 +61,7 @@ class LockFreeQueue final {
      * @brief Gets a pointer to the next readable element in the queue.
      * @return Pointer to next readable element, or nullptr if queue is empty.
      */
-    auto getNextRead() const noexcept -> const T * {
+    auto getNextRead() const noexcept -> const T* {
         return (size() ? &mStore[mNext_read] : nullptr);
     }
 
@@ -80,7 +80,7 @@ class LockFreeQueue final {
      * @param value The element to push.
      * @return true if successful, false if the queue is full.
      */
-    bool push(T &&value) noexcept {
+    bool push(T&& value) noexcept {
         if (size() >= mStore.size()) {
             return false;
         }
@@ -95,7 +95,7 @@ class LockFreeQueue final {
      * @param value The element to push.
      * @return true if successful, false if the queue is full.
      */
-    bool push(const T &value) noexcept {
+    bool push(const T& value) noexcept {
         if (size() >= mStore.size()) {
             return false;
         }
@@ -110,7 +110,7 @@ class LockFreeQueue final {
      * @param value Reference to store the popped element.
      * @return true if successful, false if the queue is empty.
      */
-    bool pop(T &value) noexcept {
+    bool pop(T& value) noexcept {
         if (size() == 0) {
             return false;
         }
@@ -127,10 +127,10 @@ class LockFreeQueue final {
     auto size() const noexcept { return mSize.load(); }
 
     LockFreeQueue() = delete;
-    LockFreeQueue(const LockFreeQueue &) = delete;
-    LockFreeQueue(const LockFreeQueue &&) = delete;
-    LockFreeQueue &operator=(const LockFreeQueue &) = delete;
-    LockFreeQueue &operator=(const LockFreeQueue &&) = delete;
+    LockFreeQueue(const LockFreeQueue&) = delete;
+    LockFreeQueue(const LockFreeQueue&&) = delete;
+    LockFreeQueue& operator=(const LockFreeQueue&) = delete;
+    LockFreeQueue& operator=(const LockFreeQueue&&) = delete;
 
    private:
     /// \brief The underlying storage for the queue elements.

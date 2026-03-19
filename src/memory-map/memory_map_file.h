@@ -1,5 +1,5 @@
 /*
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  * Author:      Harrison Farrell
  * Project:     Solo-Strategy Trading System
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
@@ -8,20 +8,11 @@
  * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  */
 
-/**
- * @file memory_map_file.h
- * @brief High-performance memory-mapped file wrapper with cross-platform support.
- *
- * This file provides the MemoryMappedFile class, which abstracts platform-specific
- * memory mapping APIs (mmap on Unix, CreateFileMapping on Windows) into a
- * consistent, easy-to-use C++ interface.
- */
-
-#ifndef SOLO_STRATEGY_SRC_ITCH_PARSER_MEMORY_MAP_FILE_H_
-#define SOLO_STRATEGY_SRC_ITCH_PARSER_MEMORY_MAP_FILE_H_
+#ifndef SOLO_STRATEGY_SRC_MEMORY_MAP_FILE_H_
+#define SOLO_STRATEGY_SRC_MEMORY_MAP_FILE_H_
 
 #ifdef __unix__
     // Linux
@@ -315,4 +306,4 @@ class MemoryMappedFile {
     void* mMappedView = nullptr;  ///< Pointer to shared memory region.
 };
 
-#endif  // SOLO_STRATEGY_SRC_ITCH_PARSER_MEMORY_MAP_FILE_H_
+#endif  // SOLO_STRATEGY_SRC_MEMORY_MAP_FILE_H_

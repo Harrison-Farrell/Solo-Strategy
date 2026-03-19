@@ -1,14 +1,14 @@
 /*
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  * Author:      Harrison Farrell
  * Project:     Solo-Strategy Trading System
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
- * This program is distributed WITHOUT ANY WARRANTY; without even the 
+ * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  */
 
 /**
@@ -46,7 +46,7 @@ class MarketOrderBook final {
      * Handles ADD, MODIFY, CANCEL, and CLEAR operations.
      * @param market_update Pointer to the market update message.
      */
-    auto onMarketUpdate(const MEMarketUpdate *market_update) noexcept -> void;
+    auto onMarketUpdate(const MEMarketUpdate* market_update) noexcept -> void;
 
     /**
      * @brief Updates the BestBidOffer view based on the current state of the book.
@@ -87,7 +87,7 @@ class MarketOrderBook final {
      * @brief Returns the current BestBidOffer view.
      * @return Pointer to the BestBidOffer structure.
      */
-    auto getBestBidOffer() const noexcept -> const BestBidOffer * { return &mBest_bid_offer; }
+    auto getBestBidOffer() const noexcept -> const BestBidOffer* { return &mBest_bid_offer; }
 
    private:
     /** @brief The ticker identifier for the instrument. */
@@ -98,9 +98,9 @@ class MarketOrderBook final {
     /** @brief Memory pool for allocating MarketOrderAtPrice objects. */
     MemoryPool<MarketOrderAtPrice> mOrders_at_price_pool;
     /** @brief Head of the bids linked list (highest price first). */
-    MarketOrderAtPrice *mBids_by_price = nullptr;
+    MarketOrderAtPrice* mBids_by_price = nullptr;
     /** @brief Head of the asks linked list (lowest price first). */
-    MarketOrderAtPrice *mAsks_by_price = nullptr;
+    MarketOrderAtPrice* mAsks_by_price = nullptr;
     /** @brief Array of price levels indexed by hashed price. */
     OrdersAtPriceArray mPrice_orders_at_price;
     /** @brief Memory pool for allocating MarketOrder objects. */
@@ -124,7 +124,7 @@ class MarketOrderBook final {
      * @param price The price to look up.
      * @return Pointer to MarketOrderAtPrice, or nullptr if none exists.
      */
-    inline auto getOrdersAtPrice(Price price) const noexcept -> MarketOrderAtPrice * {
+    inline auto getOrdersAtPrice(Price price) const noexcept -> MarketOrderAtPrice* {
         return mPrice_orders_at_price.at(priceToIndex(price));
     }
 
@@ -132,7 +132,7 @@ class MarketOrderBook final {
      * @brief Adds a new price level to the sorted linked list.
      * @param new_orders_at_price Pointer to the new price level container.
      */
-    auto addOrdersAtPrice(MarketOrderAtPrice *new_orders_at_price) noexcept {
+    auto addOrdersAtPrice(MarketOrderAtPrice* new_orders_at_price) noexcept {
         // Map the price to an index and store the new price level in the hash
         // map
         mPrice_orders_at_price.at(priceToIndex(new_orders_at_price->mPrice)) = new_orders_at_price;
@@ -221,7 +221,7 @@ class MarketOrderBook final {
      * @brief Adds an order to the book, creating a new price level if necessary.
      * @param order Pointer to the MarketOrder to add.
      */
-    auto addOrder(MarketOrder *order) noexcept -> void {
+    auto addOrder(MarketOrder* order) noexcept -> void {
         // Look up the existing price level for this order's price
         const auto orders_at_price = getOrdersAtPrice(order->mPrice);
 
@@ -255,11 +255,11 @@ class MarketOrderBook final {
     /// the doubly linked list of price levels.
     auto removeOrdersAtPrice(Side side, Price price) noexcept {}
 
-    auto removeOrder(MarketOrder *order) noexcept -> void {}
+    auto removeOrder(MarketOrder* order) noexcept -> void {}
 };
 
 /// \typedef MarketOrderBookHashMap
 /// \brief Hash map from TickerId to MarketOrderBook.
-typedef std::array<MarketOrderBook *, ME_MAX_TICKERS> MarketOrderBookHashMap;
+typedef std::array<MarketOrderBook*, ME_MAX_TICKERS> MarketOrderBookHashMap;
 
 #endif  // SOLO_STRATEGY_SRC_ORDER_BOOK_ORDER_BOOK_H_

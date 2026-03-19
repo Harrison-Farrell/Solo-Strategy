@@ -1,14 +1,14 @@
 /*
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  * Author:      Harrison Farrell
  * Project:     Solo-Strategy Trading System
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
- * This program is distributed WITHOUT ANY WARRANTY; without even the 
+ * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  */
 
 /**
@@ -40,9 +40,9 @@ struct MarketOrder {
     Priority mPriority = Priority_INVALID;
 
     /** @brief Pointer to the previous order in the linked list. */
-    MarketOrder *mPrev_order = nullptr;
+    MarketOrder* mPrev_order = nullptr;
     /** @brief Pointer to the next order in the linked list. */
-    MarketOrder *mNext_order = nullptr;
+    MarketOrder* mNext_order = nullptr;
 
     /**
      * @brief Default constructor. Only needed for use with the Memory Pool.
@@ -59,9 +59,8 @@ struct MarketOrder {
      * @param prev_order Pointer to previous order.
      * @param next_order Pointer to next order.
      */
-    MarketOrder(OrderId order_id, Side side, Price price, Qty qty,
-                Priority priority, MarketOrder *prev_order,
-                MarketOrder *next_order) noexcept;
+    MarketOrder(OrderId order_id, Side side, Price price, Qty qty, Priority priority,
+                MarketOrder* prev_order, MarketOrder* next_order) noexcept;
 
     /**
      * @brief Returns a string representation of the MarketOrder.
@@ -70,7 +69,7 @@ struct MarketOrder {
     auto toString() const -> std::string;
 };
 
-typedef std::array<MarketOrder *, ME_MAX_ORDER_IDS> OrderArray;
+typedef std::array<MarketOrder*, ME_MAX_ORDER_IDS> OrderArray;
 
 /**
  * @brief Represents all market orders at a specific price level.
@@ -82,12 +81,12 @@ struct MarketOrderAtPrice {
     Price mPrice = Price_INVALID;
 
     /** @brief Pointer to the first market order at this price. */
-    MarketOrder *mFirst_market_order = nullptr;
+    MarketOrder* mFirst_market_order = nullptr;
 
     /** @brief Pointer to the previous price entry in the linked list. */
-    MarketOrderAtPrice *mPrev_entry = nullptr;
+    MarketOrderAtPrice* mPrev_entry = nullptr;
     /** @brief Pointer to the next price entry in the linked list. */
-    MarketOrderAtPrice *mNext_entry = nullptr;
+    MarketOrderAtPrice* mNext_entry = nullptr;
 
     /**
      * @brief Default constructor.
@@ -102,9 +101,8 @@ struct MarketOrderAtPrice {
      * @param prev_entry Pointer to previous price entry.
      * @param next_entry Pointer to next price entry.
      */
-    MarketOrderAtPrice(Side side, Price price, MarketOrder *first_market_order,
-                       MarketOrderAtPrice *prev_entry,
-                       MarketOrderAtPrice *next_entry) noexcept;
+    MarketOrderAtPrice(Side side, Price price, MarketOrder* first_market_order,
+                       MarketOrderAtPrice* prev_entry, MarketOrderAtPrice* next_entry) noexcept;
 
     /**
      * @brief Returns a string representation of the MarketOrderAtPrice.
@@ -113,8 +111,7 @@ struct MarketOrderAtPrice {
     auto toString() const -> std::string;
 };
 
-typedef std::array<MarketOrderAtPrice *, ME_MAX_PRICE_LEVELS>
-    OrdersAtPriceArray;
+typedef std::array<MarketOrderAtPrice*, ME_MAX_PRICE_LEVELS> OrdersAtPriceArray;
 /**
  * @brief Represents the best bid and offer in the order book.
  */

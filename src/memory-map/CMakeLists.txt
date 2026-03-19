@@ -10,19 +10,14 @@
 # ------------------------------------------------------------------------------
 
 # Project name
-project(MemoryPoolExample)
+project(MemoryMap)
 
-add_executable(${PROJECT_NAME})
+add_library(${PROJECT_NAME} STATIC)
 
 target_sources(${PROJECT_NAME} PRIVATE
-    example_memory_pool.cpp
+    ${CURRENT_CMAKE_DIR}memory_map_file.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE MemoryPool)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
-set_target_properties(${PROJECT_NAME}
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
-)
+target_link_libraries(${PROJECT_NAME} PUBLIC )

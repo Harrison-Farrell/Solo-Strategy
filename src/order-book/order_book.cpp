@@ -1,14 +1,14 @@
 /*
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  * Author:      Harrison Farrell
  * Project:     Solo-Strategy Trading System
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
- * This program is distributed WITHOUT ANY WARRANTY; without even the 
+ * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  */
 
 #include "order_book.h"
@@ -25,7 +25,7 @@ MarketOrderBook::~MarketOrderBook() {
     mOrder_id_to_order.fill(nullptr);
 }
 
-auto MarketOrderBook::onMarketUpdate(const MEMarketUpdate *market_update) noexcept -> void {
+auto MarketOrderBook::onMarketUpdate(const MEMarketUpdate* market_update) noexcept -> void {
     // Check if the bid price level was updated by comparing side and price
     const auto bid_updated = (mBids_by_price && market_update->side == Side::BUY &&
                               market_update->price >= mBids_by_price->mPrice);
@@ -63,7 +63,7 @@ auto MarketOrderBook::onMarketUpdate(const MEMarketUpdate *market_update) noexce
             // Clear the full limit order book and deallocate all resources
 
             // Deallocate all individual orders from the memory pool
-            for (auto &order : mOrder_id_to_order) {
+            for (auto& order : mOrder_id_to_order) {
                 if (order) mOrder_pool.deallocate(order);
             }
             // Reset the order ID mapping

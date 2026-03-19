@@ -1,20 +1,20 @@
 /*
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  * Author:      Harrison Farrell
  * Project:     Solo-Strategy Trading System
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
- * This program is distributed WITHOUT ANY WARRANTY; without even the 
+ * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  */
 
 /**
  * @file endian_utils.h
  * @brief Utilities for cross-platform endian conversion.
- * 
+ *
  * Provides template-based functions to safely swap bytes and convert
  * big/little-endian data to host-native format.
  */
@@ -33,10 +33,10 @@ namespace endian {
 
 /**
  * @brief Swaps the byte order of the given value.
- * 
+ *
  * Uses `std::byteswap` if C++23 is available, otherwise provides a robust
  * manual implementation using bitwise operations.
- * 
+ *
  * @tparam T An integral type (uint16_t, uint32_t, etc.).
  * @param value The value to swap.
  * @return The value with reversed byte order.
@@ -70,7 +70,7 @@ constexpr T swap(T value) noexcept {
 
 /**
  * @brief Converts a Big-Endian value to the host's native endianness.
- * 
+ *
  * @tparam T An integral type.
  * @param value Big-endian input value.
  * @return Host-native representation.
@@ -86,7 +86,7 @@ constexpr T from_big_endian(T value) noexcept {
 
 /**
  * @brief Converts a Little-Endian value to the host's native endianness.
- * 
+ *
  * @tparam T An integral type.
  * @param value Little-endian input value.
  * @return Host-native representation.

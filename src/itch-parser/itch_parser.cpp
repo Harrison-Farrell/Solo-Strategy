@@ -1,5 +1,5 @@
 /*
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  * Author:      Harrison Farrell
  * Project:     Solo-Strategy Trading System
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
@@ -8,13 +8,13 @@
  * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  */
 
 #include "itch-parser/itch_parser.h"
 
-#include "itch-parser/memory-map/memory_map_file.h"
 #include "itch-parser/messages/itch_messages.h"
+#include "memory-map/memory_map_file.h"
 
 ITCH_Parser::ITCH_Parser() : mMessageQueue(1024) {}
 ITCH_Parser::ITCH_Parser(const std::string& file_path) : mMessageQueue(1024) {}

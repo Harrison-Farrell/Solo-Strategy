@@ -1,14 +1,14 @@
 /*
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  * Author:      Harrison Farrell
  * Project:     Solo-Strategy Trading System
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
- * This program is distributed WITHOUT ANY WARRANTY; without even the 
+ * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  */
 
 /// \file example_memorypool.cpp
@@ -29,7 +29,7 @@ struct MyStruct {
 /// \details Creates two memory pools (one for doubles, one for MyStruct),
 ///          allocates 50 elements to each, and deallocates every 5th element.
 /// \return Exit status code (0 for success)
-int main(int, char **) {
+int main(int, char**) {
     /// Create a memory pool for 50 double values
     MemoryPool<double> prim_pool(50);
     /// Create a memory pool for 50 MyStruct objects
@@ -43,22 +43,18 @@ int main(int, char **) {
         auto s_ret = struct_pool.allocate(MyStruct{i, i + 1, i + 2});
 
         /// Output the allocated primitive element and its address
-        std::cout << "prim elem:" << *p_ret << " allocated at:" << p_ret
-                  << std::endl;
+        std::cout << "prim elem:" << *p_ret << " allocated at:" << p_ret << std::endl;
 
         /// Output the allocated struct element values and its address
-        std::cout << "struct elem:" << s_ret->d_[0] << "," << s_ret->d_[1]
-                  << "," << s_ret->d_[2] << " allocated at:" << s_ret
-                  << std::endl;
+        std::cout << "struct elem:" << s_ret->d_[0] << "," << s_ret->d_[1] << "," << s_ret->d_[2]
+                  << " allocated at:" << s_ret << std::endl;
 
         /// Deallocate every 5th element from both pools
         if (i % 5 == 0) {
-            std::cout << "deallocating prim elem:" << *p_ret
-                      << " from:" << p_ret << std::endl;
+            std::cout << "deallocating prim elem:" << *p_ret << " from:" << p_ret << std::endl;
 
-            std::cout << "deallocating struct elem:" << s_ret->d_[0] << ", "
-                      << s_ret->d_[1] << "," << s_ret->d_[2]
-                      << " from:" << s_ret << std::endl;
+            std::cout << "deallocating struct elem:" << s_ret->d_[0] << ", " << s_ret->d_[1] << ","
+                      << s_ret->d_[2] << " from:" << s_ret << std::endl;
 
             prim_pool.deallocate(p_ret);
             struct_pool.deallocate(s_ret);

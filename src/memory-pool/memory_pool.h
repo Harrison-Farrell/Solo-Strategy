@@ -1,14 +1,14 @@
 /*
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  * Author:      Harrison Farrell
  * Project:     Solo-Strategy Trading System
  * Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
- * This program is distributed WITHOUT ANY WARRANTY; without even the 
+ * This program is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------
  */
 
 /**
@@ -39,7 +39,7 @@ class MemoryPool final {
      */
     explicit MemoryPool(std::size_t num_elems)
         : mStore(num_elems, {T(), true}) /* pre-allocation of vector storage. */ {
-        ASSERT(reinterpret_cast<const ElementBlock *>(&(mStore[0].element)) == &(mStore[0]),
+        ASSERT(reinterpret_cast<const ElementBlock*>(&(mStore[0].element)) == &(mStore[0]),
                "T object should be first member of ElementBlock.");
     }
 
@@ -51,11 +51,11 @@ class MemoryPool final {
      * @return Pointer to the allocated and constructed object.
      */
     template <typename... Args>
-    T *allocate(Args... args) noexcept {
+    T* allocate(Args... args) noexcept {
         auto obj_block = &(mStore[mNext_free_index]);
         ASSERT(obj_block->is_free,
                "Expected free ObjectBlock at index:" + std::to_string(mNext_free_index));
-        T *ret = &(obj_block->element);
+        T* ret = &(obj_block->element);
         ret = new (ret) T(args...);  // placement new.
         obj_block->is_free = false;
 
@@ -68,8 +68,8 @@ class MemoryPool final {
      * @brief Deallocates an object, marking its block as free for reuse.
      * @param elem Pointer to the object to deallocate.
      */
-    auto deallocate(const T *elem) noexcept {
-        const auto elem_index = (reinterpret_cast<const ElementBlock *>(elem) - &mStore[0]);
+    auto deallocate(const T* elem) noexcept {
+        const auto elem_index = (reinterpret_cast<const ElementBlock*>(elem) - &mStore[0]);
         ASSERT(elem_index >= 0 && static_cast<size_t>(elem_index) < mStore.size(),
                "Element being deallocated does not belong to this Memory pool.");
         ASSERT(!mStore[elem_index].is_free,
@@ -79,10 +79,10 @@ class MemoryPool final {
 
     // Deleted default, copy & move constructors and assignment-operators.
     MemoryPool() = delete;
-    MemoryPool(const MemoryPool &) = delete;
-    MemoryPool(const MemoryPool &&) = delete;
-    MemoryPool &operator=(const MemoryPool &) = delete;
-    MemoryPool &operator=(const MemoryPool &&) = delete;
+    MemoryPool(const MemoryPool&) = delete;
+    MemoryPool(const MemoryPool&&) = delete;
+    MemoryPool& operator=(const MemoryPool&) = delete;
+    MemoryPool& operator=(const MemoryPool&&) = delete;
 
    private:
     /**
