@@ -218,7 +218,7 @@ bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
 
     int flags = MAP_SHARED;
     #ifdef MAP_POPULATE
-    if (mHint == Sequential) {
+    if (mHint == SequentialScan) {
         flags |= MAP_POPULATE;
     }
     #endif
@@ -231,7 +231,7 @@ bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
     }
 
     #ifdef MADV_SEQUENTIAL
-    if (mHint == Sequential) {
+    if (mHint == SequentialScan) {
         ::madvise(mMappedView, mappedBytes, MADV_SEQUENTIAL);
     }
     #endif

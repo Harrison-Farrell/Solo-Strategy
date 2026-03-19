@@ -1,3 +1,7 @@
+[![Linux OS Build](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/linux_build.yml/badge.svg)](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/linux_build.yml)
+[![Windows OS Build](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/windows_build.yml/badge.svg)](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/windows_build.yml)
+[![Unit Tests](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/unit_tests.yml)
+
 # Trading Ecosystem Self-Learning Checklist
 
 This checklist outlines the key topics to master when building a foundational understanding of the HFT ecosystem from a low-latency C++ perspective.

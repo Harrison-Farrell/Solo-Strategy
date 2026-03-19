@@ -43,7 +43,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "Utilities/endian_utils.h"
+#include "utilities/endian_utils.h"
 
 /**
  * @class MemoryMappedFile
