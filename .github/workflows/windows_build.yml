@@ -1,0 +1,30 @@
+name: Windows OS Build
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop, feature/* ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        build-type: [Debug, Release]
+    
+    steps:
+    - uses: actions/checkout@v6
+    
+    - name: Install CMake and Ninja
+      run: |
+        choco install cmake ninja -y
+      shell: powershell
+    
+    - name: Configure CMake
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -G Ninja -DBUILD_TESTS=OFF -DBUILD_DOXYGEN=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF
+      shell: powershell
+    
+    - name: Build
+      run: cmake --build build --config ${{ matrix.build-type }}
+      shell: powershell
