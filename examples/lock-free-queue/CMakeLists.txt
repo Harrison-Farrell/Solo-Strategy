@@ -9,7 +9,6 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # -----------------------------------------------------------------------------
 
-# Project name
 project(LockFreeQueueExample)
 
 add_executable(${PROJECT_NAME})
@@ -18,7 +17,9 @@ target_sources(${PROJECT_NAME} PRIVATE
     example_lock_free_queue.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE LockFreeQueue)
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+    solo_strategy::lock_free_queue
+)
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES

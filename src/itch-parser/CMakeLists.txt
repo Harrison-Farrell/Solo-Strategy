@@ -9,10 +9,10 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # -----------------------------------------------------------------------------
 
-# Project name
-project(ITCH-PARSER)
+project(itch_parser)
 
 add_library(${PROJECT_NAME} STATIC)
+add_library(${LIBRARY_PREFIX}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE
     ${CURRENT_CMAKE_DIR}itch_parser.cpp
@@ -22,7 +22,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC 
-    Utilities
-    LockFreeQueue
-    MemoryMap
+    solo_strategy::utilities
+    solo_strategy::lock_free_queue
+    solo_strategy::memory_map
 )

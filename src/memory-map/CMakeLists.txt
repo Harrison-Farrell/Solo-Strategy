@@ -9,10 +9,10 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # -----------------------------------------------------------------------------
 
-# Project name
-project(MemoryMap)
+project(memory_map)
 
 add_library(${PROJECT_NAME} STATIC)
+add_library(${LIBRARY_PREFIX}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE
     ${CURRENT_CMAKE_DIR}memory_map_file.cpp
@@ -21,5 +21,5 @@ target_sources(${PROJECT_NAME} PRIVATE
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC 
-    Utilities
+    solo_strategy::utilities
 )

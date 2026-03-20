@@ -15,7 +15,9 @@ add_executable(${MEMORY_MAP} example_memory_map_file.cpp)
 
 target_include_directories(${MEMORY_MAP} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
-target_link_libraries(${MEMORY_MAP} PUBLIC MemoryMap)
+target_link_libraries(${MEMORY_MAP} PUBLIC 
+    solo_strategy::memory_map
+)
 
 set_target_properties(${MEMORY_MAP}
     PROPERTIES

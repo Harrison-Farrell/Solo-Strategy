@@ -19,6 +19,9 @@ project(SoloStrategy VERSION 1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Set global library ALIAS
+set(LIBRARY_PREFIX "solo_strategy")
+
 # Build options
 option(BUILD_DOXYGEN "Build Doxygen documentation" ON)
 option(BUILD_TESTS "Build unit tests" ON)

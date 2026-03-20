@@ -9,6 +9,5 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # -----------------------------------------------------------------------------
 
-add_subdirectory(itch-parser)
-add_subdirectory(lock-free-queue)
-add_subdirectory(memory-map)
+AddTests(memory_map_file_test)
+AddTests(lock_free_queue_test)
