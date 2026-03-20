@@ -145,7 +145,7 @@ TEST_F(MemoryMappedFileTest, ReadEndianness) {
     EXPECT_EQ(mappedFile.read48(), 0xAABBCCDDEEFF);
 
     // read64 test (8 bytes)
-    EXPECT_EQ(mappedFile.read64(), 0x708050603040102);
+    EXPECT_EQ(mappedFile.read64(), 0x102030405060708);
 }
 
 TEST_F(MemoryMappedFileTest, ReadStrings) {

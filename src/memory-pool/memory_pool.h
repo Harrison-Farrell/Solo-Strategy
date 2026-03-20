@@ -62,8 +62,8 @@ class MemoryPool final {
     }
 
     /// @brief DeAllocates an object, marking its block as free for reuse.
-    /// @param elem Pointer to the object to DeAllocate.
-    auto DeAllocate(const T* elem) noexcept {
+    /// @param elem Pointer to the object to Deallocate.
+    auto Deallocate(const T* elem) noexcept {
         const auto elem_index = (reinterpret_cast<const ElementBlock*>(elem) - &m_Store[0]);
         ASSERT(elem_index >= 0 && static_cast<size_t>(elem_index) < m_Store.size(),
                "Element being DeAllocated does not belong to this Memory pool.");

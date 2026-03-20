@@ -15,6 +15,7 @@
 #ifndef SOLO_STRATEGY_SRC_UTILITIES_MACROS_H_
 #define SOLO_STRATEGY_SRC_UTILITIES_MACROS_H_
 
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 
@@ -24,7 +25,7 @@
 inline auto ASSERT(bool cond, const std::string& msg) noexcept {
     if (!cond) [[unlikely]] {
         std::cerr << "ASSERT : " << msg << "\n";
-        exit(EXIT_FAILURE);
+        std::quick_exit(EXIT_FAILURE);
     }
 }
 
@@ -33,7 +34,7 @@ inline auto ASSERT(bool cond, const std::string& msg) noexcept {
 inline auto FATAL(const std::string& msg) noexcept {
     std::cerr << "FATAL : " << msg << "\n";
 
-    exit(EXIT_FAILURE);
+    std::quick_exit(EXIT_FAILURE);
 }
 
 #endif  // SOLO_STRATEGY_SRC_UTILITIES_MACROS_H_

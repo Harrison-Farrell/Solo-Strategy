@@ -27,38 +27,12 @@
 namespace endian {
 
 /// @brief Swaps the byte order of the given value.
-///
-/// Uses `std::byteSwap` if C++23 is available, otherwise provides a robust
-/// manual implementation using bitwise operations.
-///
 /// @tparam T An integral type (uint16_t, uint32_t, etc.).
 /// @param value The value to Swap.
 /// @return The value with reversed byte order.
 template <std::integral T>
 constexpr T Swap(T value) noexcept {
-#if __cpp_lib_byteSwap
-    return std::byteSwap(value);
-#else
-    // Fallback for older compilers if C++23 is not fully supported
-    if constexpr (sizeof(T) == 1) {
-        return value;
-    } else if constexpr (sizeof(T) == 2) {
-        return static_cast<T>((value << 8) | (value >> 8));
-    } else if constexpr (sizeof(T) == 4) {
-        uint32_t v = static_cast<uint32_t>(value);
-        v = ((v << 8) & 0xFF00FF00) | ((v >> 8) & 0x00FF00FF);
-        return static_cast<T>((v << 16) | (v >> 16));
-    } else if constexpr (sizeof(T) == 8) {
-        uint64_t v = static_cast<uint64_t>(value);
-        v = ((v << 8) & 0xFF00FF00FF00FF00ULL) | ((v >> 8) & 0x00FF00FF00FF00FFULL);
-        v = ((v << 16) & 0xFFFF0000FFFF0000ULL) | ((v >> 16) & 0x0000FFFF0000FFFFULL);
-        v = ((v << 16) & 0xFFFF0000FFFF0000ULL) | ((v >> 16) & 0x0000FFFF0000FFFFULL);
-        v = ((v << 32) & 0xFFFFFFFF00000000ULL) | ((v >> 32) & 0x00000000FFFFFFFFULL);
-        return static_cast<T>((v << 32) | (v >> 32));
-    } else {
-        return value;
-    }
-#endif
+    return std::byteswap(value);
 }
 
 /// @brief Converts a Big-Endian value to the host's native endianness.

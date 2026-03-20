@@ -8,53 +8,44 @@
 // implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
-/// \file example_memorypool.cpp
-/// \brief Example demonstrating the usage of the MemoryPool template class
-/// \details Shows how to Allocate and DeAllocate primitive and custom struct
-/// types
-///          using the MemoryPool container with automatic memory management.
+
+#include <array>
+#include <iostream>
 
 #include "memory-pool/memory_pool.h"
 
-/// \struct MyStruct
-/// \brief A simple structure containing an array of integers
+namespace {
 struct MyStruct {
-    int d_[3];  ///< Array of 3 integers
+    std::array<int, 3> data;
 };
+}  // namespace
 
-/// \brief Main function demonstrating MemoryPool usage
-/// \details Creates two memory pools (one for doubles, one for MyStruct),
-///          Allocates 50 elements to each, and DeAllocates every 5th element.
-/// \return Exit status code (0 for success)
-int main(int, char**) {
-    /// Create a memory pool for 50 double values
-    MemoryPool<double> prim_pool(50);
-    /// Create a memory pool for 50 MyStruct objects
-    MemoryPool<MyStruct> struct_pool(50);
+int main() {
+    constexpr int pool_size = 50;
+    constexpr int deallcate_modulus = 5;
+    constexpr int iteration_loop_size = 50;
 
-    /// Allocate elements and demonstrate pool management
-    for (auto i = 0; i < 50; ++i) {
-        /// Allocate a double with value i to the primitive pool
-        auto p_ret = prim_pool.Allocate(i);
-        /// Allocate a MyStruct with values {i, i+1, i+2} to the struct pool
-        auto s_ret = struct_pool.Allocate(MyStruct{i, i + 1, i + 2});
+    MemoryPool<double> prim_pool(pool_size);
+    MemoryPool<MyStruct> struct_pool(pool_size);
 
-        /// Output the Allocated primitive element and its address
-        std::cout << "prim elem:" << *p_ret << " Allocated at:" << p_ret << std::endl;
+    for (auto i = 0; i < iteration_loop_size; ++i) {
+        auto* p_ret = prim_pool.Allocate(i);
 
-        /// Output the Allocated struct element values and its address
-        std::cout << "struct elem:" << s_ret->d_[0] << "," << s_ret->d_[1] << "," << s_ret->d_[2]
-                  << " Allocated at:" << s_ret << std::endl;
+        auto* s_ret = struct_pool.Allocate(MyStruct{i, i + 1, i + 2});
 
-        /// DeAllocate every 5th element from both pools
-        if (i % 5 == 0) {
-            std::cout << "deallocating prim elem:" << *p_ret << " from:" << p_ret << std::endl;
+        std::cout << "prim elem:" << *p_ret << " Allocated at:" << p_ret << "\n";
 
-            std::cout << "deallocating struct elem:" << s_ret->d_[0] << ", " << s_ret->d_[1] << ","
-                      << s_ret->d_[2] << " from:" << s_ret << std::endl;
+        std::cout << "struct elem:" << s_ret->data.at(0) << "," << s_ret->data.at(1) << ","
+                  << s_ret->data.at(2) << " Allocated at:" << s_ret << "\n";
 
-            prim_pool.DeAllocate(p_ret);
-            struct_pool.DeAllocate(s_ret);
+        if (i % deallcate_modulus == 0) {
+            std::cout << "deallocating prim elem:" << *p_ret << " from:" << p_ret << "\n";
+
+            std::cout << "deallocating struct elem:" << s_ret->data.at(0) << ", "
+                      << s_ret->data.at(1) << "," << s_ret->data.at(2) << " from:" << s_ret << "\n";
+
+            prim_pool.Deallocate(p_ret);
+            struct_pool.Deallocate(s_ret);
         }
     }
 

@@ -78,9 +78,9 @@ struct MEMarketUpdate {
         ss << "MEMarketUpdate"
            << " ["
            << " type:" << marketUpdateTypeToString(type)
-           << " ticker:" << tickerIdToString(ticker_id) << " oid:" << orderIdToString(order_id)
-           << " side:" << sideToString(side) << " qty:" << qtyToString(qty)
-           << " price:" << priceToString(price) << " priority:" << priorityToString(priority)
+           << " ticker:" << TickerIdToString(ticker_id) << " oid:" << OrderIdToString(order_id)
+           << " side:" << SideToString(side) << " qty:" << QtyToString(qty)
+           << " price:" << PriceToString(price) << " priority:" << PriorityToString(priority)
            << "]";
         return ss.str();
     }

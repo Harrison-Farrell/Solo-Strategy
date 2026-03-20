@@ -9,54 +9,64 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
+#include <array>
 #include <chrono>
+#include <print>
 #include <thread>
 
 #include "lock-free-queue/lock_free_queue.h"
 
+namespace {
+constexpr std::chrono::seconds inital_sleep_in_seconds(5);
+constexpr std::chrono::seconds loop_sleep_in_seconds(1);
+
 struct MyStruct {
-    int data[3];
+    std::array<int, 3> data;
 };
 
-auto consumeFunction(LockFreeQueue<MyStruct>* data_queue) {
+auto ConsumeFunction(LockFreeQueue<MyStruct>* data_queue) {
     using namespace std::literals::chrono_literals;
 
-    std::this_thread::sleep_for(5s);
+    std::this_thread::sleep_for(inital_sleep_in_seconds);
 
-    while (data_queue->size()) {
-        const auto d = data_queue->getNextRead();
+    while (static_cast<bool>(data_queue->size())) {
+        const auto* const block = data_queue->getNextRead();
 
         data_queue->updateReadIndex();
 
-        std::cout << "consumeFunction read elem:" << d->data[0] << "," << d->data[1] << ","
-                  << d->data[2] << " size:" << data_queue->size() << std::endl;
+        std::print("ConsumeFunction read elem: {}, {}, {} size: {}\n", block->data.at(0),
+                   block->data.at(1), block->data.at(2), data_queue->size());
 
-        std::this_thread::sleep_for(1s);
+        std::this_thread::sleep_for(loop_sleep_in_seconds);
     }
 
-    std::cout << "consumeFunction exiting." << std::endl;
+    std::print("ConsumerFunction exiting\n");
 }
+}  // namespace
 
-int main(int, char**) {
-    LockFreeQueue<MyStruct> data_queue(20);
+int main() {
+    constexpr int data_queue_size = 20;
+    constexpr int iteration_loop_size = 50;
 
-    std::jthread ct(consumeFunction, &data_queue);
+    LockFreeQueue<MyStruct> data_queue(data_queue_size);
 
-    for (auto i = 0; i < 50; ++i) {
-        const MyStruct d{i, i * 10, i * 100};
-        *data_queue.getNextWrite() = d;
+    std::jthread ctx(ConsumeFunction, &data_queue);
+
+    for (auto i = 0; i < iteration_loop_size; ++i) {
+        const MyStruct block{i, i * 10, i * 100};
+        *data_queue.getNextWrite() = block;
         data_queue.updateWriteIndex();
 
-        std::cout << "main constructed elem:" << d.data[0] << "," << d.data[1] << "," << d.data[2]
-                  << " size:" << data_queue.size() << std::endl;
+        std::print("main constructed elem: {}, {}, {} size: {}\n", block.data.at(0),
+                   block.data.at(1), block.data.at(2), data_queue.size());
 
         using namespace std::literals::chrono_literals;
-        std::this_thread::sleep_for(1s);
+        std::this_thread::sleep_for(loop_sleep_in_seconds);
     }
 
-    ct.join();
+    ctx.join();
 
-    std::cout << "main exiting." << std::endl;
+    std::print("main thread exiting\n");
 
     return 0;
 }

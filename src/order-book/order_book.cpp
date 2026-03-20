@@ -58,29 +58,29 @@ auto MarketOrderBook::onMarketUpdate(const MEMarketUpdate* market_update) noexce
             return;
         } break;
         case MarketUpdateType::CLEAR: {
-            // Clear the full limit order book and DeAllocate all resources
+            // Clear the full limit order book and Deallocate all resources
 
-            // DeAllocate all individual orders from the memory pool
+            // Deallocate all individual orders from the memory pool
             for (auto& order : mOrder_id_to_order) {
-                if (order) mOrder_pool.DeAllocate(order);
+                if (order) mOrder_pool.Deallocate(order);
             }
             // Reset the order ID mapping
             mOrder_id_to_order.fill(nullptr);
 
-            // DeAllocate all bid price levels
+            // Deallocate all bid price levels
             if (mBids_by_price) {
                 for (auto bid = mBids_by_price->mNext_entry; bid != mBids_by_price;
                      bid = bid->mNext_entry)
-                    mOrders_at_price_pool.DeAllocate(bid);
-                mOrders_at_price_pool.DeAllocate(mBids_by_price);
+                    mOrders_at_price_pool.Deallocate(bid);
+                mOrders_at_price_pool.Deallocate(mBids_by_price);
             }
 
-            // DeAllocate all ask price levels
+            // Deallocate all ask price levels
             if (mAsks_by_price) {
                 for (auto ask = mAsks_by_price->mNext_entry; ask != mAsks_by_price;
                      ask = ask->mNext_entry)
-                    mOrders_at_price_pool.DeAllocate(ask);
-                mOrders_at_price_pool.DeAllocate(mAsks_by_price);
+                    mOrders_at_price_pool.Deallocate(ask);
+                mOrders_at_price_pool.Deallocate(mAsks_by_price);
             }
 
             // Reset bid and ask pointers
