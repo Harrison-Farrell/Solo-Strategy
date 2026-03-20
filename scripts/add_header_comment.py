@@ -1,4 +1,4 @@
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Author:      Harrison Farrell
 # Project:     Solo-Strategy Trading System
 # Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
@@ -7,8 +7,7 @@
 # This program is distributed WITHOUT ANY WARRANTY; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
-# ------------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
 #!/usr/bin/env python3
 import os
 import sys
@@ -25,7 +24,7 @@ def get_comment_blocks(content, file_ext, filename):
     
     # C-style block for C++
     if file_ext in ['.h', '.hpp', '.cpp', '.c', '.cc']:
-        return '/*\n' + '\n'.join([f" * {line}" if line.strip() else " *" for line in lines]) + '\n */\n\n'
+        return '\n'.join([f"// {line}" if line.strip() else "//" for line in lines]) + '\n'
     
     return None
 
