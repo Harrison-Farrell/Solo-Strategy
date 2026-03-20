@@ -21,7 +21,7 @@ The 'DRY'
 
 *   **[ITCH Parser](@ref MemoryMappedFile):** High-efficiency Nasdaq ITCH protocol parsing using memory-mapped files and safe binary data handling with automatic endian conversion.
 *   **[Lock-Free Queue](@ref LockFreeQueue):** A thread-safe, lock-free circular buffer for low-latency communication between components, ensuring minimal synchronization overhead.
-*   **[Memory Pool](@ref MemoryPool):** Deterministic memory management using pre-allocated object pools to avoid the costs of dynamic heap allocation during runtime.
+*   **[Memory Pool](@ref MemoryPool):** Deterministic memory management using pre-Allocated object pools to avoid the costs of dynamic heap allocation during runtime.
 *   **[Order Book](@ref MarketOrderBook):** Advanced Limit Order Book (LOB) implementation using efficient linked lists and memory-mapped data structures for real-time order processing.
 
 ## Architecture

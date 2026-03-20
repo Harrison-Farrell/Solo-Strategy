@@ -11,3 +11,4 @@
 
 AddTests(memory_map_file_test)
 AddTests(lock_free_queue_test)
+AddTests(endian_utils_test)

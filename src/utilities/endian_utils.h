@@ -20,6 +20,7 @@
 
 #include <bit>
 #include <concepts>
+#include <cstdint>
 
 /// @namespace endian
 /// @brief Tools for handling different binary data orderings.

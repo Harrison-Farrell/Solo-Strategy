@@ -32,29 +32,29 @@ class LockFreeQueue final {
    public:
     /// @brief Constructs a LockFreeQueue with a fixed capacity.
     /// @param element_number The maximum number of elements the queue can hold.
-    LockFreeQueue(std::size_t element_number) : mStore(element_number, T()) {}
+    LockFreeQueue(std::size_t element_number) : m_Store(element_number, T()) {}
 
     /// @brief Gets a pointer to the next writable element in the queue.
     /// @return Pointer to the next writable element.
-    auto getNextWrite() noexcept { return &mStore[mNext_write]; }
+    auto getNextWrite() noexcept { return &m_Store[mNext_write]; }
 
     /// @brief Advances the write index in a circular fashion and increments the size.
     /// Should be called after writing to the pointer returned by getNextWrite().
     auto updateWriteIndex() noexcept {
-        mNext_write = (mNext_write + 1) % mStore.size();
+        mNext_write = (mNext_write + 1) % m_Store.size();
         mSize++;
     }
 
     /// @brief Gets a pointer to the next readable element in the queue.
     /// @return Pointer to next readable element, or nullptr if queue is empty.
     auto getNextRead() const noexcept -> const T* {
-        return (size() ? &mStore[mNext_read] : nullptr);
+        return (size() ? &m_Store[mNext_read] : nullptr);
     }
 
     /// @brief Advances the read index in a circular fashion and decrements the size.
     /// Should be called after reading from the pointer returned by getNextRead().
     auto updateReadIndex() noexcept {
-        mNext_read = (mNext_read + 1) % mStore.size();
+        mNext_read = (mNext_read + 1) % m_Store.size();
         ASSERT(mSize != 0, "Read an invalid element");
         mSize--;
     }
@@ -63,11 +63,11 @@ class LockFreeQueue final {
     /// @param value The element to push.
     /// @return true if successful, false if the queue is full.
     bool push(T&& value) noexcept {
-        if (size() >= mStore.size()) {
+        if (size() >= m_Store.size()) {
             return false;
         }
 
-        mStore[mNext_write] = std::move(value);
+        m_Store[mNext_write] = std::move(value);
         updateWriteIndex();
         return true;
     }
@@ -76,11 +76,11 @@ class LockFreeQueue final {
     /// @param value The element to push.
     /// @return true if successful, false if the queue is full.
     bool push(const T& value) noexcept {
-        if (size() >= mStore.size()) {
+        if (size() >= m_Store.size()) {
             return false;
         }
 
-        mStore[mNext_write] = value;
+        m_Store[mNext_write] = value;
         updateWriteIndex();
         return true;
     }
@@ -93,7 +93,7 @@ class LockFreeQueue final {
             return false;
         }
 
-        value = std::move(mStore[mNext_read]);
+        value = std::move(m_Store[mNext_read]);
         updateReadIndex();
         return true;
     }
@@ -110,7 +110,7 @@ class LockFreeQueue final {
 
    private:
     /// \brief The underlying storage for the queue elements.
-    std::vector<T> mStore;
+    std::vector<T> m_Store;
     /// \brief The index for the next write operation.
     std::atomic<size_t> mNext_write = {0};
     /// \brief The index for the next read operation.

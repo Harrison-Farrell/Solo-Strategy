@@ -207,7 +207,7 @@ class MarketOrderBook final {
             order->mNext_order = order->mPrev_order = order;
 
             // Allocate a new MarketOrderAtPrice container for this price level
-            auto new_orders_at_price = mOrders_at_price_pool.allocate(order->mSide, order->mPrice,
+            auto new_orders_at_price = mOrders_at_price_pool.Allocate(order->mSide, order->mPrice,
                                                                       order, nullptr, nullptr);
             // Add the new price level to the price-level linked list
             addOrdersAtPrice(new_orders_at_price);

@@ -2,9 +2,9 @@
 
 A memory pool in a trading ecosystem, particularly for high-frequency trading (HFT), serves to optimize memory management for low-latency performance. Its key purposes include:
 
-- **Reducing Allocation Overhead:** Pre-allocates a fixed block of memory (e.g., via a pool of objects or buffers) to avoid slow dynamic allocations/deallocations (like `malloc`/`free` in C++), which can introduce unpredictable delays or cache misses during rapid order processing.
+- **Reducing Allocation Overhead:** Pre-Allocates a fixed block of memory (e.g., via a pool of objects or buffers) to avoid slow dynamic allocations/deallocations (like `malloc`/`free` in C++), which can introduce unpredictable delays or cache misses during rapid order processing.
 
-- **Deterministic Performance:** Ensures consistent, bounded latency by reusing memory from a pre-allocated pool, critical for HFT where microseconds matter in strategies like market making or arbitrage.
+- **Deterministic Performance:** Ensures consistent, bounded latency by reusing memory from a pre-Allocated pool, critical for HFT where microseconds matter in strategies like market making or arbitrage.
 
 - **Minimizing Fragmentation:** Prevents memory fragmentation that could degrade performance over time, maintaining efficient use of RAM for handling high volumes of orders, ticks, or data feeds.
 
@@ -16,7 +16,7 @@ In C++ HFT implementations, libraries like Boost.Pool or custom allocators are u
 
 A memory pool typically includes the following components:
 
-- **Pool Size:** The total amount of pre-allocated memory, often specified in bytes or number of blocks, to limit resource usage.
+- **Pool Size:** The total amount of pre-Allocated memory, often specified in bytes or number of blocks, to limit resource usage.
 
 - **Block Size:** The fixed size of each memory unit (e.g., for allocating order objects), ensuring uniform allocations and reducing overhead.
 

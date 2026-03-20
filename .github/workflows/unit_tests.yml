@@ -25,5 +25,5 @@ jobs:
       run: cmake --build build --config Debug
     - name: Run Unit Tests
       run: |
-        cd build
+        cd build/test
         ctest --build-config Debug --output-on-failure --verbose

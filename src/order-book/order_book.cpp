@@ -35,7 +35,7 @@ auto MarketOrderBook::onMarketUpdate(const MEMarketUpdate* market_update) noexce
     switch (market_update->type) {
         case MarketUpdateType::ADD: {
             // Allocate a new order from the memory pool with update details
-            auto order = mOrder_pool.allocate(market_update->order_id, market_update->side,
+            auto order = mOrder_pool.Allocate(market_update->order_id, market_update->side,
                                               market_update->price, market_update->qty,
                                               market_update->priority, nullptr, nullptr);
             // Add the newly created order to the order book
@@ -58,29 +58,29 @@ auto MarketOrderBook::onMarketUpdate(const MEMarketUpdate* market_update) noexce
             return;
         } break;
         case MarketUpdateType::CLEAR: {
-            // Clear the full limit order book and deallocate all resources
+            // Clear the full limit order book and DeAllocate all resources
 
-            // Deallocate all individual orders from the memory pool
+            // DeAllocate all individual orders from the memory pool
             for (auto& order : mOrder_id_to_order) {
-                if (order) mOrder_pool.deallocate(order);
+                if (order) mOrder_pool.DeAllocate(order);
             }
             // Reset the order ID mapping
             mOrder_id_to_order.fill(nullptr);
 
-            // Deallocate all bid price levels
+            // DeAllocate all bid price levels
             if (mBids_by_price) {
                 for (auto bid = mBids_by_price->mNext_entry; bid != mBids_by_price;
                      bid = bid->mNext_entry)
-                    mOrders_at_price_pool.deallocate(bid);
-                mOrders_at_price_pool.deallocate(mBids_by_price);
+                    mOrders_at_price_pool.DeAllocate(bid);
+                mOrders_at_price_pool.DeAllocate(mBids_by_price);
             }
 
-            // Deallocate all ask price levels
+            // DeAllocate all ask price levels
             if (mAsks_by_price) {
                 for (auto ask = mAsks_by_price->mNext_entry; ask != mAsks_by_price;
                      ask = ask->mNext_entry)
-                    mOrders_at_price_pool.deallocate(ask);
-                mOrders_at_price_pool.deallocate(mAsks_by_price);
+                    mOrders_at_price_pool.DeAllocate(ask);
+                mOrders_at_price_pool.DeAllocate(mAsks_by_price);
             }
 
             // Reset bid and ask pointers
