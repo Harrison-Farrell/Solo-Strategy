@@ -9,10 +9,8 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
-/**
- * @file market_update.h
- * @brief Messaging structures for publishing and consuming market data updates.
- */
+/// @file market_update.h
+/// @brief Messaging structures for publishing and consuming market data updates.
 
 #ifndef SOLO_STRATEGY_SRC_MARKET_ORDERS_MARKET_UPDATE_H_
 #define SOLO_STRATEGY_SRC_MARKET_ORDERS_MARKET_UPDATE_H_
@@ -22,9 +20,7 @@
 #include "lock-free-queue/lock_free_queue.h"
 #include "utilities/types.h"
 
-/**
- * @brief Represents the type of action in a market update message.
- */
+/// @brief Represents the type of action in a market update message.
 enum class MarketUpdateType : uint8_t {
     INVALID = 0,
     CLEAR = 1,
@@ -36,11 +32,9 @@ enum class MarketUpdateType : uint8_t {
     SNAPSHOT_END = 7
 };
 
-/**
- * @brief Converts a MarketUpdateType enum to its string representation.
- * @param type The MarketUpdateType to convert.
- * @return String representation of the type.
- */
+/// @brief Converts a MarketUpdateType enum to its string representation.
+/// @param type The MarketUpdateType to convert.
+/// @return String representation of the type.
 inline std::string marketUpdateTypeToString(MarketUpdateType type) {
     switch (type) {
         case MarketUpdateType::CLEAR:
@@ -66,10 +60,8 @@ inline std::string marketUpdateTypeToString(MarketUpdateType type) {
 /// are packed to remove system dependent extra padding.
 #pragma pack(push, 1)
 
-/**
- * @brief Market update structure used internally by the matching engine.
- * These structures are packed to ensure consistent binary layout across systems.
- */
+/// @brief Market update structure used internally by the matching engine.
+/// These structures are packed to ensure consistent binary layout across systems.
 struct MEMarketUpdate {
     MarketUpdateType type = MarketUpdateType::INVALID;
     OrderId order_id = OrderId_INVALID;
@@ -79,10 +71,8 @@ struct MEMarketUpdate {
     Qty qty = Qty_INVALID;
     Priority priority = Priority_INVALID;
 
-    /**
-     * @brief Converts the MEMarketUpdate to a string representation.
-     * @return String representation of the update.
-     */
+    /// @brief Converts the MEMarketUpdate to a string representation.
+    /// @return String representation of the update.
     auto toString() const {
         std::stringstream ss;
         ss << "MEMarketUpdate"
@@ -96,18 +86,14 @@ struct MEMarketUpdate {
     }
 };
 
-/**
- * @brief Market update structure published over the network.
- * Includes a sequence number for tracking and ordering.
- */
+/// @brief Market update structure published over the network.
+/// Includes a sequence number for tracking and ordering.
 struct MDPMarketUpdate {
     size_t seq_num_ = 0;
     MEMarketUpdate me_market_update_;
 
-    /**
-     * @brief Converts the MDPMarketUpdate to a string representation.
-     * @return String representation of the update.
-     */
+    /// @brief Converts the MDPMarketUpdate to a string representation.
+    /// @return String representation of the update.
     auto toString() const {
         std::stringstream ss;
         ss << "MDPMarketUpdate"

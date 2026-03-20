@@ -9,10 +9,8 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
-/**
- * @file lock_free_queue.h
- * @brief Thread-safe, lock-free circular buffer for low-latency data passing.
- */
+/// @file lock_free_queue.h
+/// @brief Thread-safe, lock-free circular buffer for low-latency data passing.
 
 #ifndef SOLO_STRATEGY_SRC_LOCK_FREE_QUEUE_LOCK_FREE_QUEUE_H_
 #define SOLO_STRATEGY_SRC_LOCK_FREE_QUEUE_LOCK_FREE_QUEUE_H_
@@ -25,59 +23,45 @@
 
 #include "utilities/macros.h"
 
-/**
- * @brief A lock-free, thread-safe queue for sharing data between threads.
- * Uses a fixed-size circular buffer with atomic operations for lock-free
- * enqueuing and dequeuing.
- * @tparam T The type of elements stored in the queue.
- */
+/// @brief A lock-free, thread-safe queue for sharing data between threads.
+/// Uses a fixed-size circular buffer with atomic operations for lock-free
+/// enqueuing and dequeuing.
+/// @tparam T The type of elements stored in the queue.
 template <typename T>
 class LockFreeQueue final {
    public:
-    /**
-     * @brief Constructs a LockFreeQueue with a fixed capacity.
-     * @param element_number The maximum number of elements the queue can hold.
-     */
+    /// @brief Constructs a LockFreeQueue with a fixed capacity.
+    /// @param element_number The maximum number of elements the queue can hold.
     LockFreeQueue(std::size_t element_number) : mStore(element_number, T()) {}
 
-    /**
-     * @brief Gets a pointer to the next writable element in the queue.
-     * @return Pointer to the next writable element.
-     */
+    /// @brief Gets a pointer to the next writable element in the queue.
+    /// @return Pointer to the next writable element.
     auto getNextWrite() noexcept { return &mStore[mNext_write]; }
 
-    /**
-     * @brief Advances the write index in a circular fashion and increments the size.
-     * Should be called after writing to the pointer returned by getNextWrite().
-     */
+    /// @brief Advances the write index in a circular fashion and increments the size.
+    /// Should be called after writing to the pointer returned by getNextWrite().
     auto updateWriteIndex() noexcept {
         mNext_write = (mNext_write + 1) % mStore.size();
         mSize++;
     }
 
-    /**
-     * @brief Gets a pointer to the next readable element in the queue.
-     * @return Pointer to next readable element, or nullptr if queue is empty.
-     */
+    /// @brief Gets a pointer to the next readable element in the queue.
+    /// @return Pointer to next readable element, or nullptr if queue is empty.
     auto getNextRead() const noexcept -> const T* {
         return (size() ? &mStore[mNext_read] : nullptr);
     }
 
-    /**
-     * @brief Advances the read index in a circular fashion and decrements the size.
-     * Should be called after reading from the pointer returned by getNextRead().
-     */
+    /// @brief Advances the read index in a circular fashion and decrements the size.
+    /// Should be called after reading from the pointer returned by getNextRead().
     auto updateReadIndex() noexcept {
         mNext_read = (mNext_read + 1) % mStore.size();
         ASSERT(mSize != 0, "Read an invalid element");
         mSize--;
     }
 
-    /**
-     * @brief Pushes an element onto the queue using move semantics.
-     * @param value The element to push.
-     * @return true if successful, false if the queue is full.
-     */
+    /// @brief Pushes an element onto the queue using move semantics.
+    /// @param value The element to push.
+    /// @return true if successful, false if the queue is full.
     bool push(T&& value) noexcept {
         if (size() >= mStore.size()) {
             return false;
@@ -88,11 +72,9 @@ class LockFreeQueue final {
         return true;
     }
 
-    /**
-     * @brief Pushes an element onto the queue using copy semantics.
-     * @param value The element to push.
-     * @return true if successful, false if the queue is full.
-     */
+    /// @brief Pushes an element onto the queue using copy semantics.
+    /// @param value The element to push.
+    /// @return true if successful, false if the queue is full.
     bool push(const T& value) noexcept {
         if (size() >= mStore.size()) {
             return false;
@@ -103,11 +85,9 @@ class LockFreeQueue final {
         return true;
     }
 
-    /**
-     * @brief Pops an element from the queue.
-     * @param value Reference to store the popped element.
-     * @return true if successful, false if the queue is empty.
-     */
+    /// @brief Pops an element from the queue.
+    /// @param value Reference to store the popped element.
+    /// @return true if successful, false if the queue is empty.
     bool pop(T& value) noexcept {
         if (size() == 0) {
             return false;
@@ -118,10 +98,8 @@ class LockFreeQueue final {
         return true;
     }
 
-    /**
-     * @brief Returns the current number of elements in the queue.
-     * @return The number of elements currently stored in the queue.
-     */
+    /// @brief Returns the current number of elements in the queue.
+    /// @return The number of elements currently stored in the queue.
     auto size() const noexcept { return mSize.load(); }
 
     LockFreeQueue() = delete;

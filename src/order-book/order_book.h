@@ -9,10 +9,8 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
-/**
- * @file order_book.h
- * @brief Core LOB (Limit Order Book) implementation for the trading system.
- */
+/// @file order_book.h
+/// @brief Core LOB (Limit Order Book) implementation for the trading system.
 
 #ifndef SOLO_STRATEGY_SRC_ORDER_BOOK_ORDER_BOOK_H_
 #define SOLO_STRATEGY_SRC_ORDER_BOOK_ORDER_BOOK_H_
@@ -23,34 +21,24 @@
 #include "utilities/macros.h"
 #include "utilities/types.h"
 
-/**
- * @brief Represents the limit order book for a single trading instrument.
- */
+/// @brief Represents the limit order book for a single trading instrument.
 class MarketOrderBook final {
    public:
-    /**
-     * @brief Constructs a MarketOrderBook for the given ticker.
-     * @param ticker_id The ticker identifier for the instrument.
-     */
+    /// @brief Constructs a MarketOrderBook for the given ticker.
+    /// @param ticker_id The ticker identifier for the instrument.
     MarketOrderBook(TickerId ticker_id);
 
-    /**
-     * @brief Destructor for MarketOrderBook.
-     */
+    /// @brief Destructor for MarketOrderBook.
     ~MarketOrderBook();
 
-    /**
-     * @brief Processes a market update and updates the order book accordingly.
-     * Handles ADD, MODIFY, CANCEL, and CLEAR operations.
-     * @param market_update Pointer to the market update message.
-     */
+    /// @brief Processes a market update and updates the order book accordingly.
+    /// Handles ADD, MODIFY, CANCEL, and CLEAR operations.
+    /// @param market_update Pointer to the market update message.
     auto onMarketUpdate(const MEMarketUpdate* market_update) noexcept -> void;
 
-    /**
-     * @brief Updates the BestBidOffer view based on the current state of the book.
-     * @param update_bid Flag to update the bid side.
-     * @param update_ask Flag to update the ask side.
-     */
+    /// @brief Updates the BestBidOffer view based on the current state of the book.
+    /// @param update_bid Flag to update the bid side.
+    /// @param update_ask Flag to update the ask side.
     auto updateBestBidOffer(bool update_bid, bool update_ask) noexcept {
         if (update_bid) {
             if (mBids_by_price) {
@@ -81,55 +69,47 @@ class MarketOrderBook final {
         }
     }
 
-    /**
-     * @brief Returns the current BestBidOffer view.
-     * @return Pointer to the BestBidOffer structure.
-     */
+    /// @brief Returns the current BestBidOffer view.
+    /// @return Pointer to the BestBidOffer structure.
     auto getBestBidOffer() const noexcept -> const BestBidOffer* { return &mBest_bid_offer; }
 
    private:
-    /** @brief The ticker identifier for the instrument. */
+    /// @brief The ticker identifier for the instrument.
     const TickerId mTicker_id;
 
-    /** @brief Array of orders indexed by their order id. */
+    /// @brief Array of orders indexed by their order id.
     OrderArray mOrder_id_to_order;
-    /** @brief Memory pool for allocating MarketOrderAtPrice objects. */
+    /// @brief Memory pool for allocating MarketOrderAtPrice objects.
     MemoryPool<MarketOrderAtPrice> mOrders_at_price_pool;
-    /** @brief Head of the bids linked list (highest price first). */
+    /// @brief Head of the bids linked list (highest price first).
     MarketOrderAtPrice* mBids_by_price = nullptr;
-    /** @brief Head of the asks linked list (lowest price first). */
+    /// @brief Head of the asks linked list (lowest price first).
     MarketOrderAtPrice* mAsks_by_price = nullptr;
-    /** @brief Array of price levels indexed by hashed price. */
+    /// @brief Array of price levels indexed by hashed price.
     OrdersAtPriceArray mPrice_orders_at_price;
-    /** @brief Memory pool for allocating MarketOrder objects. */
+    /// @brief Memory pool for allocating MarketOrder objects.
     MemoryPool<MarketOrder> mOrder_pool;
 
-    /** @brief current best bid and offer for the book. */
+    /// @brief current best bid and offer for the book.
     BestBidOffer mBest_bid_offer;
-    /** @brief Last update time string. */
+    /// @brief Last update time string.
     std::string mtime_str;
 
    private:
-    /**
-     * @brief Maps a price to an index for constant-time lookup.
-     * @param price The price value to map.
-     * @return Index in the range [0, ME_MAX_PRICE_LEVELS).
-     */
+    /// @brief Maps a price to an index for constant-time lookup.
+    /// @param price The price value to map.
+    /// @return Index in the range [0, ME_MAX_PRICE_LEVELS).
     inline auto priceToIndex(Price price) const noexcept { return price % ME_MAX_PRICE_LEVELS; }
 
-    /**
-     * @brief Retrieves the price level container for a given price.
-     * @param price The price to look up.
-     * @return Pointer to MarketOrderAtPrice, or nullptr if none exists.
-     */
+    /// @brief Retrieves the price level container for a given price.
+    /// @param price The price to look up.
+    /// @return Pointer to MarketOrderAtPrice, or nullptr if none exists.
     inline auto getOrdersAtPrice(Price price) const noexcept -> MarketOrderAtPrice* {
         return mPrice_orders_at_price.at(priceToIndex(price));
     }
 
-    /**
-     * @brief Adds a new price level to the sorted linked list.
-     * @param new_orders_at_price Pointer to the new price level container.
-     */
+    /// @brief Adds a new price level to the sorted linked list.
+    /// @param new_orders_at_price Pointer to the new price level container.
     auto addOrdersAtPrice(MarketOrderAtPrice* new_orders_at_price) noexcept {
         // Map the price to an index and store the new price level in the hash
         // map
@@ -215,10 +195,8 @@ class MarketOrderBook final {
         }
     }
 
-    /**
-     * @brief Adds an order to the book, creating a new price level if necessary.
-     * @param order Pointer to the MarketOrder to add.
-     */
+    /// @brief Adds an order to the book, creating a new price level if necessary.
+    /// @param order Pointer to the MarketOrder to add.
     auto addOrder(MarketOrder* order) noexcept -> void {
         // Look up the existing price level for this order's price
         const auto orders_at_price = getOrdersAtPrice(order->mPrice);
