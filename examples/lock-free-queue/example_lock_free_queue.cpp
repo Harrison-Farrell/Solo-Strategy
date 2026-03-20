@@ -34,13 +34,13 @@ auto ConsumeFunction(LockFreeQueue<MyStruct>* data_queue) {
 
         data_queue->updateReadIndex();
 
-        std::print("ConsumeFunction read elem: {}, {}, {} size: {}\n", block->data.at(0),
-                   block->data.at(1), block->data.at(2), data_queue->size());
+        std::println("ConsumeFunction read elem: {}, {}, {} size: {}", block->data.at(0),
+                     block->data.at(1), block->data.at(2), data_queue->size());
 
         std::this_thread::sleep_for(loop_sleep_in_seconds);
     }
 
-    std::print("ConsumerFunction exiting\n");
+    std::println("ConsumerFunction exiting");
 }
 }  // namespace
 
@@ -57,8 +57,8 @@ int main() {
         *data_queue.getNextWrite() = block;
         data_queue.updateWriteIndex();
 
-        std::print("main constructed elem: {}, {}, {} size: {}\n", block.data.at(0),
-                   block.data.at(1), block.data.at(2), data_queue.size());
+        std::println("main constructed elem: {}, {}, {} size: {}", block.data.at(0),
+                     block.data.at(1), block.data.at(2), data_queue.size());
 
         using namespace std::literals::chrono_literals;
         std::this_thread::sleep_for(loop_sleep_in_seconds);
@@ -66,7 +66,7 @@ int main() {
 
     ctx.join();
 
-    std::print("main thread exiting\n");
+    std::println("main thread exiting");
 
     return 0;
 }

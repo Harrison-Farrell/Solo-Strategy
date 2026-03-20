@@ -8,14 +8,14 @@
 // implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
-
-#include "memory-map/memory_map_file.h"
-
+// NOLINTBEGIN
 #include <gtest/gtest.h>
 
 #include <filesystem>
 #include <fstream>
 #include <vector>
+
+#include "memory-map/memory_map_file.h"
 
 namespace {
 
@@ -178,3 +178,4 @@ TEST_F(MemoryMappedFileTest, Iterators) {
 }
 
 }  // namespace
+// NOLINTEND

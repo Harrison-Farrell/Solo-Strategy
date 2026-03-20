@@ -8,13 +8,13 @@
 // implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
-
-#include "lock-free-queue/lock_free_queue.h"
-
+// NOLINTBEGIN
 #include <gtest/gtest.h>
 
 #include <string>
 #include <vector>
+
+#include "lock-free-queue/lock_free_queue.h"
 
 /**
  * @brief Test fixture for LockFreeQueue tests.
@@ -112,3 +112,4 @@ TEST_F(LockFreeQueueTest, PointerInterface) {
     queue.updateReadIndex();
     EXPECT_EQ(queue.size(), 0);
 }
+// NOLINTEND

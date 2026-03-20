@@ -19,15 +19,15 @@
 
 int main(int argc, char* argv[]) {
     if (argc < 2 || argc > 3) {
-        std::print("Invalid Arguments!\n");
-        std::print("Supply the binary file path to read\n");
+        std::println("Invalid Arguments!");
+        std::println("Supply the binary file path to read");
         std::quick_exit(1);
     }
 
     // disable cppcoreguidelines-pro-bounds-pointer-arithmetic
     const std::string input_file_path(argv[1]);  // NOLINT
 
-    std::print("File Path to  read: {}\n", input_file_path);
+    std::println("File Path to  read: {}", input_file_path);
 
     MemoryMappedFile mapped_file(input_file_path);
 

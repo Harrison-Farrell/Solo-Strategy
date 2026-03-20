@@ -8,13 +8,13 @@
 // implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
-
-#include "utilities/endian_utils.h"
-
+// NOLINTBEGIN
 #include <gtest/gtest.h>
 
 #include <bit>
 #include <cstdint>
+
+#include "utilities/endian_utils.h"
 
 namespace {
 
@@ -76,3 +76,4 @@ TEST(EndianUtilsTest, FromLittleEndianToNative) {
 }
 
 }  // namespace
+// NOLINTEND

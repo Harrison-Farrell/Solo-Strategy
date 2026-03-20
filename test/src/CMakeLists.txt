@@ -9,6 +9,7 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # -----------------------------------------------------------------------------
 
-AddTests(memory_map_file_test)
-AddTests(lock_free_queue_test)
-AddTests(endian_utils_test)
+AddTests(test_memory_map_file)
+AddTests(test_lock_free_queue)
+AddTests(test_endian_utils)
+AddTests(test_macros)
