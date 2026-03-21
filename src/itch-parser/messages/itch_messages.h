@@ -9,8 +9,8 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
-/// @file itch_messages.h
-/// @brief Structure definitions for Nasdaq TotalView ITCH 5.0 messages.
+/// \file itch_messages.h
+/// \brief Structure definitions for Nasdaq TotalView ITCH 5.0 messages.
 ///
 /// This file contains packed structures representing each message type in the
 /// ITCH protocol. These structures can be directly mapped to memory-mapped
@@ -31,9 +31,9 @@ namespace ITCH {
 constexpr int STOCK_LEN = 8;
 constexpr int TIME_LEN = 6;
 
-/// @brief Divisor to convert 4-decimal fixed point prices to floating point.
+/// \brief Divisor to convert 4-decimal fixed point prices to floating point.
 constexpr double PRICE_DIVISOR = 10000.0;
-/// @brief Divisor for MWCB messages which use 8-decimal precision.
+/// \brief Divisor for MWCB messages which use 8-decimal precision.
 constexpr double MWCB_PRICE_DIVISOR = 1.0E8;
 
 using Timestamp = std::array<uint8_t, TIME_LEN>;
@@ -67,8 +67,8 @@ enum class MessageType : char {
     RetailPriceImprovementIndicatorMessage = 'N'  ///< 12 fields, 48 bytes
 };
 
-/// @struct SystemEventMessage
-/// @brief Disseminated for various system-level events like start/end of day.
+/// \struct SystemEventMessage
+/// \brief Disseminated for various system-level events like start/end of day.
 struct SystemEventMessage {
     MessageType message_type;  ///< Message type
     uint16_t stock_locate;     ///< Locate code for the security
@@ -77,8 +77,8 @@ struct SystemEventMessage {
     char event_code;           ///< Code for the system event ('O','S','Q','M','E','C');
 };
 
-/// @struct StockTradingActionMessage
-/// @brief Current trading state of a security.
+/// \struct StockTradingActionMessage
+/// \brief Current trading state of a security.
 struct StockTradingActionMessage {
     MessageType message_type;    ///< Message type
     uint16_t stock_locate;       ///< Locate code for the security
@@ -90,8 +90,8 @@ struct StockTradingActionMessage {
     std::array<char, 4> reason;  ///< Reason for state change
 };
 
-/// @struct RegSHOMessage
-/// @brief Disseminated when a Short Sale Price Test is in effect.
+/// \struct RegSHOMessage
+/// \brief Disseminated when a Short Sale Price Test is in effect.
 struct RegSHOMessage {
     MessageType message_type;  ///< Message type
     uint16_t stock_locate;     ///< Locate code for the security
@@ -101,8 +101,8 @@ struct RegSHOMessage {
     char reg_sho_action;       ///< Current SHO action ('0', '1', '2')
 };
 
-/// @struct MarketParticipantPositionMessage
-/// @brief Quote information for a market participant.
+/// \struct MarketParticipantPositionMessage
+/// \brief Quote information for a market participant.
 struct MarketParticipantPositionMessage {
     MessageType message_type;       ///< Message type
     uint16_t stock_locate;          ///< Locate code for the security
@@ -114,10 +114,32 @@ struct MarketParticipantPositionMessage {
     char market_maker_mode;         ///< Normal, Passive, etc.
     char market_participant_state;  ///< Active, Excused, etc.
 };
+
+/// \struct MWCBDeclineLevelMessage
+/// \brief Market Wide Circuit Breaker decline levels.
+struct MWCBDeclineLevelMessage {
+    MessageType message_type;  ///< Message type
+    uint16_t stock_locate;     ///< Locate code for the security
+    uint16_t tracking_number;  ///< Nasdaq internal tracking number
+    Timestamp timestamp;       ///< Nanoseconds past midnight (48-bit)
+    uint64_t level1;           ///< Level 1 decline threshold (8 decimals)
+    uint64_t level2;           ///< Level 2 decline threshold (8 decimals)
+    uint64_t level3;           ///< Level 3 decline threshold (8 decimals)
+};
+
+/// \struct MWCBStatusMessage
+/// \brief Current status of MWCB levels.
+struct MWCBStatusMessage {
+    MessageType message_type;  ///< Message type
+    uint16_t stock_locate;     ///< Locate code for the security
+    uint16_t tracking_number;  ///< Nasdaq internal tracking number
+    Timestamp timestamp;       ///< Nanoseconds past midnight (48-bit)
+    char breached_level;       ///< '1', '2', or '3' if breached
+};
 //==============================================================================
 /*
- * @struct MessageHeader
- * @brief Message header for all ITCH messages.
+ * \struct MessageHeader
+ * \brief Message header for all ITCH messages.
  */
 struct MessageHeader {
     MessageType message_type;  ///< Message type
@@ -126,8 +148,8 @@ struct MessageHeader {
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
 };
 
-/// @struct StockDirectoryMessage
-/// @brief Basic data for a stock, sent at the start of the day.
+/// \struct StockDirectoryMessage
+/// \brief Basic data for a stock, sent at the start of the day.
 struct StockDirectoryMessage {
     MessageHeader header{MessageType::StockDirectoryMessage, 0, 0, 0};  ///< Message header
     char stock[8];                        ///< Stock symbol, right-padded with spaces
@@ -146,24 +168,8 @@ struct StockDirectoryMessage {
     char inverse_indicator;               ///< 'Y' if inverse ETP
 };
 
-/// @struct MWCBDeclineLevelMessage
-/// @brief Market Wide Circuit Breaker decline levels.
-struct MWCBDeclineLevelMessage {
-    MessageHeader header{MessageType::MWCBDeclineLevelMessage, 0, 0, 0};  ///< Message header
-    uint64_t level1;  ///< Level 1 decline threshold (8 decimals)
-    uint64_t level2;  ///< Level 2 decline threshold (8 decimals)
-    uint64_t level3;  ///< Level 3 decline threshold (8 decimals)
-};
-
-/// @struct MWCBStatusMessage
-/// @brief Current status of MWCB levels.
-struct MWCBStatusMessage {
-    MessageHeader header{MessageType::MWCBStatusMessage, 0, 0, 0};  ///< Message header
-    char breached_level;  ///< '1', '2', or '3' if breached
-};
-
-/// @struct IPOQuotingPeriodUpdateMessage
-/// @brief IPO quoting period tracking.
+/// \struct IPOQuotingPeriodUpdateMessage
+/// \brief IPO quoting period tracking.
 struct IPOQuotingPeriodUpdateMessage {
     MessageHeader header{MessageType::IPOQuotingPeriodUpdateMessage, 0, 0, 0};  ///< Message header
     char stock[8];                                                              ///< Stock symbol
@@ -172,8 +178,8 @@ struct IPOQuotingPeriodUpdateMessage {
     uint32_t ipo_price;                    ///< IPO price (4 decimals)
 };
 
-/// @struct LULDAuctionCollarMessage
-/// @brief Auction collar levels for LULD.
+/// \struct LULDAuctionCollarMessage
+/// \brief Auction collar levels for LULD.
 struct LULDAuctionCollarMessage {
     MessageHeader header{MessageType::LULDAuctionCollarMessage, 0, 0, 0};  ///< Message header
     char stock[8];                                                         ///< Stock symbol
@@ -183,8 +189,8 @@ struct LULDAuctionCollarMessage {
     uint32_t auction_collar_extension;        ///< Extension number
 };
 
-/// @struct OperationalHaltMessage
-/// @brief Operational halt status per market.
+/// \struct OperationalHaltMessage
+/// \brief Operational halt status per market.
 struct OperationalHaltMessage {
     MessageHeader header{MessageType::OperationalHaltMessage, 0, 0, 0};  ///< Message header
     char stock[8];                                                       ///< Stock symbol
@@ -192,8 +198,8 @@ struct OperationalHaltMessage {
     char operational_halt_action;  ///< 'H' for halt, 'T' for trading
 };
 
-/// @struct AddOrderMessage
-/// @brief New order added without attribution.
+/// \struct AddOrderMessage
+/// \brief New order added without attribution.
 struct AddOrderMessage {
     MessageHeader header{MessageType::AddOrderMessage, 0, 0, 0};  ///< Message header
     uint64_t order_reference_number;                              ///< Unique order ID
@@ -203,8 +209,8 @@ struct AddOrderMessage {
     uint32_t price;                                               ///< Limit price (4 decimals)
 };
 
-/// @struct AddOrderMPIDAttributionMessage
-/// @brief New order added with MPID attribution.
+/// \struct AddOrderMPIDAttributionMessage
+/// \brief New order added with MPID attribution.
 struct AddOrderMPIDAttributionMessage {
     MessageHeader header{MessageType::AddOrderMPIDAttributionMessage, 0, 0, 0};  ///< Message header
     uint64_t order_reference_number;  ///< Unique order ID
@@ -215,8 +221,8 @@ struct AddOrderMPIDAttributionMessage {
     char attribution[4];              ///< Market Participant ID
 };
 
-/// @struct OrderExecutedMessage
-/// @brief Full or partial execution of an existing order.
+/// \struct OrderExecutedMessage
+/// \brief Full or partial execution of an existing order.
 struct OrderExecutedMessage {
     MessageHeader header{MessageType::OrderExecutedMessage, 0, 0, 0};  ///< Message header
     uint64_t order_reference_number;                                   ///< Reference to AddOrder
@@ -224,8 +230,8 @@ struct OrderExecutedMessage {
     uint64_t match_number;                                             ///< Execution ID
 };
 
-/// @struct OrderExecutedWithPriceMessage
-/// @brief Execution with a non-limit price (e.g., cross).
+/// \struct OrderExecutedWithPriceMessage
+/// \brief Execution with a non-limit price (e.g., cross).
 struct OrderExecutedWithPriceMessage {
     MessageHeader header{MessageType::OrderExecutedWithPriceMessage, 0, 0, 0};  ///< Message header
     uint64_t order_reference_number;  ///< Reference to AddOrder
@@ -235,23 +241,23 @@ struct OrderExecutedWithPriceMessage {
     uint32_t execution_price;         ///< Execution price (4 decimals)
 };
 
-/// @struct OrderCancelMessage
-/// @brief Partial reduction of an order's shares.
+/// \struct OrderCancelMessage
+/// \brief Partial reduction of an order's shares.
 struct OrderCancelMessage {
     MessageHeader header{MessageType::OrderCancelMessage, 0, 0, 0};  ///< Message header
     uint64_t order_reference_number;                                 ///< Reference to AddOrder
     uint32_t cancelled_shares;                                       ///< Amount reduced
 };
 
-/// @struct OrderDeleteMessage
-/// @brief Removal of an order from the book.
+/// \struct OrderDeleteMessage
+/// \brief Removal of an order from the book.
 struct OrderDeleteMessage {
     MessageHeader header{MessageType::OrderDeleteMessage, 0, 0, 0};  ///< Message header
     uint64_t order_reference_number;                                 ///< Reference to AddOrder
 };
 
-/// @struct OrderReplaceMessage
-/// @brief Modification of an order's price or shares.
+/// \struct OrderReplaceMessage
+/// \brief Modification of an order's price or shares.
 struct OrderReplaceMessage {
     MessageHeader header{MessageType::OrderReplaceMessage, 0, 0, 0};  ///< Message header
     uint64_t original_order_reference_number;                         ///< Old ID
@@ -260,8 +266,8 @@ struct OrderReplaceMessage {
     uint32_t price;                                                   ///< New limit price
 };
 
-/// @struct NonCrossTradeMessage
-/// @brief Trade result from hidden orders (standard trade).
+/// \struct NonCrossTradeMessage
+/// \brief Trade result from hidden orders (standard trade).
 struct NonCrossTradeMessage {
     MessageHeader header{MessageType::NonCrossTradeMessage, 0, 0, 0};  ///< Message header
     uint64_t order_reference_number;                                   ///< Internal ID
@@ -272,8 +278,8 @@ struct NonCrossTradeMessage {
     uint64_t match_number;                                             ///< Execution ID
 };
 
-/// @struct CrossTradeMessage
-/// @brief Opening, closing, or halt-cross trade result.
+/// \struct CrossTradeMessage
+/// \brief Opening, closing, or halt-cross trade result.
 struct CrossTradeMessage {
     MessageHeader header{MessageType::CrossTradeMessage, 0, 0, 0};  ///< Message header
     uint64_t shares;                                                ///< Total shares crossed
@@ -283,15 +289,15 @@ struct CrossTradeMessage {
     char cross_type;                                                ///< 'O', 'C', 'H', or 'I'
 };
 
-/// @struct BrokenTradeMessage
-/// @brief Indicates a previous trade was cancelled.
+/// \struct BrokenTradeMessage
+/// \brief Indicates a previous trade was cancelled.
 struct BrokenTradeMessage {
     MessageHeader header{MessageType::BrokenTradeMessage, 0, 0, 0};  ///< Message header
     uint64_t match_number;  ///< Match ID of the original trade
 };
 
-/// @struct NOIIMessage
-/// @brief Net Order Imbalance Indicator.
+/// \struct NOIIMessage
+/// \brief Net Order Imbalance Indicator.
 struct NOIIMessage {
     MessageHeader header{MessageType::NOIIMessage, 0, 0, 0};  ///< Message header
     uint64_t paired_shares;            ///< Shares combined at reference price
@@ -305,8 +311,8 @@ struct NOIIMessage {
     char price_variation_indicator;    ///< Degree of change
 };
 
-/// @struct RetailPriceImprovementIndicatorMessage
-/// @brief RPI interest in a symbol.
+/// \struct RetailPriceImprovementIndicatorMessage
+/// \brief RPI interest in a symbol.
 struct RetailPriceImprovementIndicatorMessage {
     MessageHeader header{MessageType::RetailPriceImprovementIndicatorMessage, 0, 0,
                          0};  ///< Message header
@@ -314,8 +320,8 @@ struct RetailPriceImprovementIndicatorMessage {
     char interest_flag;       ///< 'B', 'S', 'A', or 'N'
 };
 
-/// @struct DLCRMessage
-/// @brief Direct Listing Capital Raise information.
+/// \struct DLCRMessage
+/// \brief Direct Listing Capital Raise information.
 struct DLCRMessage {
     MessageHeader header{MessageType::DLCRMessage, 0, 0, 0};  ///< Message header
     char stock[8];                                            ///< Symbol
@@ -330,8 +336,8 @@ struct DLCRMessage {
 
 #pragma pack(pop)
 
-/// @typedef Message
-/// @brief Variant type holding any specific ITCH message structure.
+/// \typedef Message
+/// \brief Variant type holding any specific ITCH message structure.
 using Message =
     std::variant<SystemEventMessage, StockDirectoryMessage, StockTradingActionMessage,
                  RegSHOMessage, MarketParticipantPositionMessage, MWCBDeclineLevelMessage,
@@ -350,36 +356,36 @@ std::string ArrayToString(const std::array<char, N>& arr) {
 
 uint64_t ArrayToUint48(const std::array<uint8_t, TIME_LEN>& bytes);
 
-auto print_impl(std::ostream& out, const SystemEventMessage& msg);
-auto print_impl(std::ostream& out, const StockDirectoryMessage& msg);
-auto print_impl(std::ostream& out, const StockTradingActionMessage& msg);
-auto print_impl(std::ostream& out, const RegSHOMessage& msg);
-auto print_impl(std::ostream& out, const MarketParticipantPositionMessage& msg);
-auto print_impl(std::ostream& out, const MWCBDeclineLevelMessage& msg);
-auto print_impl(std::ostream& out, const MWCBStatusMessage& msg);
-auto print_impl(std::ostream& out, const IPOQuotingPeriodUpdateMessage& msg);
-auto print_impl(std::ostream& out, const LULDAuctionCollarMessage& msg);
-auto print_impl(std::ostream& out, const OperationalHaltMessage& msg);
-auto print_impl(std::ostream& out, const AddOrderMessage& msg);
-auto print_impl(std::ostream& out, const AddOrderMPIDAttributionMessage& msg);
-auto print_impl(std::ostream& out, const OrderExecutedMessage& msg);
-auto print_impl(std::ostream& out, const OrderExecutedWithPriceMessage& msg);
-auto print_impl(std::ostream& out, const OrderCancelMessage& msg);
-auto print_impl(std::ostream& out, const OrderDeleteMessage& msg);
-auto print_impl(std::ostream& out, const OrderReplaceMessage& msg);
-auto print_impl(std::ostream& out, const NonCrossTradeMessage& msg);
-auto print_impl(std::ostream& out, const CrossTradeMessage& msg);
-auto print_impl(std::ostream& out, const BrokenTradeMessage& msg);
-auto print_impl(std::ostream& out, const NOIIMessage& msg);
-auto print_impl(std::ostream& out, const RetailPriceImprovementIndicatorMessage& msg);
-auto print_impl(std::ostream& out, const DLCRMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const SystemEventMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const StockDirectoryMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const StockTradingActionMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const RegSHOMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const MarketParticipantPositionMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const MWCBDeclineLevelMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const MWCBStatusMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const IPOQuotingPeriodUpdateMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const LULDAuctionCollarMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const OperationalHaltMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const AddOrderMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const AddOrderMPIDAttributionMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const OrderExecutedMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const OrderExecutedWithPriceMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const OrderCancelMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const OrderDeleteMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const OrderReplaceMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const NonCrossTradeMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const CrossTradeMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const BrokenTradeMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const NOIIMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const RetailPriceImprovementIndicatorMessage& msg);
+auto InternalPrintMessage(std::ostream& out, const DLCRMessage& msg);
 
-/// @brief Formats a Message variant into a human-readable stream.
-/// @param out Output stream.
-/// @param msg Message variant.
-auto print_message(std::ostream& out, const Message& msg) -> void;
+/// \brief Formats a Message variant into a human-readable stream.
+/// \param out Output stream.
+/// \param msg Message variant.
+auto PrintMessage(std::ostream& out, const Message& msg) -> void;
 
-/// @brief Stream operator overload for ITCH messages.
+/// \brief Stream operator overload for ITCH messages.
 auto operator<<(std::ostream& out, const Message& msg) -> std::ostream&;
 
 }  // namespace ITCH

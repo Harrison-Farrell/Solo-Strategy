@@ -41,10 +41,11 @@ class ITCH_Parser {
     inline auto StockTradingActionMessage();
     inline auto RegSHOMessage();
     inline auto MarketParticipantPositionMessage();
+    inline auto MWCBDeclineLevelMessage();
+    inline auto MWCBStatusMessage();
     // to be unit tested
     inline auto StockDirectoryMessage(const ITCH::MessageHeader& header);
-    inline auto MWCBDeclineLevelMessage(const ITCH::MessageHeader& header);
-    inline auto MWCBStatusMessage(const ITCH::MessageHeader& header);
+
     inline auto IPOQuotingPeriodUpdateMessage(const ITCH::MessageHeader& header);
     inline auto LULDAuctionCollarMessage(const ITCH::MessageHeader& header);
     inline auto OperationalHaltMessage(const ITCH::MessageHeader& header);

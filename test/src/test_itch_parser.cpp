@@ -160,7 +160,6 @@ TEST_F(ITCHPaserTest, MarketParticipantPositionMessageTest) {
               get<MarketParticipantPositionMessage>(message).message_type);
 
     EXPECT_EQ(10, FromBigEndian(get<MarketParticipantPositionMessage>(message).stock_locate));
-
     EXPECT_EQ(255, FromBigEndian(get<MarketParticipantPositionMessage>(message).tracking_number));
     EXPECT_EQ(16777215, ArrayToUint48(get<MarketParticipantPositionMessage>(message).timestamp));
     EXPECT_EQ(expected_stock, get<MarketParticipantPositionMessage>(message).stock);
@@ -168,5 +167,58 @@ TEST_F(ITCHPaserTest, MarketParticipantPositionMessageTest) {
     EXPECT_EQ('N', get<MarketParticipantPositionMessage>(message).primary_market_maker);
     EXPECT_EQ('R', get<MarketParticipantPositionMessage>(message).market_maker_mode);
     EXPECT_EQ('E', get<MarketParticipantPositionMessage>(message).market_participant_state);
+}
+
+TEST_F(ITCHPaserTest, MWCBDeclineLevelMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x56,                                            // Message Type ('V')
+        0x00, 0x00,                                      // Stock Locate (0)
+        0x00, 0xFF,                                      // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,              // Timestamp (207588671094783)
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,  // Level 1 (280375465148160)
+        0x00, 0xAA, 0xFF, 0xBB, 0x00, 0xAA, 0xFF, 0xBB,  // Level 2 (48131924675985339)
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01   // Level 3 (1)
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::MWCBDeclineLevelMessage,
+              get<MWCBDeclineLevelMessage>(message).message_type);
+
+    EXPECT_EQ(0, FromBigEndian(get<MWCBDeclineLevelMessage>(message).stock_locate));
+    EXPECT_EQ(255, FromBigEndian(get<MWCBDeclineLevelMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783, ArrayToUint48(get<MWCBDeclineLevelMessage>(message).timestamp));
+    EXPECT_EQ(280375465148160, FromBigEndian(get<MWCBDeclineLevelMessage>(message).level1));
+    EXPECT_EQ(48131924675985339, FromBigEndian(get<MWCBDeclineLevelMessage>(message).level2));
+    EXPECT_EQ(1, FromBigEndian(get<MWCBDeclineLevelMessage>(message).level3));
+}
+
+TEST_F(ITCHPaserTest, MWCBStatusMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x57,                                // Message Type ('W')
+        0x00, 0x00,                          // Stock Locate (0)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (207588671094783)
+        0x33                                 // Breached Level ('3')
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::MWCBStatusMessage, get<MWCBStatusMessage>(message).message_type);
+
+    EXPECT_EQ(0, FromBigEndian(get<MWCBStatusMessage>(message).stock_locate));
+    EXPECT_EQ(255, FromBigEndian(get<MWCBStatusMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783, ArrayToUint48(get<MWCBStatusMessage>(message).timestamp));
+    EXPECT_EQ('3', get<MWCBStatusMessage>(message).breached_level);
 }
 // NOLINTEND

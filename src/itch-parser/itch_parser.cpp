@@ -17,15 +17,22 @@
 #include "memory-map/memory_map_file.h"
 
 auto ITCH_Parser::SystemEventMessage() { return m_Reader.Read<ITCH::SystemEventMessage>(); }
-auto ITCH_Parser::RegSHOMessage() { return m_Reader.Read<ITCH::RegSHOMessage>(); }
 
 auto ITCH_Parser::StockTradingActionMessage() {
     return m_Reader.Read<ITCH::StockTradingActionMessage>();
 }
 
+auto ITCH_Parser::RegSHOMessage() { return m_Reader.Read<ITCH::RegSHOMessage>(); }
+
 auto ITCH_Parser::MarketParticipantPositionMessage() {
     return m_Reader.Read<ITCH::MarketParticipantPositionMessage>();
 }
+
+auto ITCH_Parser::MWCBDeclineLevelMessage() {
+    return m_Reader.Read<ITCH::MWCBDeclineLevelMessage>();
+}
+
+auto ITCH_Parser::MWCBStatusMessage() { return m_Reader.Read<ITCH::MWCBStatusMessage>(); }
 
 ITCH_Parser::ITCH_Parser(const std::string& file_path)
     : m_Reader(file_path), m_MessageQueue(m_MessageQueueSize) {
@@ -35,6 +42,8 @@ ITCH_Parser::ITCH_Parser(const std::string& file_path)
     m_dispatch[MessageType::StockTradingActionMessage] = [this](){return StockTradingActionMessage();};
     m_dispatch[MessageType::RegSHOMessage] = [this](){return RegSHOMessage();};
     m_dispatch[MessageType::MarketParticipantPositionMessage] = [this](){return MarketParticipantPositionMessage();};
+    m_dispatch[MessageType::MWCBDeclineLevelMessage] = [this](){return MWCBDeclineLevelMessage();};
+    m_dispatch[MessageType::MWCBStatusMessage] = [this](){return MWCBStatusMessage();};
     // clang-format on
 }
 
@@ -55,16 +64,6 @@ auto ITCH_Parser::StockDirectoryMessage(const ITCH::MessageHeader& header) {
     char etp_flag = m_Reader.ReadChar();
     char etp_leverage_factor = m_Reader.Read32();
     char inverse_indicator = m_Reader.ReadChar();
-}
-
-auto ITCH_Parser::MWCBDeclineLevelMessage(const ITCH::MessageHeader& header) {
-    ITCH::MWCBDeclineLevelMessage msg = {};
-    m_MessageQueue.push(msg);
-}
-
-auto ITCH_Parser::MWCBStatusMessage(const ITCH::MessageHeader& header) {
-    ITCH::MWCBStatusMessage msg = {};
-    m_MessageQueue.push(msg);
 }
 
 auto ITCH_Parser::IPOQuotingPeriodUpdateMessage(const ITCH::MessageHeader& header) {
@@ -160,107 +159,3 @@ ITCH::Message ITCH_Parser::DecodeMessage() {
     const auto type = m_Reader.Inspect<ITCH::MessageType>();
     return m_dispatch[type]();
 }
-
-// bool ITCH_Parser::Execute() {
-//     bool success_flag = true;
-//     while (m_Reader.tell() < m_Reader.size() && success_flag) {
-//         // The first two bytes are message length as per moldupd64
-//         // can skip, jumping to the message type char
-//         m_Reader.seek(m_Reader.tell() + 2);
-
-//         ITCH::MessageHeader header = {.message_type = (ITCH::MessageType)m_Reader.ReadChar(),
-//                                       .stock_locate = m_Reader.Read16(),
-//                                       .tracking_number = m_Reader.Read16(),
-//                                       .timestamp = m_Reader.Read48()};
-
-//         switch (header.message_type) {
-//             case ITCH::MessageType::SystemEventMessage: {
-//                 SystemEventMessage();
-//                 break;
-//             }
-//             case ITCH::MessageType::StockDirectoryMessage: {
-//                 StockDirectoryMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::StockTradingActionMessage: {
-//                 StockTradingActionMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::RegSHOMessage: {
-//                 RegSHOMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::MarketParticipantPositionMessage: {
-//                 MarketParticipantPositionMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::MWCBDeclineLevelMessage: {
-//                 MWCBDeclineLevelMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::MWCBStatusMessage: {
-//                 MWCBStatusMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::IPOQuotingPeriodUpdateMessage: {
-//                 IPOQuotingPeriodUpdateMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::LULDAuctionCollarMessage: {
-//                 LULDAuctionCollarMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::OperationalHaltMessage: {
-//                 OperationalHaltMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::AddOrderMessage: {
-//                 AddOrderMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::AddOrderMPIDAttributionMessage: {
-//                 AddOrderMPIDAttributionMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::OrderExecutedMessage: {
-//                 OrderExecutedMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::OrderExecutedWithPriceMessage: {
-//                 OrderExecutedWithPriceMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::OrderCancelMessage: {
-//                 OrderCancelMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::OrderDeleteMessage: {
-//                 OrderDeleteMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::OrderReplaceMessage: {
-//                 OrderReplaceMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::NonCrossTradeMessage: {
-//                 NonCrossTradeMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::CrossTradeMessage: {
-//                 CrossTradeMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::BrokenTradeMessage: {
-//                 BrokenTradeMessage(header);
-//                 break;
-//             }
-//             case ITCH::MessageType::RetailPriceImprovementIndicatorMessage: {
-//                 RetailPriceImprovementIndicatorMessage(header);
-//                 break;
-//             }
-//             default:
-//                 success_flag = false;
-//         }
-//     }
-//     return success_flag;
-// }
