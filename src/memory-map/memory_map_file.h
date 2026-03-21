@@ -35,6 +35,7 @@
     #include <windows.h>
 #endif
 
+#include <array>
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
@@ -136,7 +137,7 @@ class MemoryMappedFile {
     /// @return Value read from the stream.
     /// @throws std::out_of_range If reading past end of mapped region.
     template <typename T>
-    T read() {
+    T Read() {
         // Direct memory access via pointer casting
         T value = *reinterpret_cast<const T*>(static_cast<const uint8_t*>(mMappedView) + mCursor);
         mCursor += sizeof(T);
@@ -147,46 +148,50 @@ class MemoryMappedFile {
     /// @tparam T Integer type to read.
     /// @return Host-endian value.
     template <typename T>
-    T readBE() {
-        return endian::FromBigEndian(read<T>());
+    T ReadBE() {
+        return endian::FromBigEndian(Read<T>());
     }
 
     /// @brief Reads Little-Endian data and converts to host endianness.
     /// @tparam T Integer type to read.
     /// @return Host-endian value.
     template <typename T>
-    T readLE() {
-        return endian::FromLittleEndian(read<T>());
+    T ReadLE() {
+        return endian::FromLittleEndian(Read<T>());
     }
 
     /// @brief Reads a single byte.
     /// @return uint8_t value.
     /// @warning No bounds checking for performance. Ensure offset < size().
-    uint8_t read8() { return read<uint8_t>(); }
+    uint8_t Read8() { return Read<uint8_t>(); }
     /// @brief Reads a single byte.
     /// @return char value.
     /// @warning No bounds checking for performance. Ensure offset < size().
-    char readChar() { return read<char>(); }
+    char ReadChar() { return Read<char>(); }
     /// @brief Reads a 16-bit big-endian value.
     /// @return uint16_t value.
     /// @warning No bounds checking for performance. Ensure offset < size().
-    uint16_t read16() { return readBE<uint16_t>(); }
+    uint16_t Read16() { return ReadBE<uint16_t>(); }
     /// @brief Reads a 32-bit big-endian value.
     /// @return uint32_t value.
     /// @warning No bounds checking for performance. Ensure offset < size().
-    uint32_t read32() { return readBE<uint32_t>(); }
+    uint32_t Read32() { return ReadBE<uint32_t>(); }
     /// @brief Reads a 48-bit big-endian value.
     /// @return uint64_t value.
     /// @warning No bounds checking for performance. Ensure offset < size().
-    uint64_t read48();
+    uint64_t Read48();
     /// @brief Reads a 64-bit big-endian value.
     /// @return uint64_t value.
     /// @warning No bounds checking for performance. Ensure offset < size().
-    uint64_t read64() { return readBE<uint64_t>(); }
-    /// @brief Reads a fixed-length string and advances the cursor.
-    /// @param length Number of characters to read.
-    /// @return std::string containing the characters.
-    std::string readString(size_t length);
+    uint64_t Read64() { return ReadBE<uint64_t>(); }
+
+    template <size_t N>
+    std::array<char, N> ReadArray() {
+        std::array<char, N> result{};
+        std::memcpy(result.data(), static_cast<const char*>(mMappedView) + mCursor, N);
+        mCursor += N;
+        return result;
+    }
 
     /// @brief Copies a fixed-length string and advances the cursor.
     /// @param dentation of the string copy.
@@ -198,7 +203,7 @@ class MemoryMappedFile {
 
     /// @brief Memory-mapped reading of an 8-character symbol.
     /// @return std::string containing 8 characters.
-    std::string readSymbol() { return readString(8); }
+    std::array<char, 8> ReadSymbol() { return ReadArray<8>(); }
     /// @brief Sets the internal cursor for the read() functions.
     /// @param pos New byte offset from the start of the file.
     void seek(size_t pos) { mCursor = pos; }

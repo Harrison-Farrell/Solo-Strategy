@@ -19,6 +19,7 @@
 #ifndef SOLO_STRATEGY_SRC_ITCH_PARSER_MESSAGES_ITCH_MESSAGES_H_
 #define SOLO_STRATEGY_SRC_ITCH_PARSER_MESSAGES_ITCH_MESSAGES_H_
 
+#include <array>
 #include <cstdint>
 #include <iostream>
 #include <string>
@@ -26,6 +27,13 @@
 #include <vector>
 
 namespace ITCH {
+
+/// @brief Length of the stock symbol field in ITCH messages.
+constexpr int STOCK_LEN = 8;
+/// @brief Divisor to convert 4-decimal fixed point prices to floating point.
+constexpr double PRICE_DIVISOR = 10000.0;
+/// @brief Divisor for MWCB messages which use 8-decimal precision.
+constexpr double MWCB_PRICE_DIVISOR = 1.0E8;
 
 #pragma pack(push, 1)
 
@@ -55,6 +63,54 @@ enum class MessageType : char {
     RetailPriceImprovementIndicatorMessage = 'N'  ///< 12 fields, 48 bytes
 };
 
+/// @struct SystemEventMessage
+/// @brief Disseminated for various system-level events like start/end of day.
+struct SystemEventMessage {
+    MessageType message_type;  ///< Message type
+    uint16_t stock_locate;     ///< Locate code for the security
+    uint16_t tracking_number;  ///< Nasdaq internal tracking number
+    uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
+    char event_code;           ///< Code for the system event ('O','S','Q','M','E','C');
+};
+
+/// @struct StockTradingActionMessage
+/// @brief Current trading state of a security.
+struct StockTradingActionMessage {
+    MessageType message_type;           ///< Message type
+    uint16_t stock_locate;              ///< Locate code for the security
+    uint16_t tracking_number;           ///< Nasdaq internal tracking number
+    uint64_t timestamp;                 ///< Nanoseconds past midnight (48-bit) header
+    std::array<char, STOCK_LEN> stock;  ///< Stock symbol
+    char trading_state;                 ///< Current trading state (e.g., 'H', 'T', 'Q')
+    char reserved;                      ///< Reserved field
+    std::array<char, 4> reason;         ///< Reason for state change
+};
+
+/// @struct RegSHOMessage
+/// @brief Disseminated when a Short Sale Price Test is in effect.
+struct RegSHOMessage {
+    MessageType message_type;           ///< Message type
+    uint16_t stock_locate;              ///< Locate code for the security
+    uint16_t tracking_number;           ///< Nasdaq internal tracking number
+    uint64_t timestamp;                 ///< Nanoseconds past midnight (48-bit)
+    std::array<char, STOCK_LEN> stock;  ///< Stock symbol
+    char reg_sho_action;                ///< Current SHO action ('0', '1', '2')
+};
+
+/// @struct MarketParticipantPositionMessage
+/// @brief Quote information for a market participant.
+struct MarketParticipantPositionMessage {
+    MessageType message_type;           ///< Message type
+    uint16_t stock_locate;              ///< Locate code for the security
+    uint16_t tracking_number;           ///< Nasdaq internal tracking number
+    uint64_t timestamp;                 ///< Nanoseconds past midnight (48-bit)
+    std::array<char, 4> mpid;           ///< Market Participant ID
+    std::array<char, STOCK_LEN> stock;  ///< Stock symbol
+    char primary_market_maker;          ///< 'Y' if primary MM
+    char market_maker_mode;             ///< Normal, Passive, etc.
+    char market_participant_state;      ///< Active, Excused, etc.
+};
+//==============================================================================
 /*
  * @struct MessageHeader
  * @brief Message header for all ITCH messages.
@@ -64,13 +120,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// @struct SystemEventMessage
-/// @brief Disseminated for various system-level events like start/end of day.
-struct SystemEventMessage {
-    MessageHeader header{MessageType::SystemEventMessage, 0, 0, 0};  ///< Message header
-    char event_code;  ///< Code for the system event (e.g., 'O', 'S')
 };
 
 /// @struct StockDirectoryMessage
@@ -91,36 +140,6 @@ struct StockDirectoryMessage {
     char etp_flag;                        ///< 'Y' if ETP
     uint32_t etp_leverage_factor;         ///< Leverage factor (8 decimals)
     char inverse_indicator;               ///< 'Y' if inverse ETP
-};
-
-/// @struct StockTradingActionMessage
-/// @brief Current trading state of a security.
-struct StockTradingActionMessage {
-    MessageHeader header{MessageType::StockTradingActionMessage, 0, 0, 0};  ///< Message header
-    char stock[8];                                                          ///< Stock symbol
-    char trading_state;  ///< Current trading state (e.g., 'H', 'T', 'Q')
-    char reserved;       ///< Reserved field
-    char reason[4];      ///< Reason for state change
-};
-
-/// @struct RegSHOMessage
-/// @brief Disseminated when a Short Sale Price Test is in effect.
-struct RegSHOMessage {
-    MessageHeader header{MessageType::RegSHOMessage, 0, 0, 0};  ///< Message header
-    char stock[8];                                              ///< Stock symbol
-    char reg_sho_action;  ///< Current SHO action ('0', '1', '2')
-};
-
-/// @struct MarketParticipantPositionMessage
-/// @brief Quote information for a market participant.
-struct MarketParticipantPositionMessage {
-    MessageHeader header{MessageType::MarketParticipantPositionMessage, 0, 0,
-                         0};        ///< Message header
-    char mpid[4];                   ///< Market Participant ID
-    char stock[8];                  ///< Stock symbol
-    char primary_market_maker;      ///< 'Y' if primary MM
-    char market_maker_mode;         ///< Normal, Passive, etc.
-    char market_participant_state;  ///< Active, Excused, etc.
 };
 
 /// @struct MWCBDeclineLevelMessage
@@ -319,23 +338,10 @@ using Message =
                  BrokenTradeMessage, NOIIMessage, RetailPriceImprovementIndicatorMessage,
                  DLCRMessage>;
 
-/// @brief Length of the stock symbol field in ITCH messages.
-constexpr int STOCK_LEN = 8;
-/// @brief Divisor to convert 4-decimal fixed point prices to floating point.
-constexpr double PRICE_DIVISOR = 10000.0;
-/// @brief Divisor for MWCB messages which use 8-decimal precision.
-constexpr double MWCB_PRICE_DIVISOR = 1.0E8;
-
-/// @brief Converts a padded character array to a trimmed std::string.
-/// @param arr Pointer to the start of the character array.
-/// @param size Fixed size of the character array.
-/// @return std::string with trailing whitespace removed.
-inline std::string to_string(const char* arr, size_t size) {
-    size_t len = size;
-    while (len > 0 && (arr[len - 1] == ' ' || arr[len - 1] == '\0')) {
-        len--;
-    }
-    return std::string{arr, len};
+template <size_t N>
+std::string ArrayToString(const std::array<char, N>& arr) {
+    // Uses the iterator constructor: std::string(begin, end)
+    return std::string(arr.begin(), arr.end());
 }
 
 auto print_impl(std::ostream& out, const SystemEventMessage& msg);

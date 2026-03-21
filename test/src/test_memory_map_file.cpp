@@ -114,18 +114,18 @@ TEST_F(MemoryMappedFileTest, CursorSequentialReadAndNavigation) {
 
     EXPECT_EQ(mappedFile.tell(), 0);
 
-    // read8
-    EXPECT_EQ(mappedFile.read8(), 0x01);
+    // Read8
+    EXPECT_EQ(mappedFile.Read8(), 0x01);
     EXPECT_EQ(mappedFile.tell(), 1);
 
-    // readChar
-    EXPECT_EQ(mappedFile.readChar(), '\x02');
+    // ReadChar
+    EXPECT_EQ(mappedFile.ReadChar(), '\x02');
     EXPECT_EQ(mappedFile.tell(), 2);
 
     // seek
     mappedFile.seek(4);
     EXPECT_EQ(mappedFile.tell(), 4);
-    EXPECT_EQ(mappedFile.read8(), 0x0A);
+    EXPECT_EQ(mappedFile.Read8(), 0x0A);
 }
 
 TEST_F(MemoryMappedFileTest, ReadEndianness) {
@@ -138,14 +138,14 @@ TEST_F(MemoryMappedFileTest, ReadEndianness) {
     MemoryMappedFile mappedFile;
     ASSERT_TRUE(mappedFile.open(tempFilePath));
 
-    EXPECT_EQ(mappedFile.read16(), 0x1234);
-    EXPECT_EQ(mappedFile.read32(), 0x11223344);
+    EXPECT_EQ(mappedFile.Read16(), 0x1234);
+    EXPECT_EQ(mappedFile.Read32(), 0x11223344);
 
-    // read48 test (6 bytes)
-    EXPECT_EQ(mappedFile.read48(), 0xAABBCCDDEEFF);
+    // Read48 test (6 bytes)
+    EXPECT_EQ(mappedFile.Read48(), 0xAABBCCDDEEFF);
 
-    // read64 test (8 bytes)
-    EXPECT_EQ(mappedFile.read64(), 0x102030405060708);
+    // Read64 test (8 bytes)
+    EXPECT_EQ(mappedFile.Read64(), 0x102030405060708);
 }
 
 TEST_F(MemoryMappedFileTest, ReadStrings) {
@@ -154,7 +154,9 @@ TEST_F(MemoryMappedFileTest, ReadStrings) {
     MemoryMappedFile mappedFile;
     ASSERT_TRUE(mappedFile.open(tempFilePath));
 
-    EXPECT_EQ(mappedFile.readString(8), "HARRISON");
+    std::array<char, 8> expected_result{'H', 'A', 'R', 'R', 'I', 'S', 'O', 'N'};
+    EXPECT_EQ(mappedFile.ReadArray<8>(), expected_result);
+
     EXPECT_EQ(mappedFile.tell(), 8);
 
     char buf[10] = {0};

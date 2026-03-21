@@ -12,30 +12,39 @@
 #ifndef SOLO_STRATEGY_SRC_ITCH_PARSER_ITCH_PARSER_H_
 #define SOLO_STRATEGY_SRC_ITCH_PARSER_ITCH_PARSER_H_
 
+#include <functional>
 #include <string>
+#include <unordered_map>
 
 #include "itch-parser/messages/itch_messages.h"
 #include "lock-free-queue/lock_free_queue.h"
 #include "memory-map/memory_map_file.h"
 
+// Type definition for the function returns void
+using DispatchFunction = std::function<ITCH::Message()>;
+
 class ITCH_Parser {
    public:
-    ITCH_Parser();
     ITCH_Parser(const std::string& file_path);
 
-    bool execute();
+    ITCH::Message DecodeMessage(ITCH::MessageType message_id);
+    void Execute();
 
    private:
-    MemoryMappedFile mReader;
-    LockFreeQueue<ITCH::Message> mMessageQueue;
+    MemoryMappedFile m_Reader;
 
-    void decodeMessage();
+    const int m_MessageQueueSize = 1024;
+    LockFreeQueue<ITCH::Message> m_MessageQueue;
+    std::unordered_map<ITCH::MessageType, DispatchFunction> m_dispatch;
 
-    inline auto SystemEventMessage(const ITCH::MessageHeader& header);
+    auto DispatchMessage(const ITCH::MessageHeader& header);
+    // unit tested messages
+    inline auto SystemEventMessage();
+    inline auto StockTradingActionMessage();
+    inline auto RegSHOMessage();
+    inline auto MarketParticipantPositionMessage();
+    // to be unit tested
     inline auto StockDirectoryMessage(const ITCH::MessageHeader& header);
-    inline auto StockTradingActionMessage(const ITCH::MessageHeader& header);
-    inline auto RegSHOMessage(const ITCH::MessageHeader& header);
-    inline auto MarketParticipantPositionMessage(const ITCH::MessageHeader& header);
     inline auto MWCBDeclineLevelMessage(const ITCH::MessageHeader& header);
     inline auto MWCBStatusMessage(const ITCH::MessageHeader& header);
     inline auto IPOQuotingPeriodUpdateMessage(const ITCH::MessageHeader& header);

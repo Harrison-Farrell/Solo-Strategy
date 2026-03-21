@@ -11,8 +11,10 @@
 
 #include "memory-map/memory_map_file.h"
 
+#include <cstdint>
 #include <cstdio>
 #include <stdexcept>
+#include <string>
 
 #ifdef __WINDOWS_OS__
     #define WIN32_LEAN_AND_MEAN
@@ -109,7 +111,7 @@ uint64_t MemoryMappedFile::size() const { return mFilesize; }
 
 size_t MemoryMappedFile::mappedSize() const { return mMappedBytes; }
 
-uint64_t MemoryMappedFile::read48() {
+uint64_t MemoryMappedFile::Read48() {
     const uint8_t* ptr = static_cast<const uint8_t*>(mMappedView) + mCursor;
     uint64_t value = (static_cast<uint64_t>(ptr[0]) << 40) | (static_cast<uint64_t>(ptr[1]) << 32) |
                      (static_cast<uint64_t>(ptr[2]) << 24) | (static_cast<uint64_t>(ptr[3]) << 16) |
@@ -117,13 +119,6 @@ uint64_t MemoryMappedFile::read48() {
 
     mCursor += 6;
     return value;
-}
-
-std::string MemoryMappedFile::readString(size_t length) {
-    std::string str(
-        reinterpret_cast<const char*>(static_cast<const uint8_t*>(mMappedView) + mCursor), length);
-    mCursor += length;
-    return str;
 }
 
 // OS-specific implementations
