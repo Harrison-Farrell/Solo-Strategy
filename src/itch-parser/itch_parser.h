@@ -27,17 +27,15 @@ class ITCH_Parser {
    public:
     ITCH_Parser(const std::string& file_path);
 
-    ITCH::Message DecodeMessage(ITCH::MessageType message_id);
+    ITCH::Message DecodeMessage();
     void Execute();
 
    private:
     MemoryMappedFile m_Reader;
-
     const int m_MessageQueueSize = 1024;
     LockFreeQueue<ITCH::Message> m_MessageQueue;
     std::unordered_map<ITCH::MessageType, DispatchFunction> m_dispatch;
 
-    auto DispatchMessage(const ITCH::MessageHeader& header);
     // unit tested messages
     inline auto SystemEventMessage();
     inline auto StockTradingActionMessage();

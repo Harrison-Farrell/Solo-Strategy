@@ -11,6 +11,8 @@
 
 #include "itch-parser/messages/itch_messages.h"
 
+#include <array>
+#include <cstdint>
 #include <ostream>
 #include <variant>
 
@@ -18,27 +20,27 @@ namespace ITCH {
 
 auto print_impl(std::ostream& out, const SystemEventMessage& msg) {
     out << "System Event:\n"
-        << "  Timestamp: " << msg.timestamp << "\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  Event Code: " << msg.event_code;
 }
 
 auto print_impl(std::ostream& out, const StockTradingActionMessage& msg) {
     out << "Stock Trading Action:\n"
-        << "  Timestamp: " << msg.timestamp << "\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
         << "  State: " << msg.trading_state;
 }
 
 auto print_impl(std::ostream& out, const RegSHOMessage& msg) {
     out << "Reg SHO Message:\n"
-        << "  Timestamp: " << msg.timestamp << "\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
         << "  Reg SHO Action: " << msg.reg_sho_action;
 }
 
 auto print_impl(std::ostream& out, const MarketParticipantPositionMessage& msg) {
     out << "Market Participant Position:\n"
-        << "  Timestamp: " << msg.timestamp << "\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  MPID: " << ArrayToString<4>(msg.mpid) << "\n"
         << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
         << "  Market Marker: " << msg.primary_market_maker << "\n"
@@ -195,6 +197,23 @@ auto print_message(std::ostream& out, const Message& msg) -> void {
 std::ostream& operator<<(std::ostream& out, const Message& msg) {
     print_message(out, msg);
     return out;
+}
+
+uint64_t ArrayToUint48(const std::array<uint8_t, TIME_LEN>& bytes) {
+    constexpr int first = 0;
+    constexpr int second = 8;
+    constexpr int third = 16;
+    constexpr int fourth = 24;
+    constexpr int fifth = 32;
+    constexpr int sixth = 40;
+
+    const uint64_t result = (static_cast<uint64_t>(bytes.at(0)) << sixth) |
+                            (static_cast<uint64_t>(bytes.at(1)) << fifth) |
+                            (static_cast<uint64_t>(bytes.at(2)) << fourth) |
+                            (static_cast<uint64_t>(bytes.at(3)) << third) |
+                            (static_cast<uint64_t>(bytes.at(4)) << second) |
+                            (static_cast<uint64_t>(bytes.at(5)) << first);
+    return result;
 }
 
 }  // namespace ITCH

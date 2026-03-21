@@ -16,46 +16,15 @@
 #include "itch-parser/messages/itch_messages.h"
 #include "memory-map/memory_map_file.h"
 
-auto ITCH_Parser::SystemEventMessage() {
-    return ITCH::SystemEventMessage{.message_type = ITCH::MessageType::SystemEventMessage,
-                                    .stock_locate = m_Reader.Read16(),
-                                    .tracking_number = m_Reader.Read16(),
-                                    .timestamp = m_Reader.Read48(),
-                                    .event_code = m_Reader.ReadChar()};
-}
+auto ITCH_Parser::SystemEventMessage() { return m_Reader.Read<ITCH::SystemEventMessage>(); }
+auto ITCH_Parser::RegSHOMessage() { return m_Reader.Read<ITCH::RegSHOMessage>(); }
 
 auto ITCH_Parser::StockTradingActionMessage() {
-    return ITCH::StockTradingActionMessage{
-        .message_type = ITCH::MessageType::StockTradingActionMessage,
-        .stock_locate = m_Reader.Read16(),
-        .tracking_number = m_Reader.Read16(),
-        .timestamp = m_Reader.Read48(),
-        .stock = m_Reader.ReadSymbol(),
-        .trading_state = m_Reader.ReadChar(),
-        .reserved = m_Reader.ReadChar(),
-        .reason = m_Reader.ReadArray<4>()};
-}
-
-auto ITCH_Parser::RegSHOMessage() {
-    return ITCH::RegSHOMessage{.message_type = ITCH::MessageType::RegSHOMessage,
-                               .stock_locate = m_Reader.Read16(),
-                               .tracking_number = m_Reader.Read16(),
-                               .timestamp = m_Reader.Read48(),
-                               .stock = m_Reader.ReadSymbol(),
-                               .reg_sho_action = m_Reader.ReadChar()};
+    return m_Reader.Read<ITCH::StockTradingActionMessage>();
 }
 
 auto ITCH_Parser::MarketParticipantPositionMessage() {
-    return ITCH::MarketParticipantPositionMessage{
-        .message_type = ITCH::MessageType::MarketParticipantPositionMessage,
-        .stock_locate = m_Reader.Read16(),
-        .tracking_number = m_Reader.Read16(),
-        .timestamp = m_Reader.Read48(),
-        .mpid = m_Reader.ReadArray<4>(),
-        .stock = m_Reader.ReadSymbol(),
-        .primary_market_maker = m_Reader.ReadChar(),
-        .market_maker_mode = m_Reader.ReadChar(),
-        .market_participant_state = m_Reader.ReadChar()};
+    return m_Reader.Read<ITCH::MarketParticipantPositionMessage>();
 }
 
 ITCH_Parser::ITCH_Parser(const std::string& file_path)
@@ -181,21 +150,15 @@ auto ITCH_Parser::RetailPriceImprovementIndicatorMessage(const ITCH::MessageHead
 void ITCH_Parser::Execute() {
     while (m_Reader.tell() < m_Reader.size()) {
         // The first two bytes are message length as per moldupd64
-        // can skip, jumping to the message type char
+        // Skip, jumping to the message type char
         m_Reader.seek(m_Reader.tell() + 2);
-
-        // call each message as par the message type
-        ITCH::Message decoded_message =
-            m_dispatch[static_cast<ITCH::MessageType>(m_Reader.ReadChar())]();
-        m_MessageQueue.push(decoded_message);
+        m_MessageQueue.push(DecodeMessage());
     }
 }
 
-ITCH::Message ITCH_Parser::DecodeMessage(ITCH::MessageType message_id) {
-    // skip the message type byte. Type is alReady know
-    m_Reader.seek(m_Reader.tell() + 1);
-
-    return m_dispatch[message_id]();
+ITCH::Message ITCH_Parser::DecodeMessage() {
+    const auto type = m_Reader.Inspect<ITCH::MessageType>();
+    return m_dispatch[type]();
 }
 
 // bool ITCH_Parser::Execute() {

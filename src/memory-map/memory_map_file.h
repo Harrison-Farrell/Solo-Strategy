@@ -65,6 +65,11 @@ class MemoryMappedFile {
     /// @brief Default constructor. File must be opened using open().
     MemoryMappedFile();
 
+    /// @brief Prevents creating duplicates of the mapping object.
+    MemoryMappedFile(const MemoryMappedFile&) = delete;
+    /// @brief Prevents assignment, as handles are managed uniquely.
+    MemoryMappedFile& operator=(const MemoryMappedFile&) = delete;
+
     /// @brief Constructs and immediately maps a file.
     /// @param filename Path to the file.
     /// @param mappedBytes Number of bytes to map. Use WholeFile (0) for the entire file.
@@ -131,6 +136,17 @@ class MemoryMappedFile {
     /// @param mappedBytes Number of bytes to map from the new offset.
     /// @return true on success.
     [[nodiscard]] bool remap(uint64_t offset, size_t mappedBytes);
+
+    /// @brief Inpsects a value of type T from the current cursor.
+    /// @tparam T Type to read (e.g., uint32_t, char).
+    /// @return Value read from the stream.
+    /// @throws std::out_of_range If reading past end of mapped region.
+    template <typename T>
+    T Inspect() {
+        // Direct memory access via pointer casting
+        T value = *reinterpret_cast<const T*>(static_cast<const uint8_t*>(mMappedView) + mCursor);
+        return value;
+    }
 
     /// @brief Reads a value of type T from the current cursor and advances it.
     /// @tparam T Type to read (e.g., uint32_t, char).
@@ -212,11 +228,6 @@ class MemoryMappedFile {
     [[nodiscard]] size_t tell() const { return mCursor; }
 
    private:
-    /// @brief Prevents creating duplicates of the mapping object.
-    MemoryMappedFile(const MemoryMappedFile&) = delete;
-    /// @brief Prevents assignment, as handles are managed uniquely.
-    MemoryMappedFile& operator=(const MemoryMappedFile&) = delete;
-
     /// @brief Implementation detail for OS-specific file opening.
     [[nodiscard]] bool osOpen(const std::filesystem::path& filename);
     /// @brief Implementation detail for OS-specific handle closing.

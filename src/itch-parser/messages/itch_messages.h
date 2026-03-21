@@ -28,12 +28,16 @@
 
 namespace ITCH {
 
-/// @brief Length of the stock symbol field in ITCH messages.
 constexpr int STOCK_LEN = 8;
+constexpr int TIME_LEN = 6;
+
 /// @brief Divisor to convert 4-decimal fixed point prices to floating point.
 constexpr double PRICE_DIVISOR = 10000.0;
 /// @brief Divisor for MWCB messages which use 8-decimal precision.
 constexpr double MWCB_PRICE_DIVISOR = 1.0E8;
+
+using Timestamp = std::array<uint8_t, TIME_LEN>;
+using StockID = std::array<char, STOCK_LEN>;
 
 #pragma pack(push, 1)
 
@@ -69,46 +73,46 @@ struct SystemEventMessage {
     MessageType message_type;  ///< Message type
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
-    uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
+    Timestamp timestamp;       ///< Nanoseconds past midnight (48-bit)
     char event_code;           ///< Code for the system event ('O','S','Q','M','E','C');
 };
 
 /// @struct StockTradingActionMessage
 /// @brief Current trading state of a security.
 struct StockTradingActionMessage {
-    MessageType message_type;           ///< Message type
-    uint16_t stock_locate;              ///< Locate code for the security
-    uint16_t tracking_number;           ///< Nasdaq internal tracking number
-    uint64_t timestamp;                 ///< Nanoseconds past midnight (48-bit) header
-    std::array<char, STOCK_LEN> stock;  ///< Stock symbol
-    char trading_state;                 ///< Current trading state (e.g., 'H', 'T', 'Q')
-    char reserved;                      ///< Reserved field
-    std::array<char, 4> reason;         ///< Reason for state change
+    MessageType message_type;    ///< Message type
+    uint16_t stock_locate;       ///< Locate code for the security
+    uint16_t tracking_number;    ///< Nasdaq internal tracking number
+    Timestamp timestamp;         ///< Nanoseconds past midnight (48-bit) header
+    StockID stock;               ///< Stock symbol
+    char trading_state;          ///< Current trading state (e.g., 'H', 'T', 'Q')
+    char reserved;               ///< Reserved field
+    std::array<char, 4> reason;  ///< Reason for state change
 };
 
 /// @struct RegSHOMessage
 /// @brief Disseminated when a Short Sale Price Test is in effect.
 struct RegSHOMessage {
-    MessageType message_type;           ///< Message type
-    uint16_t stock_locate;              ///< Locate code for the security
-    uint16_t tracking_number;           ///< Nasdaq internal tracking number
-    uint64_t timestamp;                 ///< Nanoseconds past midnight (48-bit)
-    std::array<char, STOCK_LEN> stock;  ///< Stock symbol
-    char reg_sho_action;                ///< Current SHO action ('0', '1', '2')
+    MessageType message_type;  ///< Message type
+    uint16_t stock_locate;     ///< Locate code for the security
+    uint16_t tracking_number;  ///< Nasdaq internal tracking number
+    Timestamp timestamp;       ///< Nanoseconds past midnight (48-bit)
+    StockID stock;             ///< Stock symbol
+    char reg_sho_action;       ///< Current SHO action ('0', '1', '2')
 };
 
 /// @struct MarketParticipantPositionMessage
 /// @brief Quote information for a market participant.
 struct MarketParticipantPositionMessage {
-    MessageType message_type;           ///< Message type
-    uint16_t stock_locate;              ///< Locate code for the security
-    uint16_t tracking_number;           ///< Nasdaq internal tracking number
-    uint64_t timestamp;                 ///< Nanoseconds past midnight (48-bit)
-    std::array<char, 4> mpid;           ///< Market Participant ID
-    std::array<char, STOCK_LEN> stock;  ///< Stock symbol
-    char primary_market_maker;          ///< 'Y' if primary MM
-    char market_maker_mode;             ///< Normal, Passive, etc.
-    char market_participant_state;      ///< Active, Excused, etc.
+    MessageType message_type;       ///< Message type
+    uint16_t stock_locate;          ///< Locate code for the security
+    uint16_t tracking_number;       ///< Nasdaq internal tracking number
+    Timestamp timestamp;            ///< Nanoseconds past midnight (48-bit)
+    std::array<char, 4> mpid;       ///< Market Participant ID
+    StockID stock;                  ///< Stock symbol
+    char primary_market_maker;      ///< 'Y' if primary MM
+    char market_maker_mode;         ///< Normal, Passive, etc.
+    char market_participant_state;  ///< Active, Excused, etc.
 };
 //==============================================================================
 /*
@@ -343,6 +347,8 @@ std::string ArrayToString(const std::array<char, N>& arr) {
     // Uses the iterator constructor: std::string(begin, end)
     return std::string(arr.begin(), arr.end());
 }
+
+uint64_t ArrayToUint48(const std::array<uint8_t, TIME_LEN>& bytes);
 
 auto print_impl(std::ostream& out, const SystemEventMessage& msg);
 auto print_impl(std::ostream& out, const StockDirectoryMessage& msg);

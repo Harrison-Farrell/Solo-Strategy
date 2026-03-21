@@ -16,7 +16,9 @@
 #include <vector>
 
 #include "itch-parser/itch_parser.h"
+#include "itch-parser/messages/itch_messages.h"
 #include "memory-map/memory_map_file.h"
+#include "utilities/endian_utils.h"
 
 class ITCHPaserTest : public ::testing::Test {
    protected:
@@ -45,26 +47,35 @@ class ITCHPaserTest : public ::testing::Test {
 };
 
 TEST_F(ITCHPaserTest, SystemEventMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
     CreateTestFile({
         0x53,                                // Message Type ('S')
         0xCC, 0xBB,                          // Stock Locate (52411)
         0xFF, 0xAA,                          // Tracking Number (65450)
-        0xAA, 0xBB, 0xCC, 0xAA, 0xBB, 0xCC,  // Timestamp (187723569347532)
+        0x41, 0x41, 0x41, 0x41, 0x41, 0x41,  // Timestamp ('A' 'A' 'A' 'A' 'A' 'A')
         0x51                                 // Event Code ('Q')
     });
 
-    ITCH_Parser paser(stringTempFilePath);
-    ITCH::Message message = paser.DecodeMessage(ITCH::MessageType::SystemEventMessage);
+    array<uint8_t, 6> expected_timestamp{'A', 'A', 'A', 'A', 'A', 'A'};
 
-    EXPECT_EQ(ITCH::MessageType::SystemEventMessage,
-              std::get<ITCH::SystemEventMessage>(message).message_type);
-    EXPECT_EQ(52411, std::get<ITCH::SystemEventMessage>(message).stock_locate);
-    EXPECT_EQ(65450, std::get<ITCH::SystemEventMessage>(message).tracking_number);
-    EXPECT_EQ(187723569347532, std::get<ITCH::SystemEventMessage>(message).timestamp);
-    EXPECT_EQ('Q', std::get<ITCH::SystemEventMessage>(message).event_code);
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::SystemEventMessage, get<SystemEventMessage>(message).message_type);
+    EXPECT_EQ(52411, FromBigEndian(get<SystemEventMessage>(message).stock_locate));
+    EXPECT_EQ(65450, FromBigEndian(get<SystemEventMessage>(message).tracking_number));
+    EXPECT_EQ(expected_timestamp, get<SystemEventMessage>(message).timestamp);
+    EXPECT_EQ('Q', get<SystemEventMessage>(message).event_code);
 }
 
 TEST_F(ITCHPaserTest, StockTradingActionMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
     CreateTestFile({
         0x48,                                            // Message Type ('H')
         0xFF, 0xAA,                                      // Stock Locate (65450)
@@ -76,17 +87,18 @@ TEST_F(ITCHPaserTest, StockTradingActionMessageTest) {
         0x41, 0x42, 0x43, 0x44                           // Reason (ABCD)
     });
 
-    std::array<char, 8> expected_stock{'A', 'B', 'C', 'D', 'A', 'B', 'C', 'D'};
-    std::array<char, 4> expected_reason{'A', 'B', 'C', 'D'};
+    array<uint8_t, 6> expected_timestamp{0xAA, 0xBB, 0xCC, 0xAA, 0xBB, 0xCC};
+    array<char, 8> expected_stock{'A', 'B', 'C', 'D', 'A', 'B', 'C', 'D'};
+    array<char, 4> expected_reason{'A', 'B', 'C', 'D'};
 
     ITCH_Parser paser(stringTempFilePath);
-    ITCH::Message message = paser.DecodeMessage(ITCH::MessageType::StockTradingActionMessage);
+    Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(ITCH::MessageType::StockTradingActionMessage,
-              std::get<ITCH::StockTradingActionMessage>(message).message_type);
-    EXPECT_EQ(65450, std::get<ITCH::StockTradingActionMessage>(message).stock_locate);
-    EXPECT_EQ(65450, std::get<ITCH::StockTradingActionMessage>(message).tracking_number);
-    EXPECT_EQ(187723569347532, std::get<ITCH::StockTradingActionMessage>(message).timestamp);
+    EXPECT_EQ(MessageType::StockTradingActionMessage,
+              get<StockTradingActionMessage>(message).message_type);
+    EXPECT_EQ(65450, FromBigEndian(get<StockTradingActionMessage>(message).stock_locate));
+    EXPECT_EQ(65450, FromBigEndian(get<StockTradingActionMessage>(message).tracking_number));
+    EXPECT_EQ(187723569347532, ArrayToUint48(get<StockTradingActionMessage>(message).timestamp));
     EXPECT_EQ(expected_stock, std::get<ITCH::StockTradingActionMessage>(message).stock);
     EXPECT_EQ('P', std::get<ITCH::StockTradingActionMessage>(message).trading_state);
     EXPECT_EQ('0', std::get<ITCH::StockTradingActionMessage>(message).reserved);
@@ -94,6 +106,10 @@ TEST_F(ITCHPaserTest, StockTradingActionMessageTest) {
 }
 
 TEST_F(ITCHPaserTest, RegSHOMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
     CreateTestFile({
         0x59,                                            // Message Type ('Y')
         0x00, 0x0A,                                      // Stock Locate (10)
@@ -103,21 +119,25 @@ TEST_F(ITCHPaserTest, RegSHOMessageTest) {
         0x31,                                            // Reg SHO Action ('1')
     });
 
-    std::array<char, 8> expected_stock{'A', 'P', 'P', 'L', ' ', ' ', ' ', ' '};
+    array<uint8_t, 6> expected_timestamp{'A', 'A', 'A', 'A', 'A', 'A'};
+    array<char, 8> expected_stock{'A', 'P', 'P', 'L', ' ', ' ', ' ', ' '};
 
     ITCH_Parser paser(stringTempFilePath);
-    ITCH::Message message = paser.DecodeMessage(ITCH::MessageType::RegSHOMessage);
+    Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(ITCH::MessageType::RegSHOMessage,
-              std::get<ITCH::RegSHOMessage>(message).message_type);
-    EXPECT_EQ(10, std::get<ITCH::RegSHOMessage>(message).stock_locate);
-    EXPECT_EQ(255, std::get<ITCH::RegSHOMessage>(message).tracking_number);
-    EXPECT_EQ(16777215, std::get<ITCH::RegSHOMessage>(message).timestamp);
-    EXPECT_EQ(expected_stock, std::get<ITCH::RegSHOMessage>(message).stock);
-    EXPECT_EQ('1', std::get<ITCH::RegSHOMessage>(message).reg_sho_action);
+    EXPECT_EQ(MessageType::RegSHOMessage, get<RegSHOMessage>(message).message_type);
+    EXPECT_EQ(10, FromBigEndian(get<RegSHOMessage>(message).stock_locate));
+    EXPECT_EQ(255, FromBigEndian(get<RegSHOMessage>(message).tracking_number));
+    EXPECT_EQ(16777215, ArrayToUint48(get<ITCH::RegSHOMessage>(message).timestamp));
+    EXPECT_EQ(expected_stock, get<RegSHOMessage>(message).stock);
+    EXPECT_EQ('1', get<RegSHOMessage>(message).reg_sho_action);
 }
 
 TEST_F(ITCHPaserTest, MarketParticipantPositionMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
     CreateTestFile({
         0x4C,                                            // Message Type ('L')
         0x00, 0x0A,                                      // Stock Locate (10)
@@ -130,23 +150,23 @@ TEST_F(ITCHPaserTest, MarketParticipantPositionMessageTest) {
         0x45                                             // State ('E')
     });
 
-    std::array<char, 8> expected_stock{'N', 'V', 'D', 'A', ' ', ' ', ' ', ' '};
-    std::array<char, 4> expected_mpid{'W', 'X', 'Y', 'Z'};
+    array<char, 8> expected_stock{'N', 'V', 'D', 'A', ' ', ' ', ' ', ' '};
+    array<char, 4> expected_mpid{'W', 'X', 'Y', 'Z'};
 
     ITCH_Parser paser(stringTempFilePath);
-    ITCH::Message message =
-        paser.DecodeMessage(ITCH::MessageType::MarketParticipantPositionMessage);
+    Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(ITCH::MessageType::MarketParticipantPositionMessage,
-              std::get<ITCH::MarketParticipantPositionMessage>(message).message_type);
-    EXPECT_EQ(10, std::get<ITCH::MarketParticipantPositionMessage>(message).stock_locate);
-    EXPECT_EQ(255, std::get<ITCH::MarketParticipantPositionMessage>(message).tracking_number);
-    EXPECT_EQ(16777215, std::get<ITCH::MarketParticipantPositionMessage>(message).timestamp);
-    EXPECT_EQ(expected_stock, std::get<ITCH::MarketParticipantPositionMessage>(message).stock);
-    EXPECT_EQ(expected_mpid, std::get<ITCH::MarketParticipantPositionMessage>(message).mpid);
-    EXPECT_EQ('N', std::get<ITCH::MarketParticipantPositionMessage>(message).primary_market_maker);
-    EXPECT_EQ('R', std::get<ITCH::MarketParticipantPositionMessage>(message).market_maker_mode);
-    EXPECT_EQ('E',
-              std::get<ITCH::MarketParticipantPositionMessage>(message).market_participant_state);
+    EXPECT_EQ(MessageType::MarketParticipantPositionMessage,
+              get<MarketParticipantPositionMessage>(message).message_type);
+
+    EXPECT_EQ(10, FromBigEndian(get<MarketParticipantPositionMessage>(message).stock_locate));
+
+    EXPECT_EQ(255, FromBigEndian(get<MarketParticipantPositionMessage>(message).tracking_number));
+    EXPECT_EQ(16777215, ArrayToUint48(get<MarketParticipantPositionMessage>(message).timestamp));
+    EXPECT_EQ(expected_stock, get<MarketParticipantPositionMessage>(message).stock);
+    EXPECT_EQ(expected_mpid, get<MarketParticipantPositionMessage>(message).mpid);
+    EXPECT_EQ('N', get<MarketParticipantPositionMessage>(message).primary_market_maker);
+    EXPECT_EQ('R', get<MarketParticipantPositionMessage>(message).market_maker_mode);
+    EXPECT_EQ('E', get<MarketParticipantPositionMessage>(message).market_participant_state);
 }
 // NOLINTEND
