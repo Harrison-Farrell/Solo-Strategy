@@ -12,47 +12,50 @@
 #include <benchmark/benchmark.h>
 
 #include <algorithm>
-#include <numeric>
+#include <cstddef>
 #include <random>
 #include <vector>
 
-// This function creates a "shuffled" linked list within a vector.
-// Each element contains the index of the next element to visit.
-std::vector<size_t> setup_latencies(size_t size) {
-    std::vector<size_t> indices(size / sizeof(size_t));
-    std::iota(indices.begin(), indices.end(), 0);
+namespace {
+std::vector<int> SetupLatencies(int size) {
+    std::vector<int> indices(size / sizeof(int));
+    std::ranges::fill(indices, 0);
 
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(indices.begin(), indices.end(), g);
+    std::random_device seed;
+    std::mt19937 gen(seed());
+    std::shuffle(indices.begin(), indices.end(), gen);
 
     return indices;
 }
+}  // namespace
 
-static void BM_MemoryLatency(benchmark::State& state) {
-    const size_t bytes = state.range(0);
-    auto data = setup_latencies(bytes);
+namespace {
+void MemoryLatencyBenchmark(benchmark::State& state) {
+    const int bytes = static_cast<int>(state.range(0));
+    auto data = SetupLatencies(bytes);
 
     // We start at a random point
     size_t current_idx = 0;
 
-    for (auto _ : state) {
+    for (auto _ : state)  // NOLINT
+    {
         // Pointer chasing: each load depends on the previous one.
         // This prevents the CPU from executing multiple loads in parallel.
-        current_idx = data[current_idx];
-        benchmark::DoNotOptimize(current_idx);
+        current_idx = data.at(current_idx);
+        benchmark::DoNotOptimize(static_cast<long long>(current_idx));
     }
 
     state.SetBytesProcessed(state.iterations() * sizeof(size_t));
 }
+}  // namespace
 
 // Define the ranges to hit different cache levels.
 // Adjust these based on your specific CPU specs.
-BENCHMARK(BM_MemoryLatency)
-    ->Args({32 * 1024})          // 32 KB (L1)
-    ->Args({256 * 1024})         // 256 KB (L2)
-    ->Args({8 * 1024 * 1024})    // 8 MB (L3)
-    ->Args({128 * 1024 * 1024})  // 128 MB (RAM)
+BENCHMARK(MemoryLatencyBenchmark)                        // NOLINT
+    ->Args({static_cast<long long>(32) * 1024})          // 32 KB (L1)
+    ->Args({static_cast<long long>(256) * 1024})         // 256 KB (L2)
+    ->Args({static_cast<long long>(8) * 1024 * 1024})    // 8 MB (L3)
+    ->Args({static_cast<long long>(128) * 1024 * 1024})  // 128 MB (RAM)
     ->Unit(benchmark::kNanosecond);
 
-BENCHMARK_MAIN();
+BENCHMARK_MAIN();  // NOLINT

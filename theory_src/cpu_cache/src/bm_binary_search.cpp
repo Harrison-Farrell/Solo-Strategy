@@ -15,30 +15,35 @@
 #include <random>
 #include <vector>
 
+namespace {
 // a simple binary search function
-bool binary_search(const std::vector<int>& data_set, int target) {
-    return std::binary_search(data_set.begin(), data_set.end(), target);
+bool BinarySearch(const std::vector<int>& data_set, int target) {
+    return std::ranges::binary_search(data_set, target);
 }
+}  // namespace
 
+namespace {
 // Benchmark for Binary Search
-static void Binary(benchmark::State& state) {
+void Binary(benchmark::State& state) {
     auto set = std::vector<int>(state.range());
 
     for (int i = 0; i < set.size(); ++i) {
-        set[i] = i;
+        set.at(i) = i;
     }
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distr(0, state.range());
+    std::random_device seed;
+    std::mt19937 gen(seed());
+    std::uniform_int_distribution<> distr(0, static_cast<int>(state.range()));
     auto target = distr(gen);
 
-    for (auto _ : state) {
-        bool result = binary_search(set, target);
+    for (auto _ : state)  // NOLINT
+    {
+        bool result = BinarySearch(set, target);
         benchmark::DoNotOptimize(result);
     }
 }
+}  // namespace
 // Register the benchmark
-BENCHMARK(Binary)->RangeMultiplier(2)->Range(2, 64);
+BENCHMARK(Binary)->RangeMultiplier(2)->Range(2, 64);  // NOLINT
 
 // Standard macro to run all registered benchmarks
-BENCHMARK_MAIN();
+BENCHMARK_MAIN();  // NOLINT

@@ -12,50 +12,53 @@
 #include <benchmark/benchmark.h>
 
 #include <algorithm>
-#include <numeric>
 #include <random>
 #include <vector>
 
+namespace {
 // simple linear search function
-bool linearSearch(std::vector<int>& data_set, int target) {
-    if (std::find(data_set.begin(), data_set.end(), target) != data_set.end()) {
-        return true;
-    }
-    return false;
+bool LinearSearch(std::vector<int>& data_set, int target) {
+    return std::ranges::contains(data_set, target);
 }
+}  // namespace
 
-std::vector<int> setup_latencies(int size) {
+namespace {
+std::vector<int> SetupLatencies(int size) {
     std::vector<int> indices(size);
-    std::iota(indices.begin(), indices.end(), 0);
+    std::ranges::fill(indices, 0);
 
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(indices.begin(), indices.end(), g);
+    std::random_device seed;
+    std::mt19937 gen(seed());
+    std::shuffle(indices.begin(), indices.end(), gen);
 
     return indices;
 }
+}  // namespace
 
+namespace {
 // benchmark for linear search
-static void linear(benchmark::State& state) {
+void Linear(benchmark::State& state) {
     // construct an intial vector of the correct size
-    auto set = setup_latencies(state.range());
+    auto set = SetupLatencies(static_cast<int>(state.range()));
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distr(0, state.range());
+    std::random_device seed;
+    std::mt19937 gen(seed());
+    std::uniform_int_distribution<> distr(0, static_cast<int>(state.range()));
 
     // randomly set the target
-    int target = distr(gen);
+    const int target = distr(gen);
 
-    for (auto _ : state) {
+    for (auto _ : state)  // NOLINT
+    {
         // code inside this loop is benchmarked
-        bool result = linearSearch(set, target);
+        bool result = LinearSearch(set, target);
         benchmark::DoNotOptimize(result);
     }
 }
+}  // namespace
 
 // register the benchmark
-BENCHMARK(linear)->RangeMultiplier(2)->Range(2, 64);
+BENCHMARK(Linear)->RangeMultiplier(2)->Range(2, 64);  // NOLINT
 
 // standard marco to run all registered benchmarks
-BENCHMARK_MAIN();
+BENCHMARK_MAIN();  // NOLINT
