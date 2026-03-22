@@ -63,9 +63,23 @@ auto InternalPrintMessage(std::ostream& out, const MWCBStatusMessage& msg) {
 }
 
 auto InternalPrintMessage(std::ostream& out, const StockDirectoryMessage& msg) {
-    // out << "Stock Directory:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+    out << "Stock Directory:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
+        << "  Market Category: " << msg.market_category << "\n"
+        << "  FinancialStatus Indicator: " << msg.etp_leverage_factor << "\n"
+        << "  Round Lot Size: " << msg.round_lot_size << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
+        << "  Round Lots Only: " << msg.round_lots_only << "\n"
+        << "  Issue Classification: " << msg.issue_classification << "\n"
+        << "  Issue Sub Type: " << ArrayToString<2>(msg.issue_sub_type) << "\n"
+        << "  Authenticity: " << msg.authenticity << "\n"
+        << "  Short Sale Threshold Indicator: " << msg.short_sale_threshold_indicator << "\n"
+        << "  IPO Flag: " << msg.ipo_flag << "\n"
+        << "  LULDReference Price Tier: " << msg.luld_ref << "\n"
+        << "  ETP Flag: " << msg.etp_flag << "\n"
+        << "  ETP Leverage Factor: " << msg.etp_leverage_factor << "\n"
+        << "  Inverse Indicator: " << msg.inverse_indicator << "\n";
 }
 
 auto InternalPrintMessage(std::ostream& out, const IPOQuotingPeriodUpdateMessage& msg) {

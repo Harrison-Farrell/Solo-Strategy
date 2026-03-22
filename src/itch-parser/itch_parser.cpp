@@ -16,23 +16,21 @@
 #include "itch-parser/messages/itch_messages.h"
 #include "memory-map/memory_map_file.h"
 
+// clang-format off
 auto ITCH_Parser::SystemEventMessage() { return m_Reader.Read<ITCH::SystemEventMessage>(); }
 
-auto ITCH_Parser::StockTradingActionMessage() {
-    return m_Reader.Read<ITCH::StockTradingActionMessage>();
-}
+auto ITCH_Parser::StockTradingActionMessage() { return m_Reader.Read<ITCH::StockTradingActionMessage>(); }
 
 auto ITCH_Parser::RegSHOMessage() { return m_Reader.Read<ITCH::RegSHOMessage>(); }
 
-auto ITCH_Parser::MarketParticipantPositionMessage() {
-    return m_Reader.Read<ITCH::MarketParticipantPositionMessage>();
-}
+auto ITCH_Parser::MarketParticipantPositionMessage() { return m_Reader.Read<ITCH::MarketParticipantPositionMessage>(); }
 
-auto ITCH_Parser::MWCBDeclineLevelMessage() {
-    return m_Reader.Read<ITCH::MWCBDeclineLevelMessage>();
-}
+auto ITCH_Parser::MWCBDeclineLevelMessage() { return m_Reader.Read<ITCH::MWCBDeclineLevelMessage>(); }
 
 auto ITCH_Parser::MWCBStatusMessage() { return m_Reader.Read<ITCH::MWCBStatusMessage>(); }
+
+auto ITCH_Parser::StockDirectoryMessage() {return m_Reader.Read<ITCH::StockDirectoryMessage>(); }
+// clang-format on
 
 ITCH_Parser::ITCH_Parser(const std::string& file_path)
     : m_Reader(file_path), m_MessageQueue(m_MessageQueueSize) {
@@ -44,26 +42,8 @@ ITCH_Parser::ITCH_Parser(const std::string& file_path)
     m_dispatch[MessageType::MarketParticipantPositionMessage] = [this](){return MarketParticipantPositionMessage();};
     m_dispatch[MessageType::MWCBDeclineLevelMessage] = [this](){return MWCBDeclineLevelMessage();};
     m_dispatch[MessageType::MWCBStatusMessage] = [this](){return MWCBStatusMessage();};
+    m_dispatch[MessageType::StockDirectoryMessage] = [this](){return StockDirectoryMessage();};
     // clang-format on
-}
-
-auto ITCH_Parser::StockDirectoryMessage(const ITCH::MessageHeader& header) {
-    char symbols[4];
-    m_Reader.copyString(symbols, 4);
-    char financial_status_indicator = m_Reader.ReadChar();
-    uint32_t round_lot_size = m_Reader.Read32();
-    char round_lots_only = m_Reader.ReadChar();
-    char issue_classification = m_Reader.ReadChar();
-    char issue_sub_type[2];
-    issue_sub_type[0] = m_Reader.ReadChar();
-    issue_sub_type[1] = m_Reader.ReadChar();
-    char authenticity = m_Reader.ReadChar();
-    char short_sale_threshold_indicator = m_Reader.ReadChar();
-    char ipo_flag = m_Reader.ReadChar();
-    char luld_ref = m_Reader.ReadChar();
-    char etp_flag = m_Reader.ReadChar();
-    char etp_leverage_factor = m_Reader.Read32();
-    char inverse_indicator = m_Reader.ReadChar();
 }
 
 auto ITCH_Parser::IPOQuotingPeriodUpdateMessage(const ITCH::MessageHeader& header) {

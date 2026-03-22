@@ -136,6 +136,29 @@ struct MWCBStatusMessage {
     Timestamp timestamp;       ///< Nanoseconds past midnight (48-bit)
     char breached_level;       ///< '1', '2', or '3' if breached
 };
+
+/// \struct StockDirectoryMessage
+/// \brief Basic data for a stock, sent at the start of the day.
+struct StockDirectoryMessage {
+    MessageType message_type;             ///< Message type
+    uint16_t stock_locate;                ///< Locate code for the security
+    uint16_t tracking_number;             ///< Nasdaq internal tracking number
+    Timestamp timestamp;                  ///< Nanoseconds past midnight (48-bit)
+    StockID stock;                        ///< Stock symbol, right-padded with spaces
+    char market_category;                 ///< Listing market category
+    char financial_status_indicator;      ///< Financial status of the issuer
+    uint32_t round_lot_size;              ///< Standard round lot size
+    char round_lots_only;                 ///< 'Y' if only round lots are allowed
+    char issue_classification;            ///< Type of issue
+    std::array<char, 2> issue_sub_type;   ///< More granular issue type
+    char authenticity;                    ///< 'P' for production, 'T' for test
+    char short_sale_threshold_indicator;  ///< Threshold status
+    char ipo_flag;                        ///< 'Y' if new IPO
+    char luld_ref;                        ///< LULD reference price tier
+    char etp_flag;                        ///< 'Y' if ETP
+    uint32_t etp_leverage_factor;         ///< Leverage factor (8 decimals)
+    char inverse_indicator;               ///< 'Y' if inverse ETP
+};
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -146,26 +169,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct StockDirectoryMessage
-/// \brief Basic data for a stock, sent at the start of the day.
-struct StockDirectoryMessage {
-    MessageHeader header{MessageType::StockDirectoryMessage, 0, 0, 0};  ///< Message header
-    char stock[8];                        ///< Stock symbol, right-padded with spaces
-    char market_category;                 ///< Listing market category
-    char financial_status_indicator;      ///< Financial status of the issuer
-    uint32_t round_lot_size;              ///< Standard round lot size
-    char round_lots_only;                 ///< 'Y' if only round lots are allowed
-    char issue_classification;            ///< Type of issue
-    char issue_sub_type[2];               ///< More granular issue type
-    char authenticity;                    ///< 'P' for production, 'T' for test
-    char short_sale_threshold_indicator;  ///< Threshold status
-    char ipo_flag;                        ///< 'Y' if new IPO
-    char luld_ref;                        ///< LULD reference price tier
-    char etp_flag;                        ///< 'Y' if ETP
-    uint32_t etp_leverage_factor;         ///< Leverage factor (8 decimals)
-    char inverse_indicator;               ///< 'Y' if inverse ETP
 };
 
 /// \struct IPOQuotingPeriodUpdateMessage

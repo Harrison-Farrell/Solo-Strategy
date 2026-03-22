@@ -221,4 +221,57 @@ TEST_F(ITCHPaserTest, MWCBStatusMessageTest) {
     EXPECT_EQ(207588671094783, ArrayToUint48(get<MWCBStatusMessage>(message).timestamp));
     EXPECT_EQ('3', get<MWCBStatusMessage>(message).breached_level);
 }
+
+TEST_F(ITCHPaserTest, StockDirectoryMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x52,                                            // Message Type
+        0x00, 0x0D,                                      // Stock Locate
+        0x00, 0x00,                                      // Tracking Numbe
+        0x0A, 0x37, 0xD4, 0xD0, 0xD3, 0x09,              // Timestamp
+        0x41, 0x50, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
+        0x51,                                            // Market Category
+        0x4E,                                            // FinancialStatus Indicator
+        0x00, 0x00, 0x00, 0x64,                          // Round Lot Size
+        0x4E,                                            // Round Lots Only
+        0x43,                                            // Issue Classification
+        0x5A, 0x20,                                      // Issue Subtype
+        0x50,                                            // Authenticity
+        0x4E,                                            // Short Sale Threshold Indicator
+        0x4E,                                            // IPO Flag
+        0x31,                                            // LULDReference Price Tier
+        0x4E,                                            // ETP Flag
+        0x00, 0x00, 0x00, 0x00,                          // ETP Leverage Factor
+        0x4E                                             // Inverse Indicator
+    });
+
+    array<char, 8> expected_stock{'A', 'P', 'P', 'L', ' ', ' ', ' ', ' '};
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::StockDirectoryMessage, get<StockDirectoryMessage>(message).message_type);
+
+    EXPECT_EQ(13, FromBigEndian(get<StockDirectoryMessage>(message).stock_locate));
+    EXPECT_EQ(0, FromBigEndian(get<StockDirectoryMessage>(message).tracking_number));
+    EXPECT_EQ(11234909934345, ArrayToUint48(get<StockDirectoryMessage>(message).timestamp));
+    EXPECT_EQ("APPL    ", ArrayToString(get<StockDirectoryMessage>(message).stock));
+    EXPECT_EQ('Q', get<StockDirectoryMessage>(message).market_category);
+    EXPECT_EQ('N', get<StockDirectoryMessage>(message).financial_status_indicator);
+    EXPECT_EQ(100, FromBigEndian(get<StockDirectoryMessage>(message).round_lot_size));
+    EXPECT_EQ('N', get<StockDirectoryMessage>(message).round_lots_only);
+    EXPECT_EQ('C', get<StockDirectoryMessage>(message).issue_classification);
+    EXPECT_EQ("Z ", ArrayToString<2>(get<StockDirectoryMessage>(message).issue_sub_type));
+    EXPECT_EQ('P', get<StockDirectoryMessage>(message).authenticity);
+    EXPECT_EQ('N', get<StockDirectoryMessage>(message).short_sale_threshold_indicator);
+    EXPECT_EQ('N', get<StockDirectoryMessage>(message).ipo_flag);
+    EXPECT_EQ('1', get<StockDirectoryMessage>(message).luld_ref);
+    EXPECT_EQ('N', get<StockDirectoryMessage>(message).etp_flag);
+    EXPECT_EQ(0, FromBigEndian(get<StockDirectoryMessage>(message).etp_leverage_factor));
+    EXPECT_EQ('N', get<StockDirectoryMessage>(message).inverse_indicator);
+}
+
 // NOLINTEND
