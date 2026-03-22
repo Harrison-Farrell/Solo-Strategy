@@ -48,9 +48,9 @@ class ITCH_Parser {
     inline auto LULDAuctionCollarMessage();
     inline auto OperationalHaltMessage();
     inline auto AddOrderMessage();
+    inline auto AddOrderMPIDAttributionMessage();
     // to be unit tested
 
-    inline auto AddOrderMPIDAttributionMessage(const ITCH::MessageHeader& header);
     inline auto OrderExecutedMessage(const ITCH::MessageHeader& header);
     inline auto OrderExecutedWithPriceMessage(const ITCH::MessageHeader& header);
     inline auto OrderCancelMessage(const ITCH::MessageHeader& header);

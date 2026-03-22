@@ -39,12 +39,13 @@ auto ITCH_Parser::OperationalHaltMessage() { return m_Reader.Read<ITCH::Operatio
 
 auto ITCH_Parser::AddOrderMessage() { return m_Reader.Read<ITCH::AddOrderMessage>(); }
 
+auto ITCH_Parser::AddOrderMPIDAttributionMessage() { return m_Reader.Read<ITCH::AddOrderMPIDAttributionMessage>(); }
 // clang-format on
 
 ITCH_Parser::ITCH_Parser(const std::string& file_path)
     : m_Reader(file_path), m_MessageQueue(m_MessageQueueSize) {
-    // clang-format off
     using namespace ITCH;
+    // clang-format off
     m_dispatch[MessageType::SystemEventMessage] = [this](){return SystemEventMessage();};
     m_dispatch[MessageType::StockTradingActionMessage] = [this](){return StockTradingActionMessage();};
     m_dispatch[MessageType::RegSHOMessage] = [this](){return RegSHOMessage();};
@@ -56,12 +57,8 @@ ITCH_Parser::ITCH_Parser(const std::string& file_path)
     m_dispatch[MessageType::LULDAuctionCollarMessage] = [this](){return LULDAuctionCollarMessage();};
     m_dispatch[MessageType::OperationalHaltMessage] = [this](){return OperationalHaltMessage();};
     m_dispatch[MessageType::AddOrderMessage] = [this](){return AddOrderMessage();};
+    m_dispatch[MessageType::AddOrderMPIDAttributionMessage] = [this](){return AddOrderMPIDAttributionMessage();};
     // clang-format on
-}
-
-auto ITCH_Parser::AddOrderMPIDAttributionMessage(const ITCH::MessageHeader& header) {
-    ITCH::AddOrderMPIDAttributionMessage msg = {};
-    m_MessageQueue.push(msg);
 }
 
 auto ITCH_Parser::OrderExecutedMessage(const ITCH::MessageHeader& header) {

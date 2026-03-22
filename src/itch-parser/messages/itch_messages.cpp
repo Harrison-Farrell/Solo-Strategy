@@ -120,13 +120,14 @@ auto InternalPrintMessage(std::ostream& out, const AddOrderMessage& msg) {
 }
 
 auto InternalPrintMessage(std::ostream& out, const AddOrderMPIDAttributionMessage& msg) {
-    // out << "Add Order (MPID):\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Stock: " << to_string(msg.stock, STOCK_LEN) << "\n"
-    //     << "  MPID: " << to_string(msg.attribution, 4) << "\n"
-    //     << "  Side: " << msg.buy_sell_indicator << "\n"
-    //     << "  Shares: " << msg.shares << "\n"
-    //     << "  Price: " << msg.price / PRICE_DIVISOR;
+    out << "Add Order (MPID):\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Order Reference ID: " << msg.order_reference_number << "\n"
+        << "  Side: " << msg.buy_sell_indicator << "\n"
+        << "  Shares: " << msg.shares << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
+        << "  Price: " << (msg.price / PRICE_DIVISOR) << "\n"
+        << "  Market Sarticipant ID: " << ArrayToString<4>(msg.attribution);
 }
 
 auto InternalPrintMessage(std::ostream& out, const OrderExecutedMessage& msg) {

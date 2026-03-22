@@ -212,6 +212,21 @@ struct AddOrderMessage {
     StockID stock;                    ///< Stock symbol
     uint32_t price;                   ///< Limit price (4 decimals)
 };
+
+/// \struct AddOrderMPIDAttributionMessage
+/// \brief New order added with MPID attribution.
+struct AddOrderMPIDAttributionMessage {
+    MessageType message_type;         ///< Message type
+    uint16_t stock_locate;            ///< Locate code for the security
+    uint16_t tracking_number;         ///< Nasdaq internal tracking number
+    Timestamp timestamp;              ///< Nanoseconds past midnight (48-bit)
+    uint64_t order_reference_number;  ///< Unique order ID
+    char buy_sell_indicator;          ///< 'B' for buy, 'S' for sell
+    uint32_t shares;                  ///< Number of shares
+    StockID stock;                    ///< Stock symbol
+    uint32_t price;                   ///< Limit price (4 decimals)
+    std::array<char, 4> attribution;  ///< Market Participant ID
+};
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -222,18 +237,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct AddOrderMPIDAttributionMessage
-/// \brief New order added with MPID attribution.
-struct AddOrderMPIDAttributionMessage {
-    MessageHeader header{MessageType::AddOrderMPIDAttributionMessage, 0, 0, 0};  ///< Message header
-    uint64_t order_reference_number;  ///< Unique order ID
-    char buy_sell_indicator;          ///< 'B' for buy, 'S' for sell
-    uint32_t shares;                  ///< Number of shares
-    char stock[8];                    ///< Stock symbol
-    uint32_t price;                   ///< Limit price (4 decimals)
-    char attribution[4];              ///< Market Participant ID
 };
 
 /// \struct OrderExecutedMessage

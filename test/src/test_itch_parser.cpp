@@ -389,4 +389,40 @@ TEST_F(ITCHPaserTest, AddOrderMessageTest) {
     EXPECT_EQ("AAPL    ", ArrayToString(get<AddOrderMessage>(message).stock));
     EXPECT_EQ(2800000, FromBigEndian(get<AddOrderMessage>(message).price));
 }
+
+TEST_F(ITCHPaserTest, AddOrderMPIDAttributionMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x46,                                            // Message Type
+        0x00, 0x0D,                                      // Stock Locate
+        0x00, 0x00,                                      // Tracking Number
+        0x0D, 0x1B, 0x51, 0x63, 0xB7, 0x25,              // Timestamp
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xA0, 0x15,  // Order Reference ID
+        0x53,                                            // Buy / Side Indicator
+        0x00, 0x00, 0x00, 0x64,                          // Shares
+        0x41, 0x41, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
+        0x00, 0x2A, 0xB9, 0x80,                          // Attribution
+        0x54, 0x52, 0x45, 0x45                           // Price
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::AddOrderMPIDAttributionMessage,
+              get<AddOrderMPIDAttributionMessage>(message).message_type);
+    EXPECT_EQ(13, FromBigEndian(get<AddOrderMPIDAttributionMessage>(message).stock_locate));
+    EXPECT_EQ(0, FromBigEndian(get<AddOrderMPIDAttributionMessage>(message).tracking_number));
+    EXPECT_EQ(14410980767525,
+              ArrayToUint48(get<AddOrderMPIDAttributionMessage>(message).timestamp));
+    EXPECT_EQ(106517,
+              FromBigEndian(get<AddOrderMPIDAttributionMessage>(message).order_reference_number));
+    EXPECT_EQ('S', get<AddOrderMPIDAttributionMessage>(message).buy_sell_indicator);
+    EXPECT_EQ(100, FromBigEndian(get<AddOrderMPIDAttributionMessage>(message).shares));
+    EXPECT_EQ("AAPL    ", ArrayToString(get<AddOrderMPIDAttributionMessage>(message).stock));
+    EXPECT_EQ(2800000, FromBigEndian(get<AddOrderMPIDAttributionMessage>(message).price));
+    EXPECT_EQ("TREE", ArrayToString(get<AddOrderMPIDAttributionMessage>(message).attribution));
+}
 // NOLINTEND
