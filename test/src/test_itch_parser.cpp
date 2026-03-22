@@ -295,4 +295,40 @@ TEST_F(ITCHPaserTest, IPOQuotingPeriodUpdateMessageTest) {
     EXPECT_EQ(6553600, FromBigEndian(get<IPOQuotingPeriodUpdateMessage>(message).ipo_price));
 }
 
+TEST_F(ITCHPaserTest, LULDAuctionCollarMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x4A,                                            // Message Type
+        0x00, 0x0D,                                      // Stock Locate
+        0x00, 0x00,                                      // Tracking Numbe
+        0x0A, 0x37, 0xD4, 0xD0, 0xD3, 0x09,              // Timestamp
+        0x41, 0x50, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
+        0x00, 0x0F, 0x42, 0x40,                          // Auction Collar Reference Price
+        0x00, 0x10, 0x05, 0x90,                          // Upper Auction Collar Price
+        0x00, 0x0D, 0xBB, 0xA0,                          // Lower Auction Collar Price
+        0x00, 0x64, 0x00, 0x00                           // Auction Collar Extension
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::LULDAuctionCollarMessage,
+              get<LULDAuctionCollarMessage>(message).message_type);
+    EXPECT_EQ(13, FromBigEndian(get<LULDAuctionCollarMessage>(message).stock_locate));
+    EXPECT_EQ(0, FromBigEndian(get<LULDAuctionCollarMessage>(message).tracking_number));
+    EXPECT_EQ(11234909934345, ArrayToUint48(get<LULDAuctionCollarMessage>(message).timestamp));
+    EXPECT_EQ("APPL    ", ArrayToString(get<LULDAuctionCollarMessage>(message).stock));
+    EXPECT_EQ(1000000,
+              FromBigEndian(get<LULDAuctionCollarMessage>(message).auction_collar_reference_price));
+    EXPECT_EQ(1050000,
+              FromBigEndian(get<LULDAuctionCollarMessage>(message).upper_auction_collar_price));
+    EXPECT_EQ(900000,
+              FromBigEndian(get<LULDAuctionCollarMessage>(message).lower_auction_collar_price));
+    EXPECT_EQ(6553600,
+              FromBigEndian(get<LULDAuctionCollarMessage>(message).auction_collar_extension));
+}
+
 // NOLINTEND

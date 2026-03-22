@@ -92,9 +92,13 @@ auto InternalPrintMessage(std::ostream& out, const IPOQuotingPeriodUpdateMessage
 }
 
 auto InternalPrintMessage(std::ostream& out, const LULDAuctionCollarMessage& msg) {
-    // out << "LULD Auction Collar:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+    out << "LULD Auction Collar:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
+        << "  Auction Collar Reference Price: " << msg.auction_collar_reference_price << "\n"
+        << "  Upper Auction Collar Price: " << msg.upper_auction_collar_price << "\n"
+        << "  Lower Auction Collar Price: " << msg.lower_auction_collar_price << "\n"
+        << "  Auction Collar Extension: " << msg.auction_collar_extension;
 }
 
 auto InternalPrintMessage(std::ostream& out, const OperationalHaltMessage& msg) {

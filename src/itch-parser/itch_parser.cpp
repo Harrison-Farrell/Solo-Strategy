@@ -32,6 +32,8 @@ auto ITCH_Parser::MWCBStatusMessage() { return m_Reader.Read<ITCH::MWCBStatusMes
 auto ITCH_Parser::StockDirectoryMessage() { return m_Reader.Read<ITCH::StockDirectoryMessage>(); }
 
 auto ITCH_Parser::IPOQuotingPeriodUpdateMessage() { return m_Reader.Read<ITCH::IPOQuotingPeriodUpdateMessage>(); }
+
+auto ITCH_Parser::LULDAuctionCollarMessage() { return m_Reader.Read<ITCH::LULDAuctionCollarMessage>(); }
 // clang-format on
 
 ITCH_Parser::ITCH_Parser(const std::string& file_path)
@@ -46,12 +48,8 @@ ITCH_Parser::ITCH_Parser(const std::string& file_path)
     m_dispatch[MessageType::MWCBStatusMessage] = [this](){return MWCBStatusMessage();};
     m_dispatch[MessageType::StockDirectoryMessage] = [this](){return StockDirectoryMessage();};
     m_dispatch[MessageType::IPOQuotingPeriodUpdateMessage] = [this](){return IPOQuotingPeriodUpdateMessage();};
+    m_dispatch[MessageType::LULDAuctionCollarMessage] = [this](){return LULDAuctionCollarMessage();};
     // clang-format on
-}
-
-auto ITCH_Parser::LULDAuctionCollarMessage(const ITCH::MessageHeader& header) {
-    ITCH::LULDAuctionCollarMessage msg = {};
-    m_MessageQueue.push(msg);
 }
 
 auto ITCH_Parser::OperationalHaltMessage(const ITCH::MessageHeader& header) {

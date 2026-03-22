@@ -172,6 +172,20 @@ struct IPOQuotingPeriodUpdateMessage {
     char ipo_quotation_release_qualifier;  ///< 'A' for anticipated, 'C' for cancelled
     uint32_t ipo_price;                    ///< IPO price (4 decimals)
 };
+
+/// \struct LULDAuctionCollarMessage
+/// \brief Auction collar levels for LULD.
+struct LULDAuctionCollarMessage {
+    MessageType message_type;                 ///< Message type
+    uint16_t stock_locate;                    ///< Locate code for the security
+    uint16_t tracking_number;                 ///< Nasdaq internal tracking number
+    Timestamp timestamp;                      ///< Nanoseconds past midnight (48-bit)
+    StockID stock;                            ///< Stock symbol
+    uint32_t auction_collar_reference_price;  ///< Reference price (4 decimals)
+    uint32_t upper_auction_collar_price;      ///< Upper collar limit (4 decimals)
+    uint32_t lower_auction_collar_price;      ///< Lower collar limit (4 decimals)
+    uint32_t auction_collar_extension;        ///< Extension number
+};
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -182,17 +196,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct LULDAuctionCollarMessage
-/// \brief Auction collar levels for LULD.
-struct LULDAuctionCollarMessage {
-    MessageHeader header{MessageType::LULDAuctionCollarMessage, 0, 0, 0};  ///< Message header
-    char stock[8];                                                         ///< Stock symbol
-    uint32_t auction_collar_reference_price;  ///< Reference price (4 decimals)
-    uint32_t upper_auction_collar_price;      ///< Upper collar limit (4 decimals)
-    uint32_t lower_auction_collar_price;      ///< Lower collar limit (4 decimals)
-    uint32_t auction_collar_extension;        ///< Extension number
 };
 
 /// \struct OperationalHaltMessage
