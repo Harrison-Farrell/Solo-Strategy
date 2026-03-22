@@ -198,6 +198,20 @@ struct OperationalHaltMessage {
     char market_code;              ///< 'Q', 'B', or 'X'
     char operational_halt_action;  ///< 'H' for halt, 'T' for trading
 };
+
+/// \struct AddOrderMessage
+/// \brief New order added without attribution.
+struct AddOrderMessage {
+    MessageType message_type;         ///< Message type
+    uint16_t stock_locate;            ///< Locate code for the security
+    uint16_t tracking_number;         ///< Nasdaq internal tracking number
+    Timestamp timestamp;              ///< Nanoseconds past midnight (48-bit)
+    uint64_t order_reference_number;  ///< Unique order ID
+    char buy_sell_indicator;          ///< 'B' for buy, 'S' for sell
+    uint32_t shares;                  ///< Number of shares
+    StockID stock;                    ///< Stock symbol
+    uint32_t price;                   ///< Limit price (4 decimals)
+};
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -208,17 +222,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct AddOrderMessage
-/// \brief New order added without attribution.
-struct AddOrderMessage {
-    MessageHeader header{MessageType::AddOrderMessage, 0, 0, 0};  ///< Message header
-    uint64_t order_reference_number;                              ///< Unique order ID
-    char buy_sell_indicator;                                      ///< 'B' for buy, 'S' for sell
-    uint32_t shares;                                              ///< Number of shares
-    char stock[8];                                                ///< Stock symbol
-    uint32_t price;                                               ///< Limit price (4 decimals)
 };
 
 /// \struct AddOrderMPIDAttributionMessage

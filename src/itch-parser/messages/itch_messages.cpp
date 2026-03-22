@@ -110,12 +110,13 @@ auto InternalPrintMessage(std::ostream& out, const OperationalHaltMessage& msg) 
 }
 
 auto InternalPrintMessage(std::ostream& out, const AddOrderMessage& msg) {
-    // out << "Add Order:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Stock: " << to_string(msg.stock, STOCK_LEN) << "\n"
-    //     << "  Side: " << msg.buy_sell_indicator << "\n"
-    //     << "  Shares: " << msg.shares << "\n"
-    //     << "  Price: " << msg.price / PRICE_DIVISOR;
+    out << "Add Order:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Order Reference ID: " << msg.order_reference_number << "\n"
+        << "  Side: " << msg.buy_sell_indicator << "\n"
+        << "  Shares: " << msg.shares << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
+        << "  Price: " << msg.price / PRICE_DIVISOR;
 }
 
 auto InternalPrintMessage(std::ostream& out, const AddOrderMPIDAttributionMessage& msg) {

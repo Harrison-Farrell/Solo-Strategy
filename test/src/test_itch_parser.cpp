@@ -359,4 +359,34 @@ TEST_F(ITCHPaserTest, OperationalHaltMessageTest) {
     EXPECT_EQ('H', get<OperationalHaltMessage>(message).operational_halt_action);
 }
 
+TEST_F(ITCHPaserTest, AddOrderMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x41,                                            // Message Type
+        0x00, 0x0D,                                      // Stock Locate
+        0x00, 0x00,                                      // Tracking Number
+        0x0D, 0x1B, 0x51, 0x63, 0xB7, 0x25,              // Timestamp
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xA0, 0x15,  // Order Reference ID
+        0x42,                                            // Buy / Side Indicator
+        0x00, 0x00, 0x00, 0x64,                          // Shares
+        0x41, 0x41, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
+        0x00, 0x2A, 0xB9, 0x80                           // Price
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::AddOrderMessage, get<AddOrderMessage>(message).message_type);
+    EXPECT_EQ(13, FromBigEndian(get<AddOrderMessage>(message).stock_locate));
+    EXPECT_EQ(0, FromBigEndian(get<AddOrderMessage>(message).tracking_number));
+    EXPECT_EQ(14410980767525, ArrayToUint48(get<AddOrderMessage>(message).timestamp));
+    EXPECT_EQ(106517, FromBigEndian(get<AddOrderMessage>(message).order_reference_number));
+    EXPECT_EQ('B', get<AddOrderMessage>(message).buy_sell_indicator);
+    EXPECT_EQ(100, FromBigEndian(get<AddOrderMessage>(message).shares));
+    EXPECT_EQ("AAPL    ", ArrayToString(get<AddOrderMessage>(message).stock));
+    EXPECT_EQ(2800000, FromBigEndian(get<AddOrderMessage>(message).price));
+}
 // NOLINTEND

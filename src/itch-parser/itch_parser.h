@@ -47,9 +47,9 @@ class ITCH_Parser {
     inline auto IPOQuotingPeriodUpdateMessage();
     inline auto LULDAuctionCollarMessage();
     inline auto OperationalHaltMessage();
+    inline auto AddOrderMessage();
     // to be unit tested
 
-    inline auto AddOrderMessage(const ITCH::MessageHeader& header);
     inline auto AddOrderMPIDAttributionMessage(const ITCH::MessageHeader& header);
     inline auto OrderExecutedMessage(const ITCH::MessageHeader& header);
     inline auto OrderExecutedWithPriceMessage(const ITCH::MessageHeader& header);
