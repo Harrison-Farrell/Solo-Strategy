@@ -1,25 +1,28 @@
-# Data Types
-All integer fields are big endian (network byte order) binary encoded numbers. 
-Unless otherwise noted, they are unsigned. All alpha fields are ASCII fields 
-which are left justified and padded on the right with spaces.
+# ITCH Parser
 
-Prices are integer fields, supplied with an associated precision. When converted
- to a decimal format, prices are in fixed point format, where the precision 
- defines the number of decimal places. For example, a field flagged as Price (4)
- has an implied 4 decimal places. The maximum value of price (4) in TotalView 
- ITCH is 200,000.0000 (decimal,77359400 hex). Timestamps are represented as 
-nanoseconds since midnight
+Parses NASDAQ ITCH protocol messages to extract market data.
 
+## Message Format
+- **Integers**: Big-endian (network byte order), binary encoded, unsigned by default.
+- **Alphanumeric**: ASCII, left-justified, right-padded with spaces.
+- **Prices**: Fixed-point integer format with implied precision (e.g., Price(4) implies 4 decimal places). Maximum value is 200,000.0000.
+- **Timestamps**: Nanoseconds since midnight.
 
-The ITCH Messages are wrapped within the moldupd64 packet
+ITCH Messages are wrapped within a `moldupd64` packet structure:
+```text
+Message Length (2 Bytes)
+Message Data   (Length Bytes)
+```
 
-Message Block
-{
-    Message Length  (2 Bytes)
-    Message Data    (Length Bytes)
+## Usage Example
+
+```cpp
+#include "itch-parser/itch_parser.h"
+
+int main() {
+    ITCH_Parser parser("path/to/itch/data.bin");
+    parser.Execute();
+    // Messages are parsed and placed in the internal message queue
+    return 0;
 }
-
-1.3 Add Order Message
-1.4 Modify Order Messages
-
-
+```

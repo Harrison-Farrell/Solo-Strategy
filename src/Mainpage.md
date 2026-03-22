@@ -1,29 +1,17 @@
 # Solo-Strategy Trading System
 
-## Project Summary
+## Overview
+Solo-Strategy is a high-performance, low-latency ecosystem for high-frequency trading (HFT). It serves as both a practical HFT learning platform and a rigorous exercise in modern, optimized C++ development.
 
-Solo-Strategy is a high-performance, low-latency trading system ecosystem designed for high-frequency trading (HFT) applications. This project serves a dual purpose: it is a practical platform for learning the intricacies of High-Frequency Trading systems and an exercise to improve and master C++ development skills. This includes with aligning to core C++ Software principles and IDIOMs such as 'SOLID', 'DRY', 'Coupling & Cohesion' principles and the RAII IDIOM.
+## Design Intent
+The core design philosophy focuses on deterministic, ultra-low latency execution through mechanical sympathy and strict adherence to modern C++ principles:
+- **Zero-Cost Abstractions**: Leveraging templates and compile-time evaluation to minimize runtime overhead.
+- **Deterministic Memory**: Avoiding dynamic allocation (`new`/`delete`) on the critical path via strictly pre-allocated memory pools.
+- **Lock-Free Concurrency**: Utilizing atomic operations instead of OS-level locks to eliminate context switching and execution jitter.
+- **Clean Architecture**: Maintaining high cohesion and low coupling through strict adherence to SOLID principles, DRY, and RAII standard idioms. 
 
-- S: Single Responsibility Principle
-- O: Open-closed Principle
-- L: Liskov Substitution Principle
-- I: Interface Segregation Principle
-- D: Dependency Inversion Principle
------ ----- ----- ----- -----
-The 'DRY' 
-- D: Don't
-- R: Repeat
-- Y: Yourself
------ ----- ----- ----- -----
-- Coupling and Cohesion
-
-### Core Components
-
-*   **[ITCH Parser](@ref MemoryMappedFile):** High-efficiency Nasdaq ITCH protocol parsing using memory-mapped files and safe binary data handling with automatic endian conversion.
-*   **[Lock-Free Queue](@ref LockFreeQueue):** A thread-safe, lock-free circular buffer for low-latency communication between components, ensuring minimal synchronization overhead.
-*   **[Memory Pool](@ref MemoryPool):** Deterministic memory management using pre-Allocated object pools to avoid the costs of dynamic heap allocation during runtime.
-*   **[Order Book](@ref MarketOrderBook):** Advanced Limit Order Book (LOB) implementation using efficient linked lists and memory-mapped data structures for real-time order processing.
-
-## Architecture
-
-The system is designed with a modular approach, where each component is optimized for speed and reliability. By abstracting platform-specific details and focusing on cache-friendly data structures, Solo-Strategy provides a robust foundation for building sophisticated trading strategies.
+## Core Components
+* **[ITCH Parser](@ref ITCH_Parser):** High-efficiency Nasdaq ITCH protocol parser with safe binary data handling and automatic endian conversion.
+* **[Lock-Free Queue](@ref LockFreeQueue):** Thread-safe, lock-free circular buffer for minimal-overhead inter-thread communication.
+* **[Memory Pool](@ref MemoryPool):** Pre-allocated object pools delivering predictable, rapid memory management.
+* **[Order Book](@ref MarketOrderBook):** Advanced Limit Order Book (LOB) implementation utilizing cache-friendly structures for real-time order processing.
