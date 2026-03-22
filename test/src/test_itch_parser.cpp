@@ -119,9 +119,6 @@ TEST_F(ITCHPaserTest, RegSHOMessageTest) {
         0x31,                                            // Reg SHO Action ('1')
     });
 
-    array<uint8_t, 6> expected_timestamp{'A', 'A', 'A', 'A', 'A', 'A'};
-    array<char, 8> expected_stock{'A', 'P', 'P', 'L', ' ', ' ', ' ', ' '};
-
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
@@ -129,7 +126,7 @@ TEST_F(ITCHPaserTest, RegSHOMessageTest) {
     EXPECT_EQ(10, FromBigEndian(get<RegSHOMessage>(message).stock_locate));
     EXPECT_EQ(255, FromBigEndian(get<RegSHOMessage>(message).tracking_number));
     EXPECT_EQ(16777215, ArrayToUint48(get<ITCH::RegSHOMessage>(message).timestamp));
-    EXPECT_EQ(expected_stock, get<RegSHOMessage>(message).stock);
+    EXPECT_EQ("APPL    ", ArrayToString<8>(get<RegSHOMessage>(message).stock));
     EXPECT_EQ('1', get<RegSHOMessage>(message).reg_sho_action);
 }
 
@@ -150,20 +147,16 @@ TEST_F(ITCHPaserTest, MarketParticipantPositionMessageTest) {
         0x45                                             // State ('E')
     });
 
-    array<char, 8> expected_stock{'N', 'V', 'D', 'A', ' ', ' ', ' ', ' '};
-    array<char, 4> expected_mpid{'W', 'X', 'Y', 'Z'};
-
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::MarketParticipantPositionMessage,
               get<MarketParticipantPositionMessage>(message).message_type);
-
     EXPECT_EQ(10, FromBigEndian(get<MarketParticipantPositionMessage>(message).stock_locate));
     EXPECT_EQ(255, FromBigEndian(get<MarketParticipantPositionMessage>(message).tracking_number));
     EXPECT_EQ(16777215, ArrayToUint48(get<MarketParticipantPositionMessage>(message).timestamp));
-    EXPECT_EQ(expected_stock, get<MarketParticipantPositionMessage>(message).stock);
-    EXPECT_EQ(expected_mpid, get<MarketParticipantPositionMessage>(message).mpid);
+    EXPECT_EQ("NVDA    ", ArrayToString<8>(get<MarketParticipantPositionMessage>(message).stock));
+    EXPECT_EQ("WXYZ", ArrayToString<4>(get<MarketParticipantPositionMessage>(message).mpid));
     EXPECT_EQ('N', get<MarketParticipantPositionMessage>(message).primary_market_maker);
     EXPECT_EQ('R', get<MarketParticipantPositionMessage>(message).market_maker_mode);
     EXPECT_EQ('E', get<MarketParticipantPositionMessage>(message).market_participant_state);
@@ -248,13 +241,10 @@ TEST_F(ITCHPaserTest, StockDirectoryMessageTest) {
         0x4E                                             // Inverse Indicator
     });
 
-    array<char, 8> expected_stock{'A', 'P', 'P', 'L', ' ', ' ', ' ', ' '};
-
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::StockDirectoryMessage, get<StockDirectoryMessage>(message).message_type);
-
     EXPECT_EQ(13, FromBigEndian(get<StockDirectoryMessage>(message).stock_locate));
     EXPECT_EQ(0, FromBigEndian(get<StockDirectoryMessage>(message).tracking_number));
     EXPECT_EQ(11234909934345, ArrayToUint48(get<StockDirectoryMessage>(message).timestamp));
@@ -272,6 +262,37 @@ TEST_F(ITCHPaserTest, StockDirectoryMessageTest) {
     EXPECT_EQ('N', get<StockDirectoryMessage>(message).etp_flag);
     EXPECT_EQ(0, FromBigEndian(get<StockDirectoryMessage>(message).etp_leverage_factor));
     EXPECT_EQ('N', get<StockDirectoryMessage>(message).inverse_indicator);
+}
+
+TEST_F(ITCHPaserTest, IPOQuotingPeriodUpdateMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x4B,                                            // Message Type
+        0x00, 0x0D,                                      // Stock Locate
+        0x00, 0x00,                                      // Tracking Numbe
+        0x0A, 0x37, 0xD4, 0xD0, 0xD3, 0x09,              // Timestamp
+        0x41, 0x50, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
+        0x00, 0x00, 0x00, 0x64,                          // IPO Quotation Release Time
+        0x43,                                            // IPO Quotation Release Qualifier
+        0x00, 0x64, 0x00, 0x00                           // IPO Price
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::IPOQuotingPeriodUpdateMessage,
+              get<IPOQuotingPeriodUpdateMessage>(message).message_type);
+    EXPECT_EQ(13, FromBigEndian(get<IPOQuotingPeriodUpdateMessage>(message).stock_locate));
+    EXPECT_EQ(0, FromBigEndian(get<IPOQuotingPeriodUpdateMessage>(message).tracking_number));
+    EXPECT_EQ(11234909934345, ArrayToUint48(get<IPOQuotingPeriodUpdateMessage>(message).timestamp));
+    EXPECT_EQ("APPL    ", ArrayToString(get<IPOQuotingPeriodUpdateMessage>(message).stock));
+    EXPECT_EQ(
+        100, FromBigEndian(get<IPOQuotingPeriodUpdateMessage>(message).ipo_quotation_release_time));
+    EXPECT_EQ('C', get<IPOQuotingPeriodUpdateMessage>(message).ipo_quotation_release_qualifier);
+    EXPECT_EQ(6553600, FromBigEndian(get<IPOQuotingPeriodUpdateMessage>(message).ipo_price));
 }
 
 // NOLINTEND

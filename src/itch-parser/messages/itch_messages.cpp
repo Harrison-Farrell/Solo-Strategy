@@ -83,9 +83,12 @@ auto InternalPrintMessage(std::ostream& out, const StockDirectoryMessage& msg) {
 }
 
 auto InternalPrintMessage(std::ostream& out, const IPOQuotingPeriodUpdateMessage& msg) {
-    // out << "IPO Quoting Period Update:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+    out << "IPO Quoting Period Update:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
+        << "  IPO Quotation Release Time: " << msg.ipo_quotation_release_time << "\n"
+        << "  IPO Quotation Release Qualifier: " << msg.ipo_quotation_release_qualifier << "\n"
+        << "  IPO Price: " << msg.ipo_price << "\n";
 }
 
 auto InternalPrintMessage(std::ostream& out, const LULDAuctionCollarMessage& msg) {

@@ -159,6 +159,19 @@ struct StockDirectoryMessage {
     uint32_t etp_leverage_factor;         ///< Leverage factor (8 decimals)
     char inverse_indicator;               ///< 'Y' if inverse ETP
 };
+
+/// \struct IPOQuotingPeriodUpdateMessage
+/// \brief IPO quoting period tracking.
+struct IPOQuotingPeriodUpdateMessage {
+    MessageType message_type;              ///< Message type
+    uint16_t stock_locate;                 ///< Locate code for the security
+    uint16_t tracking_number;              ///< Nasdaq internal tracking number
+    Timestamp timestamp;                   ///< Nanoseconds past midnight (48-bit)
+    StockID stock;                         ///< Stock symbol
+    uint32_t ipo_quotation_release_time;   ///< Seconds past midnight
+    char ipo_quotation_release_qualifier;  ///< 'A' for anticipated, 'C' for cancelled
+    uint32_t ipo_price;                    ///< IPO price (4 decimals)
+};
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -169,16 +182,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct IPOQuotingPeriodUpdateMessage
-/// \brief IPO quoting period tracking.
-struct IPOQuotingPeriodUpdateMessage {
-    MessageHeader header{MessageType::IPOQuotingPeriodUpdateMessage, 0, 0, 0};  ///< Message header
-    char stock[8];                                                              ///< Stock symbol
-    uint32_t ipo_quotation_release_time;   ///< Seconds past midnight
-    char ipo_quotation_release_qualifier;  ///< 'A' for anticipated, 'C' for cancelled
-    uint32_t ipo_price;                    ///< IPO price (4 decimals)
 };
 
 /// \struct LULDAuctionCollarMessage

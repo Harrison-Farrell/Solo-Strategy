@@ -29,7 +29,9 @@ auto ITCH_Parser::MWCBDeclineLevelMessage() { return m_Reader.Read<ITCH::MWCBDec
 
 auto ITCH_Parser::MWCBStatusMessage() { return m_Reader.Read<ITCH::MWCBStatusMessage>(); }
 
-auto ITCH_Parser::StockDirectoryMessage() {return m_Reader.Read<ITCH::StockDirectoryMessage>(); }
+auto ITCH_Parser::StockDirectoryMessage() { return m_Reader.Read<ITCH::StockDirectoryMessage>(); }
+
+auto ITCH_Parser::IPOQuotingPeriodUpdateMessage() { return m_Reader.Read<ITCH::IPOQuotingPeriodUpdateMessage>(); }
 // clang-format on
 
 ITCH_Parser::ITCH_Parser(const std::string& file_path)
@@ -43,12 +45,8 @@ ITCH_Parser::ITCH_Parser(const std::string& file_path)
     m_dispatch[MessageType::MWCBDeclineLevelMessage] = [this](){return MWCBDeclineLevelMessage();};
     m_dispatch[MessageType::MWCBStatusMessage] = [this](){return MWCBStatusMessage();};
     m_dispatch[MessageType::StockDirectoryMessage] = [this](){return StockDirectoryMessage();};
+    m_dispatch[MessageType::IPOQuotingPeriodUpdateMessage] = [this](){return IPOQuotingPeriodUpdateMessage();};
     // clang-format on
-}
-
-auto ITCH_Parser::IPOQuotingPeriodUpdateMessage(const ITCH::MessageHeader& header) {
-    ITCH::IPOQuotingPeriodUpdateMessage msg = {};
-    m_MessageQueue.push(msg);
 }
 
 auto ITCH_Parser::LULDAuctionCollarMessage(const ITCH::MessageHeader& header) {
