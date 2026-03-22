@@ -9,6 +9,7 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # -----------------------------------------------------------------------------
 
-# Add subdirectories
-add_subdirectory(cpu_cache)
-add_subdirectory(branch_prediction)
+include(Benchmarking)
+
+AddBenchmarks(bm_switch_case)
+AddBenchmarks(bm_hashmap_lookup)
