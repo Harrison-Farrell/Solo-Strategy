@@ -186,6 +186,18 @@ struct LULDAuctionCollarMessage {
     uint32_t lower_auction_collar_price;      ///< Lower collar limit (4 decimals)
     uint32_t auction_collar_extension;        ///< Extension number
 };
+
+/// \struct OperationalHaltMessage
+/// \brief Operational halt status per market.
+struct OperationalHaltMessage {
+    MessageType message_type;      ///< Message type
+    uint16_t stock_locate;         ///< Locate code for the security
+    uint16_t tracking_number;      ///< Nasdaq internal tracking number
+    Timestamp timestamp;           ///< Nanoseconds past midnight (48-bit)
+    StockID stock;                 ///< Stock symbol
+    char market_code;              ///< 'Q', 'B', or 'X'
+    char operational_halt_action;  ///< 'H' for halt, 'T' for trading
+};
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -196,15 +208,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct OperationalHaltMessage
-/// \brief Operational halt status per market.
-struct OperationalHaltMessage {
-    MessageHeader header{MessageType::OperationalHaltMessage, 0, 0, 0};  ///< Message header
-    char stock[8];                                                       ///< Stock symbol
-    char market_code;                                                    ///< 'Q', 'B', or 'X'
-    char operational_halt_action;  ///< 'H' for halt, 'T' for trading
 };
 
 /// \struct AddOrderMessage

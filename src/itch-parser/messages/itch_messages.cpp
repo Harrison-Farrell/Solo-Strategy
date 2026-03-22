@@ -102,9 +102,11 @@ auto InternalPrintMessage(std::ostream& out, const LULDAuctionCollarMessage& msg
 }
 
 auto InternalPrintMessage(std::ostream& out, const OperationalHaltMessage& msg) {
-    // out << "Operational Halt:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+    out << "Operational Halt:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
+        << "  Market Code: " << msg.market_code << "\n"
+        << "  Operational Halt Action: " << msg.operational_halt_action;
 }
 
 auto InternalPrintMessage(std::ostream& out, const AddOrderMessage& msg) {

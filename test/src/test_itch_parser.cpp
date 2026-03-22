@@ -331,4 +331,32 @@ TEST_F(ITCHPaserTest, LULDAuctionCollarMessageTest) {
               FromBigEndian(get<LULDAuctionCollarMessage>(message).auction_collar_extension));
 }
 
+TEST_F(ITCHPaserTest, OperationalHaltMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x68,                                            // Message Type
+        0x00, 0x0D,                                      // Stock Locate
+        0x00, 0x00,                                      // Tracking Numbe
+        0x0A, 0x37, 0xD4, 0xD0, 0xD3, 0x09,              // Timestamp
+        0x41, 0x50, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
+        0x51,                                            // Market Code
+        0x48                                             // Operational Halt Action
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::OperationalHaltMessage,
+              get<OperationalHaltMessage>(message).message_type);
+    EXPECT_EQ(13, FromBigEndian(get<OperationalHaltMessage>(message).stock_locate));
+    EXPECT_EQ(0, FromBigEndian(get<OperationalHaltMessage>(message).tracking_number));
+    EXPECT_EQ(11234909934345, ArrayToUint48(get<OperationalHaltMessage>(message).timestamp));
+    EXPECT_EQ("APPL    ", ArrayToString(get<OperationalHaltMessage>(message).stock));
+    EXPECT_EQ('Q', get<OperationalHaltMessage>(message).market_code);
+    EXPECT_EQ('H', get<OperationalHaltMessage>(message).operational_halt_action);
+}
+
 // NOLINTEND

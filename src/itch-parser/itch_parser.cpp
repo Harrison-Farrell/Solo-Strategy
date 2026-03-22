@@ -34,6 +34,8 @@ auto ITCH_Parser::StockDirectoryMessage() { return m_Reader.Read<ITCH::StockDire
 auto ITCH_Parser::IPOQuotingPeriodUpdateMessage() { return m_Reader.Read<ITCH::IPOQuotingPeriodUpdateMessage>(); }
 
 auto ITCH_Parser::LULDAuctionCollarMessage() { return m_Reader.Read<ITCH::LULDAuctionCollarMessage>(); }
+
+auto ITCH_Parser::OperationalHaltMessage() { return m_Reader.Read<ITCH::OperationalHaltMessage>(); }
 // clang-format on
 
 ITCH_Parser::ITCH_Parser(const std::string& file_path)
@@ -49,12 +51,8 @@ ITCH_Parser::ITCH_Parser(const std::string& file_path)
     m_dispatch[MessageType::StockDirectoryMessage] = [this](){return StockDirectoryMessage();};
     m_dispatch[MessageType::IPOQuotingPeriodUpdateMessage] = [this](){return IPOQuotingPeriodUpdateMessage();};
     m_dispatch[MessageType::LULDAuctionCollarMessage] = [this](){return LULDAuctionCollarMessage();};
+    m_dispatch[MessageType::OperationalHaltMessage] = [this](){return OperationalHaltMessage();};
     // clang-format on
-}
-
-auto ITCH_Parser::OperationalHaltMessage(const ITCH::MessageHeader& header) {
-    ITCH::OperationalHaltMessage msg = {};
-    m_MessageQueue.push(msg);
 }
 
 auto ITCH_Parser::AddOrderMessage(const ITCH::MessageHeader& header) {
