@@ -23,11 +23,11 @@ int main() {
     LockFreeQueue<int> queue(1024);
     
     // Producer
-    queue.push(42);
+    queue.Push(42);
     
     // Consumer
     int value;
-    if (queue.pop(value)) {
+    if (queue.Pop(value)) {
         std::cout << "Popped: " << value << std::endl;
     }
     

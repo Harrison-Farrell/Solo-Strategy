@@ -28,7 +28,7 @@ class ITCH_Parser {
     ITCH_Parser(const std::string& file_path);
 
     void Execute();
-    inline ITCH::Message DecodeMessage();
+    ITCH::Message DecodeMessage();
 
    private:
     MemoryMappedFile m_File;

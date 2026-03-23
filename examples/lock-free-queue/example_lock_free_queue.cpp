@@ -29,13 +29,13 @@ auto ConsumeFunction(LockFreeQueue<MyStruct>* data_queue) {
 
     std::this_thread::sleep_for(inital_sleep_in_seconds);
 
-    while (static_cast<bool>(data_queue->size())) {
-        const auto* const block = data_queue->getNextRead();
+    while (static_cast<bool>(data_queue->Size())) {
+        const auto* const block = data_queue->GetNextRead();
 
-        data_queue->updateReadIndex();
+        data_queue->UpdateReadIndex();
 
         std::println("ConsumeFunction read elem: {}, {}, {} size: {}", block->data.at(0),
-                     block->data.at(1), block->data.at(2), data_queue->size());
+                     block->data.at(1), block->data.at(2), data_queue->Size());
 
         std::this_thread::sleep_for(loop_sleep_in_seconds);
     }
@@ -54,11 +54,11 @@ int main() {
 
     for (auto i = 0; i < iteration_loop_size; ++i) {
         const MyStruct block{i, i * 10, i * 100};
-        *data_queue.getNextWrite() = block;
-        data_queue.updateWriteIndex();
+        *data_queue.GetNextWrite() = block;
+        data_queue.UpdateWriteIndex();
 
         std::println("main constructed elem: {}, {}, {} size: {}", block.data.at(0),
-                     block.data.at(1), block.data.at(2), data_queue.size());
+                     block.data.at(1), block.data.at(2), data_queue.Size());
 
         using namespace std::literals::chrono_literals;
         std::this_thread::sleep_for(loop_sleep_in_seconds);

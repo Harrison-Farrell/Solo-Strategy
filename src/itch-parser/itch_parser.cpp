@@ -56,47 +56,47 @@ ITCH_Parser::ITCH_Parser(const std::string& file_path)
 
 auto ITCH_Parser::OrderCancelMessage(const ITCH::MessageHeader& header) {
     ITCH::OrderCancelMessage msg = {};
-    m_MessageQueue.push(msg);
+    m_MessageQueue.Push(msg);
 }
 
 auto ITCH_Parser::OrderDeleteMessage(const ITCH::MessageHeader& header) {
     ITCH::OrderDeleteMessage msg = {};
-    m_MessageQueue.push(msg);
+    m_MessageQueue.Push(msg);
 }
 
 auto ITCH_Parser::OrderReplaceMessage(const ITCH::MessageHeader& header) {
     ITCH::OrderReplaceMessage msg = {};
-    m_MessageQueue.push(msg);
+    m_MessageQueue.Push(msg);
 }
 
 auto ITCH_Parser::NonCrossTradeMessage(const ITCH::MessageHeader& header) {
     ITCH::NonCrossTradeMessage msg = {};
-    m_MessageQueue.push(msg);
+    m_MessageQueue.Push(msg);
 }
 
 auto ITCH_Parser::CrossTradeMessage(const ITCH::MessageHeader& header) {
     ITCH::CrossTradeMessage msg = {};
-    m_MessageQueue.push(msg);
+    m_MessageQueue.Push(msg);
 }
 
 auto ITCH_Parser::BrokenTradeMessage(const ITCH::MessageHeader& header) {
     ITCH::BrokenTradeMessage msg = {};
-    m_MessageQueue.push(msg);
+    m_MessageQueue.Push(msg);
 }
 
 auto ITCH_Parser::NOIIMessage(const ITCH::MessageHeader& header) {
     ITCH::NOIIMessage msg = {};
-    m_MessageQueue.push(msg);
+    m_MessageQueue.Push(msg);
 }
 
 auto ITCH_Parser::DLCRMessage(const ITCH::MessageHeader& header) {
     ITCH::DLCRMessage msg = {};
-    m_MessageQueue.push(msg);
+    m_MessageQueue.Push(msg);
 }
 
 auto ITCH_Parser::RetailPriceImprovementIndicatorMessage(const ITCH::MessageHeader& header) {
     ITCH::RetailPriceImprovementIndicatorMessage msg = {};
-    m_MessageQueue.push(msg);
+    m_MessageQueue.Push(msg);
 }
 
 void ITCH_Parser::Execute() {
@@ -104,7 +104,7 @@ void ITCH_Parser::Execute() {
         // The first two bytes are message length as per moldupd64
         // Skip, jumping to the message type char
         m_File.seek(m_File.tell() + 2);
-        m_MessageQueue.push(DecodeMessage());
+        m_MessageQueue.Push(DecodeMessage());
     }
 }
 
