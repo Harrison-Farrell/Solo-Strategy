@@ -149,16 +149,16 @@ auto InternalPrintMessage(std::ostream& out, const OrderExecutedWithPriceMessage
 }
 
 auto InternalPrintMessage(std::ostream& out, const OrderCancelMessage& msg) {
-    // out << "Order Cancel:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Ref#: " << msg.order_reference_number << "\n"
-    //     << "  Cancelled Shares: " << msg.cancelled_shares;
+    out << "Order Cancel:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Order Reference ID: " << msg.order_reference_number << "\n"
+        << "  Cancelled Shares: " << msg.cancelled_shares;
 }
 
 auto InternalPrintMessage(std::ostream& out, const OrderDeleteMessage& msg) {
-    // out << "Order Delete:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Ref#: " << msg.order_reference_number;
+    out << "Order Delete:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Order Reference ID: " << msg.order_reference_number;
 }
 
 auto InternalPrintMessage(std::ostream& out, const OrderReplaceMessage& msg) {

@@ -489,4 +489,57 @@ TEST_F(ITCHPaserTest, OrderExecutedWithPriceMessageTest) {
     EXPECT_EQ('Y', get<OrderExecutedWithPriceMessage>(message).printable);
     EXPECT_EQ(2800000, FromBigEndian(get<OrderExecutedWithPriceMessage>(message).execution_price));
 }
+
+TEST_F(ITCHPaserTest, OrderCancelMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x58,                                            // Message Type ('X')
+        0x00, 0x00,                                      // Stock Locate (0)
+        0x00, 0xFF,                                      // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,              // Timestamp (207588671094783)
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,  // Order Reference Number
+        0x00, 0xAA, 0xFF, 0xBB                           // Cancelled Shares
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::OrderCancelMessage, get<OrderCancelMessage>(message).message_type);
+
+    EXPECT_EQ(0, FromBigEndian(get<OrderCancelMessage>(message).stock_locate));
+    EXPECT_EQ(255, FromBigEndian(get<OrderCancelMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783, ArrayToUint48(get<OrderCancelMessage>(message).timestamp));
+    EXPECT_EQ(280375465148160,
+              FromBigEndian(get<OrderCancelMessage>(message).order_reference_number));
+    EXPECT_EQ(11206587, FromBigEndian(get<OrderCancelMessage>(message).cancelled_shares));
+}
+
+TEST_F(ITCHPaserTest, OrderDeleteMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x44,                                           // Message Type ('D')
+        0x00, 0x00,                                     // Stock Locate (0)
+        0x00, 0xFF,                                     // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,             // Timestamp (207588671094783)
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00  // Order Reference Number
+
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::OrderDeleteMessage, get<OrderDeleteMessage>(message).message_type);
+
+    EXPECT_EQ(0, FromBigEndian(get<OrderDeleteMessage>(message).stock_locate));
+    EXPECT_EQ(255, FromBigEndian(get<OrderDeleteMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783, ArrayToUint48(get<OrderDeleteMessage>(message).timestamp));
+    EXPECT_EQ(280375465148160,
+              FromBigEndian(get<OrderDeleteMessage>(message).order_reference_number));
+}
 // NOLINTEND

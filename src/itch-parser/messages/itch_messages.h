@@ -254,6 +254,27 @@ struct OrderExecutedWithPriceMessage {
     uint32_t execution_price;         ///< Execution price (4 decimals)
 };
 
+/// \struct OrderCancelMessage
+/// \brief Partial reduction of an order's shares.
+struct OrderCancelMessage {
+    MessageType message_type;         ///< Message type
+    uint16_t stock_locate;            ///< Locate code for the security
+    uint16_t tracking_number;         ///< Nasdaq internal tracking number
+    Timestamp timestamp;              ///< Nanoseconds past midnight (48-bit)
+    uint64_t order_reference_number;  ///< Reference to AddOrder
+    uint32_t cancelled_shares;        ///< Amount reduced
+};
+
+/// \struct OrderDeleteMessage
+/// \brief Removal of an order from the book.
+struct OrderDeleteMessage {
+    MessageType message_type;         ///< Message type
+    uint16_t stock_locate;            ///< Locate code for the security
+    uint16_t tracking_number;         ///< Nasdaq internal tracking number
+    Timestamp timestamp;              ///< Nanoseconds past midnight (48-bit)
+    uint64_t order_reference_number;  ///< Reference to AddOrder
+};
+
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -264,21 +285,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct OrderCancelMessage
-/// \brief Partial reduction of an order's shares.
-struct OrderCancelMessage {
-    MessageHeader header{MessageType::OrderCancelMessage, 0, 0, 0};  ///< Message header
-    uint64_t order_reference_number;                                 ///< Reference to AddOrder
-    uint32_t cancelled_shares;                                       ///< Amount reduced
-};
-
-/// \struct OrderDeleteMessage
-/// \brief Removal of an order from the book.
-struct OrderDeleteMessage {
-    MessageHeader header{MessageType::OrderDeleteMessage, 0, 0, 0};  ///< Message header
-    uint64_t order_reference_number;                                 ///< Reference to AddOrder
 };
 
 /// \struct OrderReplaceMessage
