@@ -10,9 +10,21 @@
 # -----------------------------------------------------------------------------
 
 # Project name
-project(memory_pool)
+project(ThreadExample)
 
-add_library(${PROJECT_NAME} INTERFACE)
-add_library(${LIBRARY_PREFIX}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_executable(${PROJECT_NAME})
 
-target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_SOURCE_DIR}/src)
+target_sources(${PROJECT_NAME} PRIVATE
+    example_thread.cpp
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+    solo_strategy::thread
+)
+
+set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
+)

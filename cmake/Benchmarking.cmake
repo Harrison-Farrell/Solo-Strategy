@@ -29,6 +29,12 @@ option(BENCHMARK_ENABLE_DOXYGEN OFF)
 option(BENCHMARK_INSTALL_DOCS OFF)
 option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 
+# https://stackoverflow.com/questions/66749865/cmake-error-at-cmakelists-txt251-message-failed-to-determine-the-source-file
+set(HAVE_STD_REGEX 1)
+set(RUN_HAVE_STD_REGEX 1)
+set(HAVE_GNU_POSIX_REGEX 1)
+set(HAVE_POSIX_REGEX 1)
+
 FetchContent_MakeAvailable(googlebenchmark)
 
 macro(AddBenchmarks target)

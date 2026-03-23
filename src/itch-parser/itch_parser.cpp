@@ -33,6 +33,7 @@ auto ITCH_Parser::OrderExecutedMessage() { return m_File.Read<ITCH::OrderExecute
 auto ITCH_Parser::OrderExecutedWithPriceMessage() { return m_File.Read<ITCH::OrderExecutedWithPriceMessage>(); }
 auto ITCH_Parser::OrderCancelMessage() { return m_File.Read<ITCH::OrderCancelMessage>(); }
 auto ITCH_Parser::OrderDeleteMessage() { return m_File.Read<ITCH::OrderDeleteMessage>(); }
+auto ITCH_Parser::OrderReplaceMessage() { return m_File.Read<ITCH::OrderReplaceMessage>(); }
 // clang-format on
 
 ITCH_Parser::ITCH_Parser(const std::string& file_path)
@@ -55,12 +56,8 @@ ITCH_Parser::ITCH_Parser(const std::string& file_path)
     m_dispatch[MessageType::OrderExecutedWithPriceMessage] = [this](){return OrderExecutedWithPriceMessage();};
     m_dispatch[MessageType::OrderDeleteMessage] = [this](){return OrderDeleteMessage();};
     m_dispatch[MessageType::OrderCancelMessage] = [this](){return OrderCancelMessage();};
+    m_dispatch[MessageType::OrderReplaceMessage] = [this](){return OrderReplaceMessage();};
     // clang-format on
-}
-
-auto ITCH_Parser::OrderReplaceMessage(const ITCH::MessageHeader& header) {
-    ITCH::OrderReplaceMessage msg = {};
-    m_MessageQueue.Push(msg);
 }
 
 auto ITCH_Parser::NonCrossTradeMessage(const ITCH::MessageHeader& header) {

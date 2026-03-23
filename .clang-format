@@ -2,7 +2,7 @@ BasedOnStyle: Google
 IndentPPDirectives: BeforeHash
 
 UseTab: Never
-ColumnLimit: 100
+ColumnLimit: 80
 TabWidth: 4
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4

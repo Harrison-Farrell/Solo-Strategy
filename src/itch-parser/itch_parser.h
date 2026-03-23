@@ -53,9 +53,9 @@ class ITCH_Parser {
     inline auto OrderExecutedWithPriceMessage();
     inline auto OrderCancelMessage();
     inline auto OrderDeleteMessage();
+    inline auto OrderReplaceMessage();
     // to be unit tested
 
-    inline auto OrderReplaceMessage(const ITCH::MessageHeader& header);
     inline auto NonCrossTradeMessage(const ITCH::MessageHeader& header);
     inline auto CrossTradeMessage(const ITCH::MessageHeader& header);
     inline auto BrokenTradeMessage(const ITCH::MessageHeader& header);

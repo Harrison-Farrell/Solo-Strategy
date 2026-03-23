@@ -10,7 +10,7 @@
 # -----------------------------------------------------------------------------
 
 # Minimum CMake version required
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 4.1)
 
 # Project name and version
 project(SoloStrategy VERSION 1.0 LANGUAGES C CXX)
@@ -25,7 +25,7 @@ set(LIBRARY_PREFIX "solo_strategy")
 # Build options
 option(BUILD_DOXYGEN "Build Doxygen documentation" ON)
 option(BUILD_TESTS "Build unit tests" ON)
-option(BUILD_BENCHMARKS "Build benchmarks" ON)
+option(BUILD_BENCHMARKS "Build benchmarks" OFF)
 option(BUILD_EXAMPLES "Build examples" ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
