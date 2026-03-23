@@ -27,11 +27,11 @@ class ITCH_Parser {
    public:
     ITCH_Parser(const std::string& file_path);
 
-    ITCH::Message DecodeMessage();
     void Execute();
+    inline ITCH::Message DecodeMessage();
 
    private:
-    MemoryMappedFile m_Reader;
+    MemoryMappedFile m_File;
     const int m_MessageQueueSize = 1024;
     LockFreeQueue<ITCH::Message> m_MessageQueue;
     std::unordered_map<ITCH::MessageType, DispatchFunction> m_dispatch;
@@ -49,10 +49,10 @@ class ITCH_Parser {
     inline auto OperationalHaltMessage();
     inline auto AddOrderMessage();
     inline auto AddOrderMPIDAttributionMessage();
+    inline auto OrderExecutedMessage();
+    inline auto OrderExecutedWithPriceMessage();
     // to be unit tested
 
-    inline auto OrderExecutedMessage(const ITCH::MessageHeader& header);
-    inline auto OrderExecutedWithPriceMessage(const ITCH::MessageHeader& header);
     inline auto OrderCancelMessage(const ITCH::MessageHeader& header);
     inline auto OrderDeleteMessage(const ITCH::MessageHeader& header);
     inline auto OrderReplaceMessage(const ITCH::MessageHeader& header);

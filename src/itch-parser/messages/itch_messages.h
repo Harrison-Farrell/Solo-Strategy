@@ -227,6 +227,33 @@ struct AddOrderMPIDAttributionMessage {
     uint32_t price;                   ///< Limit price (4 decimals)
     std::array<char, 4> attribution;  ///< Market Participant ID
 };
+
+/// \struct OrderExecutedMessage
+/// \brief Full or partial execution of an existing order.
+struct OrderExecutedMessage {
+    MessageType message_type;         ///< Message type
+    uint16_t stock_locate;            ///< Locate code for the security
+    uint16_t tracking_number;         ///< Nasdaq internal tracking number
+    Timestamp timestamp;              ///< Nanoseconds past midnight (48-bit)
+    uint64_t order_reference_number;  ///< Reference to AddOrder
+    uint32_t executed_shares;         ///< Executed share count
+    uint64_t match_number;            ///< Execution ID
+};
+
+/// \struct OrderExecutedWithPriceMessage
+/// \brief Execution with a non-limit price (e.g., cross).
+struct OrderExecutedWithPriceMessage {
+    MessageType message_type;         ///< Message type
+    uint16_t stock_locate;            ///< Locate code for the security
+    uint16_t tracking_number;         ///< Nasdaq internal tracking number
+    Timestamp timestamp;              ///< Nanoseconds past midnight (48-bit)
+    uint64_t order_reference_number;  ///< Reference to AddOrder
+    uint32_t executed_shares;         ///< Executed share count
+    uint64_t match_number;            ///< Execution ID
+    char printable;                   ///< 'Y' if searchable in trade reports
+    uint32_t execution_price;         ///< Execution price (4 decimals)
+};
+
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -237,26 +264,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct OrderExecutedMessage
-/// \brief Full or partial execution of an existing order.
-struct OrderExecutedMessage {
-    MessageHeader header{MessageType::OrderExecutedMessage, 0, 0, 0};  ///< Message header
-    uint64_t order_reference_number;                                   ///< Reference to AddOrder
-    uint32_t executed_shares;                                          ///< Executed share count
-    uint64_t match_number;                                             ///< Execution ID
-};
-
-/// \struct OrderExecutedWithPriceMessage
-/// \brief Execution with a non-limit price (e.g., cross).
-struct OrderExecutedWithPriceMessage {
-    MessageHeader header{MessageType::OrderExecutedWithPriceMessage, 0, 0, 0};  ///< Message header
-    uint64_t order_reference_number;  ///< Reference to AddOrder
-    uint32_t executed_shares;         ///< Executed share count
-    uint64_t match_number;            ///< Execution ID
-    char printable;                   ///< 'Y' if searchable in trade reports
-    uint32_t execution_price;         ///< Execution price (4 decimals)
 };
 
 /// \struct OrderCancelMessage

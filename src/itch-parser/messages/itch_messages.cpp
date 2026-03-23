@@ -131,17 +131,21 @@ auto InternalPrintMessage(std::ostream& out, const AddOrderMPIDAttributionMessag
 }
 
 auto InternalPrintMessage(std::ostream& out, const OrderExecutedMessage& msg) {
-    // out << "Order Executed:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Ref#: " << msg.order_reference_number << "\n"
-    //     << "  Shares: " << msg.executed_shares;
+    out << "Order Executed:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Order Reference ID: " << msg.order_reference_number << "\n"
+        << "  Executed shares: " << msg.executed_shares << "\n"
+        << "  Match Number: " << msg.match_number;
 }
 
 auto InternalPrintMessage(std::ostream& out, const OrderExecutedWithPriceMessage& msg) {
-    // out << "Order Executed w/ Price:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Ref#: " << msg.order_reference_number << "\n"
-    //     << "  Price: " << msg.execution_price / PRICE_DIVISOR;
+    out << "Order Executed w/ Price:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Order Reference ID: " << msg.order_reference_number << "\n"
+        << "  Executed shares: " << msg.executed_shares << "\n"
+        << "  Match Number: " << msg.match_number << "\n"
+        << "  Printable: " << msg.printable << "\n"
+        << "  Execution price: " << (msg.execution_price / PRICE_DIVISOR);
 }
 
 auto InternalPrintMessage(std::ostream& out, const OrderCancelMessage& msg) {
