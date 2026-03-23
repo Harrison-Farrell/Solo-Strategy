@@ -542,4 +542,38 @@ TEST_F(ITCHPaserTest, OrderDeleteMessageTest) {
     EXPECT_EQ(280375465148160,
               FromBigEndian(get<OrderDeleteMessage>(message).order_reference_number));
 }
+
+TEST_F(ITCHPaserTest, OrderReplaceMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x55,                                            // Message Type ('U')
+        0x00, 0x00,                                      // Stock Locate (0)
+        0x00, 0xFF,                                      // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,              // Timestamp (207588671094783)
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,  // Old Order Reference Number
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,  // New Order Reference Number
+        0x00, 0x2A, 0xB9, 0x80,                          // Shares
+        0x00, 0x2C, 0x40, 0x20                           // Price
+
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::OrderReplaceMessage, get<OrderReplaceMessage>(message).message_type);
+
+    EXPECT_EQ(0, FromBigEndian(get<OrderReplaceMessage>(message).stock_locate));
+    EXPECT_EQ(255, FromBigEndian(get<OrderReplaceMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783, ArrayToUint48(get<OrderReplaceMessage>(message).timestamp));
+    EXPECT_EQ(280375465148160,
+              FromBigEndian(get<OrderReplaceMessage>(message).original_order_reference_number));
+    EXPECT_EQ(280375465148160,
+              FromBigEndian(get<OrderReplaceMessage>(message).new_order_reference_number));
+    EXPECT_EQ(2800000, FromBigEndian(get<OrderReplaceMessage>(message).shares));
+    EXPECT_EQ(2900000, FromBigEndian(get<OrderReplaceMessage>(message).price));
+}
+
 // NOLINTEND

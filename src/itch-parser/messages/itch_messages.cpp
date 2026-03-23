@@ -162,12 +162,12 @@ auto InternalPrintMessage(std::ostream& out, const OrderDeleteMessage& msg) {
 }
 
 auto InternalPrintMessage(std::ostream& out, const OrderReplaceMessage& msg) {
-    // out << "Order Replace:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Original Ref#: " << msg.original_order_reference_number << "\n"
-    //     << "  New Ref#: " << msg.new_order_reference_number << "\n"
-    //     << "  Shares: " << msg.shares << "\n"
-    //     << "  Price: " << msg.price / PRICE_DIVISOR;
+    out << "Order Replace:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Original Ref#: " << msg.original_order_reference_number << "\n"
+        << "  New Ref#: " << msg.new_order_reference_number << "\n"
+        << "  Shares: " << msg.shares << "\n"
+        << "  Price: " << msg.price / PRICE_DIVISOR;
 }
 
 auto InternalPrintMessage(std::ostream& out, const NonCrossTradeMessage& msg) {

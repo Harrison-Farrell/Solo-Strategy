@@ -275,6 +275,18 @@ struct OrderDeleteMessage {
     uint64_t order_reference_number;  ///< Reference to AddOrder
 };
 
+/// \struct OrderReplaceMessage
+/// \brief Modification of an order's price or shares.
+struct OrderReplaceMessage {
+    MessageType message_type;                  ///< Message type
+    uint16_t stock_locate;                     ///< Locate code for the security
+    uint16_t tracking_number;                  ///< Nasdaq internal tracking number
+    Timestamp timestamp;                       ///< Nanoseconds past midnight (48-bit)
+    uint64_t original_order_reference_number;  ///< Old ID
+    uint64_t new_order_reference_number;       ///< New ID
+    uint32_t shares;                           ///< New total shares
+    uint32_t price;                            ///< New limit price
+};
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -285,16 +297,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct OrderReplaceMessage
-/// \brief Modification of an order's price or shares.
-struct OrderReplaceMessage {
-    MessageHeader header{MessageType::OrderReplaceMessage, 0, 0, 0};  ///< Message header
-    uint64_t original_order_reference_number;                         ///< Old ID
-    uint64_t new_order_reference_number;                              ///< New ID
-    uint32_t shares;                                                  ///< New total shares
-    uint32_t price;                                                   ///< New limit price
 };
 
 /// \struct NonCrossTradeMessage
