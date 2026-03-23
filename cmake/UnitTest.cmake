@@ -38,7 +38,9 @@ macro(AddTests target)
 		solo_strategy::itch_parser
 		solo_strategy::lock_free_queue
 		solo_strategy::memory_map
+		solo_strategy::memory_pool
 		solo_strategy::utilities
+		solo_strategy::thread
 		gtest_main 
 		gtest
 		gmock

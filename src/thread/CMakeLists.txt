@@ -9,8 +9,7 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # -----------------------------------------------------------------------------
 
-# Project name
-project(memory_pool)
+project(thread)
 
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(${LIBRARY_PREFIX}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
