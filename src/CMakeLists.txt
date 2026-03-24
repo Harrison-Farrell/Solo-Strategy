@@ -17,6 +17,7 @@ endif()
 
 # Add subdirectories
 add_subdirectory(utilities)
+add_subdirectory(thread)
 add_subdirectory(memory-map)
 add_subdirectory(memory-pool)
 add_subdirectory(lock-free-queue)

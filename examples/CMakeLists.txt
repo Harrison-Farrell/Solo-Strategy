@@ -13,3 +13,4 @@
 add_subdirectory(lock-free-queue)
 add_subdirectory(memory-pool)
 add_subdirectory(memory-map)
+add_subdirectory(thread)
