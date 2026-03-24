@@ -88,7 +88,8 @@ inline auto ClientIdToString(ClientId client_id) -> std::string {
     return std::to_string(client_id);
 }
 
-/// \brief Type alias for Price. Signed as negative prices are possible in some contexts.
+/// \brief Type alias for Price. Signed as negative prices are possible in some
+/// contexts.
 using Price = int64_t;
 
 /// \brief Invalid value marker for Price.
@@ -162,6 +163,8 @@ inline auto SideToString(Side side) -> std::string {
 /// \brief Maps a Side to an array index.
 /// \param side The Side to convert.
 /// \return Index value.
-constexpr auto SideToIndex(Side side) noexcept { return static_cast<size_t>(side) + 1; }
+constexpr auto SideToIndex(Side side) noexcept {
+    return static_cast<size_t>(side) + 1;
+}
 
 #endif  // SOLO_STRATEGY_SRC_UTILITIES_TYPES_H_

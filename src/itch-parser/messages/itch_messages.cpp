@@ -24,7 +24,8 @@ auto InternalPrintMessage(std::ostream& out, const SystemEventMessage& msg) {
         << "  Event Code: " << msg.event_code;
 }
 
-auto InternalPrintMessage(std::ostream& out, const StockTradingActionMessage& msg) {
+auto InternalPrintMessage(std::ostream& out,
+                          const StockTradingActionMessage& msg) {
     out << "Stock Trading Action:\n"
         << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
@@ -38,7 +39,8 @@ auto InternalPrintMessage(std::ostream& out, const RegSHOMessage& msg) {
         << "  Reg SHO Action: " << msg.reg_sho_action;
 }
 
-auto InternalPrintMessage(std::ostream& out, const MarketParticipantPositionMessage& msg) {
+auto InternalPrintMessage(std::ostream& out,
+                          const MarketParticipantPositionMessage& msg) {
     out << "Market Participant Position:\n"
         << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  MPID: " << ArrayToString<4>(msg.mpid) << "\n"
@@ -48,12 +50,14 @@ auto InternalPrintMessage(std::ostream& out, const MarketParticipantPositionMess
         << "  Participant State: " << msg.market_participant_state;
 }
 
-auto InternalPrintMessage(std::ostream& out, const MWCBDeclineLevelMessage& msg) {
+auto InternalPrintMessage(std::ostream& out,
+                          const MWCBDeclineLevelMessage& msg) {
     out << "MWCB Decline Level:\n"
         << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  Level 1: " << static_cast<double>(msg.level1) / MWCB_PRICE_DIVISOR
         << "  Level 2: " << static_cast<double>(msg.level2) / MWCB_PRICE_DIVISOR
-        << "  Level 3: " << static_cast<double>(msg.level3) / MWCB_PRICE_DIVISOR;
+        << "  Level 3: "
+        << static_cast<double>(msg.level3) / MWCB_PRICE_DIVISOR;
 }
 
 auto InternalPrintMessage(std::ostream& out, const MWCBStatusMessage& msg) {
@@ -74,7 +78,8 @@ auto InternalPrintMessage(std::ostream& out, const StockDirectoryMessage& msg) {
         << "  Issue Classification: " << msg.issue_classification << "\n"
         << "  Issue Sub Type: " << ArrayToString<2>(msg.issue_sub_type) << "\n"
         << "  Authenticity: " << msg.authenticity << "\n"
-        << "  Short Sale Threshold Indicator: " << msg.short_sale_threshold_indicator << "\n"
+        << "  Short Sale Threshold Indicator: "
+        << msg.short_sale_threshold_indicator << "\n"
         << "  IPO Flag: " << msg.ipo_flag << "\n"
         << "  LULDReference Price Tier: " << msg.luld_ref << "\n"
         << "  ETP Flag: " << msg.etp_flag << "\n"
@@ -82,26 +87,34 @@ auto InternalPrintMessage(std::ostream& out, const StockDirectoryMessage& msg) {
         << "  Inverse Indicator: " << msg.inverse_indicator << "\n";
 }
 
-auto InternalPrintMessage(std::ostream& out, const IPOQuotingPeriodUpdateMessage& msg) {
+auto InternalPrintMessage(std::ostream& out,
+                          const IPOQuotingPeriodUpdateMessage& msg) {
     out << "IPO Quoting Period Update:\n"
         << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
-        << "  IPO Quotation Release Time: " << msg.ipo_quotation_release_time << "\n"
-        << "  IPO Quotation Release Qualifier: " << msg.ipo_quotation_release_qualifier << "\n"
+        << "  IPO Quotation Release Time: " << msg.ipo_quotation_release_time
+        << "\n"
+        << "  IPO Quotation Release Qualifier: "
+        << msg.ipo_quotation_release_qualifier << "\n"
         << "  IPO Price: " << msg.ipo_price << "\n";
 }
 
-auto InternalPrintMessage(std::ostream& out, const LULDAuctionCollarMessage& msg) {
+auto InternalPrintMessage(std::ostream& out,
+                          const LULDAuctionCollarMessage& msg) {
     out << "LULD Auction Collar:\n"
         << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
-        << "  Auction Collar Reference Price: " << msg.auction_collar_reference_price << "\n"
-        << "  Upper Auction Collar Price: " << msg.upper_auction_collar_price << "\n"
-        << "  Lower Auction Collar Price: " << msg.lower_auction_collar_price << "\n"
+        << "  Auction Collar Reference Price: "
+        << msg.auction_collar_reference_price << "\n"
+        << "  Upper Auction Collar Price: " << msg.upper_auction_collar_price
+        << "\n"
+        << "  Lower Auction Collar Price: " << msg.lower_auction_collar_price
+        << "\n"
         << "  Auction Collar Extension: " << msg.auction_collar_extension;
 }
 
-auto InternalPrintMessage(std::ostream& out, const OperationalHaltMessage& msg) {
+auto InternalPrintMessage(std::ostream& out,
+                          const OperationalHaltMessage& msg) {
     out << "Operational Halt:\n"
         << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
@@ -119,7 +132,8 @@ auto InternalPrintMessage(std::ostream& out, const AddOrderMessage& msg) {
         << "  Price: " << msg.price / PRICE_DIVISOR;
 }
 
-auto InternalPrintMessage(std::ostream& out, const AddOrderMPIDAttributionMessage& msg) {
+auto InternalPrintMessage(std::ostream& out,
+                          const AddOrderMPIDAttributionMessage& msg) {
     out << "Add Order (MPID):\n"
         << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  Order Reference ID: " << msg.order_reference_number << "\n"
@@ -138,7 +152,8 @@ auto InternalPrintMessage(std::ostream& out, const OrderExecutedMessage& msg) {
         << "  Match Number: " << msg.match_number;
 }
 
-auto InternalPrintMessage(std::ostream& out, const OrderExecutedWithPriceMessage& msg) {
+auto InternalPrintMessage(std::ostream& out,
+                          const OrderExecutedWithPriceMessage& msg) {
     out << "Order Executed w/ Price:\n"
         << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
         << "  Order Reference ID: " << msg.order_reference_number << "\n"
@@ -204,12 +219,14 @@ auto InternalPrintMessage(std::ostream& out, const NOIIMessage& msg) {
     //     << "  Imbalance Direction: " << msg.imbalance_direction << "\n"
     //     << "  Far Price: " << msg.far_price / PRICE_DIVISOR << "\n"
     //     << "  Near Price: " << msg.near_price / PRICE_DIVISOR << "\n"
-    //     << "  Reference Price: " << msg.current_reference_price / PRICE_DIVISOR << "\n"
+    //     << "  Reference Price: " << msg.current_reference_price /
+    //     PRICE_DIVISOR << "\n"
     //     << "  Cross Type: " << msg.cross_type << "\n"
     //     << "  Price Variation Indicator: " << msg.price_variation_indicator;
 }
 
-auto InternalPrintMessage(std::ostream& out, const RetailPriceImprovementIndicatorMessage& msg) {
+auto InternalPrintMessage(std::ostream& out,
+                          const RetailPriceImprovementIndicatorMessage& msg) {
     // out << "RPII Message:\n"
     //     << "  Timestamp: " << msg.header.timestamp << "\n"
     //     << "  Stock: " << to_string(msg.stock, STOCK_LEN);

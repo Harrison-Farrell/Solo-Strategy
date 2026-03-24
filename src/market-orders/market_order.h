@@ -10,7 +10,8 @@
 // -----------------------------------------------------------------------------
 
 /// @file market_order.h
-/// @brief Definitions for market orders, price levels, and best bid/offer views.
+/// @brief Definitions for market orders, price levels, and best bid/offer
+/// views.
 
 #ifndef SOLO_STRATEGY_SRC_MARKET_ORDERS_MARKET_ORDER_H_
 #define SOLO_STRATEGY_SRC_MARKET_ORDERS_MARKET_ORDER_H_
@@ -50,8 +51,9 @@ struct MarketOrder {
     /// @param priority Priority of the order.
     /// @param prev_order Pointer to previous order.
     /// @param next_order Pointer to next order.
-    MarketOrder(OrderId order_id, Side side, Price price, Qty qty, Priority priority,
-                MarketOrder* prev_order, MarketOrder* next_order) noexcept;
+    MarketOrder(OrderId order_id, Side side, Price price, Qty qty,
+                Priority priority, MarketOrder* prev_order,
+                MarketOrder* next_order) noexcept;
 
     /// @brief Returns a string representation of the MarketOrder.
     /// @return String representation.
@@ -85,7 +87,8 @@ struct MarketOrderAtPrice {
     /// @param prev_entry Pointer to previous price entry.
     /// @param next_entry Pointer to next price entry.
     MarketOrderAtPrice(Side side, Price price, MarketOrder* first_market_order,
-                       MarketOrderAtPrice* prev_entry, MarketOrderAtPrice* next_entry) noexcept;
+                       MarketOrderAtPrice* prev_entry,
+                       MarketOrderAtPrice* next_entry) noexcept;
 
     /// @brief Returns a string representation of the MarketOrderAtPrice.
     /// @return String representation.

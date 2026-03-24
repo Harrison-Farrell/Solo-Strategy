@@ -38,8 +38,9 @@ class LockFreeQueue final {
     /// \return Pointer to the next writable element.
     auto GetNextWrite() noexcept { return &m_Store[m_NextWrite]; }
 
-    /// \brief Advances the write index in a circular fashion and increments the size.
-    /// Should be called after writing to the pointer returned by GetNextWrite().
+    /// \brief Advances the write index in a circular fashion and increments the
+    /// size. Should be called after writing to the pointer returned by
+    /// GetNextWrite().
     auto UpdateWriteIndex() noexcept {
         m_NextWrite = (m_NextWrite + 1) % m_Store.size();
         m_Size++;
@@ -51,8 +52,9 @@ class LockFreeQueue final {
         return (Size() ? &m_Store[m_NextRead] : nullptr);
     }
 
-    /// \brief Advances the read index in a circular fashion and decrements the size.
-    /// Should be called after reading from the pointer returned by GetNextRead().
+    /// \brief Advances the read index in a circular fashion and decrements the
+    /// size. Should be called after reading from the pointer returned by
+    /// GetNextRead().
     auto UpdateReadIndex() noexcept {
         m_NextRead = (m_NextRead + 1) % m_Store.size();
         ASSERT(m_Size != 0, "Read an invalid element");

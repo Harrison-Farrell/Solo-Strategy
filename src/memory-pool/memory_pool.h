@@ -21,8 +21,9 @@
 
 #include "utilities/macros.h"
 
-/// @brief Pre-Allocates objects in memory to avoid the overhead of dynamic allocation.
-/// Offers significantly better performance than standard heap allocation.
+/// @brief Pre-Allocates objects in memory to avoid the overhead of dynamic
+/// allocation. Offers significantly better performance than standard heap
+/// allocation.
 /// @tparam T The type of objects managed by the pool.
 template <typename T>
 class MemoryPool final {
@@ -37,8 +38,10 @@ class MemoryPool final {
     /// @brief Constructs a MemoryPool with a fixed capacity.
     /// @param num_elems The number of elements to pre-Allocate.
     explicit MemoryPool(std::size_t num_elems)
-        : m_Store(num_elems, {T(), true}) /* pre-allocation of vector storage. */ {
-        ASSERT(reinterpret_cast<const ElementBlock*>(&(m_Store[0].element)) == &(m_Store[0]),
+        : m_Store(num_elems,
+                  {T(), true}) /* pre-allocation of vector storage. */ {
+        ASSERT(reinterpret_cast<const ElementBlock*>(&(m_Store[0].element)) ==
+                   &(m_Store[0]),
                "T object should be first member of ElementBlock.");
     }
 
@@ -50,8 +53,8 @@ class MemoryPool final {
     template <typename... Args>
     T* Allocate(Args... args) noexcept {
         auto obj_block = &(m_Store[m_NextFreeIndex]);
-        ASSERT(obj_block->is_free,
-               "Expected free ObjectBlock at index:" + std::to_string(m_NextFreeIndex));
+        ASSERT(obj_block->is_free, "Expected free ObjectBlock at index:" +
+                                       std::to_string(m_NextFreeIndex));
         T* ret = &(obj_block->element);
         ret = new (ret) T(args...);  // placement new.
         obj_block->is_free = false;
@@ -64,11 +67,14 @@ class MemoryPool final {
     /// @brief DeAllocates an object, marking its block as free for reuse.
     /// @param elem Pointer to the object to Deallocate.
     auto Deallocate(const T* elem) noexcept {
-        const auto elem_index = (reinterpret_cast<const ElementBlock*>(elem) - &m_Store[0]);
-        ASSERT(elem_index >= 0 && static_cast<size_t>(elem_index) < m_Store.size(),
-               "Element being DeAllocated does not belong to this Memory pool.");
+        const auto elem_index =
+            (reinterpret_cast<const ElementBlock*>(elem) - &m_Store[0]);
+        ASSERT(
+            elem_index >= 0 && static_cast<size_t>(elem_index) < m_Store.size(),
+            "Element being DeAllocated does not belong to this Memory pool.");
         ASSERT(!m_Store[elem_index].is_free,
-               "Expected in-use ObjectBlock at index:" + std::to_string(elem_index));
+               "Expected in-use ObjectBlock at index:" +
+                   std::to_string(elem_index));
         m_Store[elem_index].is_free = true;
     }
 
@@ -82,7 +88,8 @@ class MemoryPool final {
                 m_NextFreeIndex = 0;
             }
             if (initial_free_index == m_NextFreeIndex) [[unlikely]] {
-                ASSERT(initial_free_index != m_NextFreeIndex, "Memory Pool out of space.");
+                ASSERT(initial_free_index != m_NextFreeIndex,
+                       "Memory Pool out of space.");
             }
         }
     }

@@ -23,8 +23,14 @@ auto MarketOrder::toString() const -> std::string {
        << "price:" << PriceToString(mPrice) << " "
        << "qty:" << QtyToString(mQty) << " "
        << "prio:" << PriorityToString(mPriority) << " "
-       << "prev:" << OrderIdToString(mPrev_order ? mPrev_order->mOrder_id : OrderId_INVALID) << " "
-       << "next:" << OrderIdToString(mNext_order ? mNext_order->mOrder_id : OrderId_INVALID) << "]";
+       << "prev:"
+       << OrderIdToString(mPrev_order ? mPrev_order->mOrder_id
+                                      : OrderId_INVALID)
+       << " "
+       << "next:"
+       << OrderIdToString(mNext_order ? mNext_order->mOrder_id
+                                      : OrderId_INVALID)
+       << "]";
     return ss.str();
 }
 
@@ -33,18 +39,24 @@ auto MarketOrderAtPrice::toString() const -> std::string {
     ss << "MarketOrdersAtPrice["
        << "side:" << SideToString(mSide) << " "
        << "price:" << PriceToString(mPrice) << " "
-       << "first_mkt_order:" << (mFirst_market_order ? mFirst_market_order->toString() : "null")
+       << "first_mkt_order:"
+       << (mFirst_market_order ? mFirst_market_order->toString() : "null")
        << " "
-       << "prev:" << PriceToString(mPrev_entry ? mPrev_entry->mPrice : Price_INVALID) << " "
-       << "next:" << PriceToString(mNext_entry ? mNext_entry->mPrice : Price_INVALID) << "]";
+       << "prev:"
+       << PriceToString(mPrev_entry ? mPrev_entry->mPrice : Price_INVALID)
+       << " "
+       << "next:"
+       << PriceToString(mNext_entry ? mNext_entry->mPrice : Price_INVALID)
+       << "]";
 
     return ss.str();
 }
 
 auto BestBidOffer::toString() const -> std::string {
     std::stringstream ss;
-    ss << "Best Bid Offer\t{" << QtyToString(mBid_qty) << "@" << PriceToString(mBid_price) << "X"
-       << PriceToString(mAsk_price) << "@" << QtyToString(mAsk_qty) << "}";
+    ss << "Best Bid Offer\t{" << QtyToString(mBid_qty) << "@"
+       << PriceToString(mBid_price) << "X" << PriceToString(mAsk_price) << "@"
+       << QtyToString(mAsk_qty) << "}";
 
     return ss.str();
 }
