@@ -9,9 +9,20 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # -----------------------------------------------------------------------------
 
-AddTests(test_memory_map_file)
-AddTests(test_lock_free_queue)
-AddTests(test_endian_utils)
-AddTests(test_macros)
-AddTests(test_itch_parser)
-# AddTests(test_thread)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Charts)
+
+add_executable(market_depth_example example_market_depth_graph.cpp)
+
+target_include_directories(market_depth_example PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
+target_link_libraries(market_depth_example PUBLIC 
+    Qt6::Widgets 
+    Qt6::Charts
+)
+
+set_target_properties(market_depth_example
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"
+)
