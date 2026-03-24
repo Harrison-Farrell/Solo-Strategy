@@ -14,6 +14,8 @@
 #include <sstream>
 #include <string>
 
+#include "utilities/types.h"
+
 auto MarketOrder::toString() const -> std::string {
     std::stringstream ss;
 
