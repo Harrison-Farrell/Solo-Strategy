@@ -72,11 +72,12 @@ class MemoryMappedFile {
 
     /// @brief Constructs and immediately maps a file.
     /// @param filename Path to the file.
-    /// @param mappedBytes Number of bytes to map. Use WholeFile (0) for the entire file.
+    /// @param mappedBytes Number of bytes to map. Use WholeFile (0) for the
+    /// entire file.
     /// @param hint Performance hint for the operating system.
     /// @throws std::runtime_error If the file fails to open or map.
-    MemoryMappedFile(const std::filesystem::path& filename, size_t mappedBytes = WholeFile,
-                     CacheHint hint = Normal);
+    MemoryMappedFile(const std::filesystem::path& filename,
+                     size_t mappedBytes = WholeFile, CacheHint hint = Normal);
 
     /// @brief Unmaps the memory and closes the file handles.
     ~MemoryMappedFile();
@@ -89,10 +90,12 @@ class MemoryMappedFile {
     /// @param mappedBytes Bytes to map. 0 means map everything.
     /// @param hint Performance hint for the OS.
     /// @return true if successful.
-    [[nodiscard]] bool open(const std::filesystem::path& filename, size_t mappedBytes = WholeFile,
+    [[nodiscard]] bool open(const std::filesystem::path& filename,
+                            size_t mappedBytes = WholeFile,
                             CacheHint hint = Normal);
 
-    /// @brief Unmaps the memory and closes all handles. Safe to call multiple times.
+    /// @brief Unmaps the memory and closes all handles. Safe to call multiple
+    /// times.
     void close();
 
     /// @brief Fast, unchecked array-style access to the mapped data.
@@ -127,12 +130,14 @@ class MemoryMappedFile {
     /// @return File size in bytes.
     [[nodiscard]] uint64_t size() const;
 
-    /// @brief Gets the number of bytes currently mapped into the process's address space.
+    /// @brief Gets the number of bytes currently mapped into the process's
+    /// address space.
     /// @return Number of mapped bytes.
     [[nodiscard]] size_t mappedSize() const;
 
     /// @brief Shifts the memory mapping window.
-    /// @param offset New start offset in the file. Must be a multiple of OS page size.
+    /// @param offset New start offset in the file. Must be a multiple of OS
+    /// page size.
     /// @param mappedBytes Number of bytes to map from the new offset.
     /// @return true on success.
     [[nodiscard]] bool remap(uint64_t offset, size_t mappedBytes);
@@ -144,7 +149,8 @@ class MemoryMappedFile {
     template <typename T>
     T Inspect() {
         // Direct memory access via pointer casting
-        T value = *reinterpret_cast<const T*>(static_cast<const uint8_t*>(mMappedView) + mCursor);
+        T value = *reinterpret_cast<const T*>(
+            static_cast<const uint8_t*>(mMappedView) + mCursor);
         return value;
     }
 
@@ -155,7 +161,8 @@ class MemoryMappedFile {
     template <typename T>
     T Read() {
         // Direct memory access via pointer casting
-        T value = *reinterpret_cast<const T*>(static_cast<const uint8_t*>(mMappedView) + mCursor);
+        T value = *reinterpret_cast<const T*>(
+            static_cast<const uint8_t*>(mMappedView) + mCursor);
         mCursor += sizeof(T);
         return value;
     }
@@ -204,7 +211,8 @@ class MemoryMappedFile {
     template <size_t N>
     std::array<char, N> ReadArray() {
         std::array<char, N> result{};
-        std::memcpy(result.data(), static_cast<const char*>(mMappedView) + mCursor, N);
+        std::memcpy(result.data(),
+                    static_cast<const char*>(mMappedView) + mCursor, N);
         mCursor += N;
         return result;
     }
@@ -213,7 +221,8 @@ class MemoryMappedFile {
     /// @param dentation of the string copy.
     /// @param length Number of characters to read.
     inline auto copyString(char* destination, size_t length) -> void {
-        std::memcpy(destination, static_cast<const char*>(mMappedView) + mCursor, length);
+        std::memcpy(destination,
+                    static_cast<const char*>(mMappedView) + mCursor, length);
         mCursor += length;
     }
 
@@ -244,14 +253,15 @@ class MemoryMappedFile {
 
     std::filesystem::path mFilename;  ///< Canonical path of the opened file.
     uint64_t mFilesize = 0;           ///< Cached size of the file in bytes.
-    size_t mCursor = 0;               ///< Current stream position for sequential reads.
-    CacheHint mHint = Normal;         ///< Active performance hint.
-    size_t mMappedBytes = 0;          ///< Actual bytes currently accessible in memory.
+    size_t mCursor = 0;  ///< Current stream position for sequential reads.
+    CacheHint mHint = Normal;  ///< Active performance hint.
+    size_t mMappedBytes = 0;   ///< Actual bytes currently accessible in memory.
 
 #ifdef __WINDOWS_OS__
     using FileHandle = void*;
-    FileHandle mFileHandle = nullptr;     ///< Native Windows file handle.
-    FileHandle mMappingHandle = nullptr;  ///< Native Windows mapping object handle.
+    FileHandle mFileHandle = nullptr;  ///< Native Windows file handle.
+    FileHandle mMappingHandle =
+        nullptr;  ///< Native Windows mapping object handle.
 #else
     using FileHandle = int;
     FileHandle mFileHandle = -1;  ///< POSIX file descriptor.

@@ -10,7 +10,8 @@
 // -----------------------------------------------------------------------------
 
 /// @file market_update.h
-/// @brief Messaging structures for publishing and consuming market data updates.
+/// @brief Messaging structures for publishing and consuming market data
+/// updates.
 
 #ifndef SOLO_STRATEGY_SRC_MARKET_ORDERS_MARKET_UPDATE_H_
 #define SOLO_STRATEGY_SRC_MARKET_ORDERS_MARKET_UPDATE_H_
@@ -61,7 +62,8 @@ inline std::string marketUpdateTypeToString(MarketUpdateType type) {
 #pragma pack(push, 1)
 
 /// @brief Market update structure used internally by the matching engine.
-/// These structures are packed to ensure consistent binary layout across systems.
+/// These structures are packed to ensure consistent binary layout across
+/// systems.
 struct MEMarketUpdate {
     MarketUpdateType type = MarketUpdateType::INVALID;
     OrderId order_id = OrderId_INVALID;
@@ -78,10 +80,11 @@ struct MEMarketUpdate {
         ss << "MEMarketUpdate"
            << " ["
            << " type:" << marketUpdateTypeToString(type)
-           << " ticker:" << TickerIdToString(ticker_id) << " oid:" << OrderIdToString(order_id)
+           << " ticker:" << TickerIdToString(ticker_id)
+           << " oid:" << OrderIdToString(order_id)
            << " side:" << SideToString(side) << " qty:" << QtyToString(qty)
-           << " price:" << PriceToString(price) << " priority:" << PriorityToString(priority)
-           << "]";
+           << " price:" << PriceToString(price)
+           << " priority:" << PriorityToString(priority) << "]";
         return ss.str();
     }
 };

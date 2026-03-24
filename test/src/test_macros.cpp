@@ -24,5 +24,7 @@ TEST(MarcoTest, assert_test) {
     EXPECT_EXIT(ASSERT(false, "Death"), testing::ExitedWithCode(1), "Death");
 }
 
-TEST(MarcoTest, fatal_test) { EXPECT_EXIT(FATAL("Death"), testing::ExitedWithCode(1), "Death"); }
+TEST(MarcoTest, fatal_test) {
+    EXPECT_EXIT(FATAL("Death"), testing::ExitedWithCode(1), "Death");
+}
 // NOLINTEND

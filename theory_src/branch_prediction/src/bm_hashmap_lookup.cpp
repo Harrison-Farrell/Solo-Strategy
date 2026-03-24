@@ -20,9 +20,10 @@ void Sink(int& val) { benchmark::DoNotOptimize(val += 1); }
 
 // Global or static map to simulate a persistent lookup table
 const std::unordered_map<int, std::function<void(int&)>> CaseMap = {
-    {0, Sink},  {1, Sink},  {2, Sink},  {3, Sink},  {4, Sink},  {5, Sink},  {6, Sink},
-    {7, Sink},  {8, Sink},  {9, Sink},  {10, Sink}, {11, Sink}, {12, Sink}, {13, Sink},
-    {14, Sink}, {15, Sink}, {16, Sink}, {17, Sink}, {18, Sink}
+    {0, Sink},  {1, Sink},  {2, Sink},  {3, Sink},  {4, Sink},
+    {5, Sink},  {6, Sink},  {7, Sink},  {8, Sink},  {9, Sink},
+    {10, Sink}, {11, Sink}, {12, Sink}, {13, Sink}, {14, Sink},
+    {15, Sink}, {16, Sink}, {17, Sink}, {18, Sink}
 
 };
 

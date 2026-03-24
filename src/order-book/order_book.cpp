@@ -23,21 +23,25 @@ MarketOrderBook::~MarketOrderBook() {
     mOrder_id_to_order.fill(nullptr);
 }
 
-auto MarketOrderBook::onMarketUpdate(const MEMarketUpdate* market_update) noexcept -> void {
+auto MarketOrderBook::onMarketUpdate(
+    const MEMarketUpdate* market_update) noexcept -> void {
     // Check if the bid price level was updated by comparing side and price
-    const auto bid_updated = (mBids_by_price && market_update->side == Side::BUY &&
-                              market_update->price >= mBids_by_price->mPrice);
+    const auto bid_updated =
+        (mBids_by_price && market_update->side == Side::BUY &&
+         market_update->price >= mBids_by_price->mPrice);
     // Check if the ask price level was updated by comparing side and price
-    const auto ask_updated = (mAsks_by_price && market_update->side == Side::SELL &&
-                              market_update->price <= mAsks_by_price->mPrice);
+    const auto ask_updated =
+        (mAsks_by_price && market_update->side == Side::SELL &&
+         market_update->price <= mAsks_by_price->mPrice);
 
     // Process the market update based on its type
     switch (market_update->type) {
         case MarketUpdateType::ADD: {
             // Allocate a new order from the memory pool with update details
-            auto order = mOrder_pool.Allocate(market_update->order_id, market_update->side,
-                                              market_update->price, market_update->qty,
-                                              market_update->priority, nullptr, nullptr);
+            auto order = mOrder_pool.Allocate(
+                market_update->order_id, market_update->side,
+                market_update->price, market_update->qty,
+                market_update->priority, nullptr, nullptr);
             // Add the newly created order to the order book
             addOrder(order);
         } break;
@@ -69,16 +73,16 @@ auto MarketOrderBook::onMarketUpdate(const MEMarketUpdate* market_update) noexce
 
             // Deallocate all bid price levels
             if (mBids_by_price) {
-                for (auto bid = mBids_by_price->mNext_entry; bid != mBids_by_price;
-                     bid = bid->mNext_entry)
+                for (auto bid = mBids_by_price->mNext_entry;
+                     bid != mBids_by_price; bid = bid->mNext_entry)
                     mOrders_at_price_pool.Deallocate(bid);
                 mOrders_at_price_pool.Deallocate(mBids_by_price);
             }
 
             // Deallocate all ask price levels
             if (mAsks_by_price) {
-                for (auto ask = mAsks_by_price->mNext_entry; ask != mAsks_by_price;
-                     ask = ask->mNext_entry)
+                for (auto ask = mAsks_by_price->mNext_entry;
+                     ask != mAsks_by_price; ask = ask->mNext_entry)
                     mOrders_at_price_pool.Deallocate(ask);
                 mOrders_at_price_pool.Deallocate(mAsks_by_price);
             }

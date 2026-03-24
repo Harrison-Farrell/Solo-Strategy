@@ -29,17 +29,18 @@
 
 MemoryMappedFile::MemoryMappedFile() = default;
 
-MemoryMappedFile::MemoryMappedFile(const std::filesystem::path& filename, size_t mappedBytes,
-                                   CacheHint hint) {
+MemoryMappedFile::MemoryMappedFile(const std::filesystem::path& filename,
+                                   size_t mappedBytes, CacheHint hint) {
     if (!open(filename, mappedBytes, hint)) {
-        throw std::runtime_error("MemoryMappedFile::MemoryMappedFile() : failed to open file");
+        throw std::runtime_error(
+            "MemoryMappedFile::MemoryMappedFile() : failed to open file");
     }
 }
 
 MemoryMappedFile::~MemoryMappedFile() { close(); }
 
-bool MemoryMappedFile::open(const std::filesystem::path& filename, size_t mappedBytes,
-                            CacheHint hint) {
+bool MemoryMappedFile::open(const std::filesystem::path& filename,
+                            size_t mappedBytes, CacheHint hint) {
     close();
 
     if (!osOpen(filename)) {
@@ -103,7 +104,9 @@ const uint8_t* MemoryMappedFile::getData() const {
 
 const uint8_t* MemoryMappedFile::begin() const { return getData(); }
 
-const uint8_t* MemoryMappedFile::end() const { return getData() + mMappedBytes; }
+const uint8_t* MemoryMappedFile::end() const {
+    return getData() + mMappedBytes;
+}
 
 bool MemoryMappedFile::isValid() const { return mMappedView != nullptr; }
 
@@ -113,9 +116,12 @@ size_t MemoryMappedFile::mappedSize() const { return mMappedBytes; }
 
 uint64_t MemoryMappedFile::Read48() {
     const uint8_t* ptr = static_cast<const uint8_t*>(mMappedView) + mCursor;
-    uint64_t value = (static_cast<uint64_t>(ptr[0]) << 40) | (static_cast<uint64_t>(ptr[1]) << 32) |
-                     (static_cast<uint64_t>(ptr[2]) << 24) | (static_cast<uint64_t>(ptr[3]) << 16) |
-                     (static_cast<uint64_t>(ptr[4]) << 8) | (static_cast<uint64_t>(ptr[5]));
+    uint64_t value = (static_cast<uint64_t>(ptr[0]) << 40) |
+                     (static_cast<uint64_t>(ptr[1]) << 32) |
+                     (static_cast<uint64_t>(ptr[2]) << 24) |
+                     (static_cast<uint64_t>(ptr[3]) << 16) |
+                     (static_cast<uint64_t>(ptr[4]) << 8) |
+                     (static_cast<uint64_t>(ptr[5]));
 
     mCursor += 6;
     return value;
@@ -126,8 +132,9 @@ uint64_t MemoryMappedFile::Read48() {
 #ifdef __WINDOWS_OS__
 
 bool MemoryMappedFile::osOpen(const std::filesystem::path& filename) {
-    mFileHandle = ::CreateFileW(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
-                                OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    mFileHandle =
+        ::CreateFileW(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+                      OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
     return mFileHandle != INVALID_HANDLE_VALUE;
 }
@@ -144,7 +151,8 @@ bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
         mappedBytes = static_cast<size_t>(mFilesize - offset);
     }
 
-    mMappingHandle = ::CreateFileMappingW(mFileHandle, nullptr, PAGE_READONLY, 0, 0, nullptr);
+    mMappingHandle = ::CreateFileMappingW(mFileHandle, nullptr, PAGE_READONLY,
+                                          0, 0, nullptr);
     if (!mMappingHandle) {
         return false;
     }
@@ -152,8 +160,8 @@ bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
     const DWORD offsetHigh = static_cast<DWORD>(offset >> 32);
     const DWORD offsetLow = static_cast<DWORD>(offset & 0xFFFFFFFF);
 
-    mMappedView =
-        ::MapViewOfFile(mMappingHandle, FILE_MAP_READ, offsetHigh, offsetLow, mappedBytes);
+    mMappedView = ::MapViewOfFile(mMappingHandle, FILE_MAP_READ, offsetHigh,
+                                  offsetLow, mappedBytes);
 
     if (!mMappedView) {
         ::CloseHandle(mMappingHandle);
@@ -216,7 +224,8 @@ bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
     }
     #endif
 
-    mMappedView = ::mmap(nullptr, mappedBytes, PROT_READ, flags, mFileHandle, offset);
+    mMappedView =
+        ::mmap(nullptr, mappedBytes, PROT_READ, flags, mFileHandle, offset);
 
     if (mMappedView == MAP_FAILED) {
         mMappedView = nullptr;
@@ -248,6 +257,8 @@ uint64_t MemoryMappedFile::osGetFileSize() const {
     return 0;
 }
 
-uint32_t MemoryMappedFile::getPageSize() { return static_cast<uint32_t>(::sysconf(_SC_PAGESIZE)); }
+uint32_t MemoryMappedFile::getPageSize() {
+    return static_cast<uint32_t>(::sysconf(_SC_PAGESIZE));
+}
 
 #endif

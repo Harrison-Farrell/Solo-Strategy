@@ -93,13 +93,15 @@ TEST_F(MemoryMappedFileTest, RemapOffsets) {
     ASSERT_TRUE(mappedFile.open(tempFilePath, 1024));
     EXPECT_EQ(mappedFile.mappedSize(), 1024);
 
-    // remap testing (requires page size alignment typically, assuming 4096 here for safety, offset
-    // 4096) using page boundary 4096
+    // remap testing (requires page size alignment typically, assuming 4096 here
+    // for safety, offset 4096) using page boundary 4096
     bool remapped = mappedFile.remap(4096, 2048);
     if (!remapped) {
-        // Some OSes or specific page sizes might fail if offset is not aligned to their page size.
-        // fallback to whole file map or skip specific check.
-        SUCCEED() << "Remap failed possibly due to page unalignment, skipping test check.";
+        // Some OSes or specific page sizes might fail if offset is not aligned
+        // to their page size. fallback to whole file map or skip specific
+        // check.
+        SUCCEED() << "Remap failed possibly due to page unalignment, skipping "
+                     "test check.";
         return;
     }
     EXPECT_EQ(mappedFile.mappedSize(), 2048);
@@ -132,8 +134,9 @@ TEST_F(MemoryMappedFileTest, ReadEndianness) {
     // ITCH protocol deals in Big-Endian. Values here are encoded as big-endian.
     // 0x1234 -> BE: [0x12, 0x34]
     // 0x11223344 -> BE: [0x11, 0x22, 0x33, 0x44]
-    CreateTestFile({0x12, 0x34, 0x11, 0x22, 0x33, 0x44, 0xAA, 0xBB, 0xCC, 0xDD,
-                    0xEE, 0xFF, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08});
+    CreateTestFile({0x12, 0x34, 0x11, 0x22, 0x33, 0x44, 0xAA,
+                    0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x01, 0x02,
+                    0x03, 0x04, 0x05, 0x06, 0x07, 0x08});
 
     MemoryMappedFile mappedFile;
     ASSERT_TRUE(mappedFile.open(tempFilePath));
@@ -149,7 +152,8 @@ TEST_F(MemoryMappedFileTest, ReadEndianness) {
 }
 
 TEST_F(MemoryMappedFileTest, ReadStrings) {
-    CreateTestFile({'H', 'A', 'R', 'R', 'I', 'S', 'O', 'N', 'F', 'A', 'R', 'R', 'E', 'L', 'L'});
+    CreateTestFile({'H', 'A', 'R', 'R', 'I', 'S', 'O', 'N', 'F', 'A', 'R', 'R',
+                    'E', 'L', 'L'});
 
     MemoryMappedFile mappedFile;
     ASSERT_TRUE(mappedFile.open(tempFilePath));

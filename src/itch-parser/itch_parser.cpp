@@ -16,25 +16,72 @@
 #include "itch-parser/messages/itch_messages.h"
 #include "memory-map/memory_map_file.h"
 
-// clang-format off
-auto ITCH_Parser::SystemEventMessage() { return m_File.Read<ITCH::SystemEventMessage>(); }
-auto ITCH_Parser::StockTradingActionMessage() { return m_File.Read<ITCH::StockTradingActionMessage>(); }
-auto ITCH_Parser::RegSHOMessage() { return m_File.Read<ITCH::RegSHOMessage>(); }
-auto ITCH_Parser::MarketParticipantPositionMessage() { return m_File.Read<ITCH::MarketParticipantPositionMessage>(); }
-auto ITCH_Parser::MWCBDeclineLevelMessage() { return m_File.Read<ITCH::MWCBDeclineLevelMessage>(); }
-auto ITCH_Parser::MWCBStatusMessage() { return m_File.Read<ITCH::MWCBStatusMessage>(); }
-auto ITCH_Parser::StockDirectoryMessage() { return m_File.Read<ITCH::StockDirectoryMessage>(); }
-auto ITCH_Parser::IPOQuotingPeriodUpdateMessage() { return m_File.Read<ITCH::IPOQuotingPeriodUpdateMessage>(); }
-auto ITCH_Parser::LULDAuctionCollarMessage() { return m_File.Read<ITCH::LULDAuctionCollarMessage>(); }
-auto ITCH_Parser::OperationalHaltMessage() { return m_File.Read<ITCH::OperationalHaltMessage>(); }
-auto ITCH_Parser::AddOrderMessage() { return m_File.Read<ITCH::AddOrderMessage>(); }
-auto ITCH_Parser::AddOrderMPIDAttributionMessage() { return m_File.Read<ITCH::AddOrderMPIDAttributionMessage>(); }
-auto ITCH_Parser::OrderExecutedMessage() { return m_File.Read<ITCH::OrderExecutedMessage>(); }
-auto ITCH_Parser::OrderExecutedWithPriceMessage() { return m_File.Read<ITCH::OrderExecutedWithPriceMessage>(); }
-auto ITCH_Parser::OrderCancelMessage() { return m_File.Read<ITCH::OrderCancelMessage>(); }
-auto ITCH_Parser::OrderDeleteMessage() { return m_File.Read<ITCH::OrderDeleteMessage>(); }
-auto ITCH_Parser::OrderReplaceMessage() { return m_File.Read<ITCH::OrderReplaceMessage>(); }
-// clang-format on
+auto ITCH_Parser::SystemEventMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::SystemEventMessage>();
+}
+
+auto ITCH_Parser::StockTradingActionMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::StockTradingActionMessage>();
+}
+
+auto ITCH_Parser::RegSHOMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::RegSHOMessage>();
+}
+
+auto ITCH_Parser::MarketParticipantPositionMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::MarketParticipantPositionMessage>();
+}
+auto ITCH_Parser::MWCBDeclineLevelMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::MWCBDeclineLevelMessage>();
+}
+
+auto ITCH_Parser::MWCBStatusMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::MWCBStatusMessage>();
+}
+
+auto ITCH_Parser::StockDirectoryMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::StockDirectoryMessage>();
+}
+
+auto ITCH_Parser::IPOQuotingPeriodUpdateMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::IPOQuotingPeriodUpdateMessage>();
+}
+
+auto ITCH_Parser::LULDAuctionCollarMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::LULDAuctionCollarMessage>();
+}
+
+auto ITCH_Parser::OperationalHaltMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::OperationalHaltMessage>();
+}
+
+auto ITCH_Parser::AddOrderMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::AddOrderMessage>();
+}
+
+auto ITCH_Parser::AddOrderMPIDAttributionMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::AddOrderMPIDAttributionMessage>();
+}
+
+auto ITCH_Parser::OrderExecutedMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::OrderExecutedMessage>();
+}
+
+auto ITCH_Parser::OrderExecutedWithPriceMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::OrderExecutedWithPriceMessage>();
+}
+
+auto ITCH_Parser::OrderCancelMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::OrderCancelMessage>();
+}
+
+auto ITCH_Parser::OrderDeleteMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::OrderDeleteMessage>();
+}
+
+auto ITCH_Parser::OrderReplaceMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::OrderReplaceMessage>();
+}
 
 ITCH_Parser::ITCH_Parser(const std::string& file_path)
     : m_File(file_path), m_MessageQueue(m_MessageQueueSize) {
@@ -85,7 +132,8 @@ auto ITCH_Parser::DLCRMessage(const ITCH::MessageHeader& header) {
     m_MessageQueue.Push(msg);
 }
 
-auto ITCH_Parser::RetailPriceImprovementIndicatorMessage(const ITCH::MessageHeader& header) {
+auto ITCH_Parser::RetailPriceImprovementIndicatorMessage(
+    const ITCH::MessageHeader& header) {
     ITCH::RetailPriceImprovementIndicatorMessage msg = {};
     m_MessageQueue.Push(msg);
 }

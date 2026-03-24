@@ -52,11 +52,12 @@ TEST_F(ITCHPaserTest, SystemEventMessageTest) {
     using namespace ITCH;
 
     CreateTestFile({
-        0x53,                                // Message Type ('S')
-        0xCC, 0xBB,                          // Stock Locate (52411)
-        0xFF, 0xAA,                          // Tracking Number (65450)
-        0x41, 0x41, 0x41, 0x41, 0x41, 0x41,  // Timestamp ('A' 'A' 'A' 'A' 'A' 'A')
-        0x51                                 // Event Code ('Q')
+        0x53,        // Message Type ('S')
+        0xCC, 0xBB,  // Stock Locate (52411)
+        0xFF, 0xAA,  // Tracking Number (65450)
+        0x41, 0x41, 0x41, 0x41, 0x41,
+        0x41,  // Timestamp ('A' 'A' 'A' 'A' 'A' 'A')
+        0x51   // Event Code ('Q')
     });
 
     array<uint8_t, 6> expected_timestamp{'A', 'A', 'A', 'A', 'A', 'A'};
@@ -64,10 +65,17 @@ TEST_F(ITCHPaserTest, SystemEventMessageTest) {
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(MessageType::SystemEventMessage, get<SystemEventMessage>(message).message_type);
-    EXPECT_EQ(52411, FromBigEndian(get<SystemEventMessage>(message).stock_locate));
-    EXPECT_EQ(65450, FromBigEndian(get<SystemEventMessage>(message).tracking_number));
+    EXPECT_EQ(MessageType::SystemEventMessage,
+              get<SystemEventMessage>(message).message_type);
+
+    EXPECT_EQ(52411,
+              FromBigEndian(get<SystemEventMessage>(message).stock_locate));
+
+    EXPECT_EQ(65450,
+              FromBigEndian(get<SystemEventMessage>(message).tracking_number));
+
     EXPECT_EQ(expected_timestamp, get<SystemEventMessage>(message).timestamp);
+
     EXPECT_EQ('Q', get<SystemEventMessage>(message).event_code);
 }
 
@@ -77,10 +85,10 @@ TEST_F(ITCHPaserTest, StockTradingActionMessageTest) {
     using namespace ITCH;
 
     CreateTestFile({
-        0x48,                                            // Message Type ('H')
-        0xFF, 0xAA,                                      // Stock Locate (65450)
-        0xFF, 0xAA,                                      // Tracking Number (65450)
-        0xAA, 0xBB, 0xCC, 0xAA, 0xBB, 0xCC,              // Timestamp (187723569347532)
+        0x48,                                // Message Type ('H')
+        0xFF, 0xAA,                          // Stock Locate (65450)
+        0xFF, 0xAA,                          // Tracking Number (65450)
+        0xAA, 0xBB, 0xCC, 0xAA, 0xBB, 0xCC,  // Timestamp (187723569347532)
         0x41, 0x42, 0x43, 0x44, 0x41, 0x42, 0x43, 0x44,  // Stock ID (ABCDABCD)
         0x50,                                            // Trading State ('P')
         0x30,                                            // Reserved ('0')
@@ -96,13 +104,27 @@ TEST_F(ITCHPaserTest, StockTradingActionMessageTest) {
 
     EXPECT_EQ(MessageType::StockTradingActionMessage,
               get<StockTradingActionMessage>(message).message_type);
-    EXPECT_EQ(65450, FromBigEndian(get<StockTradingActionMessage>(message).stock_locate));
-    EXPECT_EQ(65450, FromBigEndian(get<StockTradingActionMessage>(message).tracking_number));
-    EXPECT_EQ(187723569347532, ArrayToUint48(get<StockTradingActionMessage>(message).timestamp));
-    EXPECT_EQ(expected_stock, std::get<ITCH::StockTradingActionMessage>(message).stock);
-    EXPECT_EQ('P', std::get<ITCH::StockTradingActionMessage>(message).trading_state);
+
+    EXPECT_EQ(65450, FromBigEndian(
+                         get<StockTradingActionMessage>(message).stock_locate));
+
+    EXPECT_EQ(
+        65450,
+        FromBigEndian(get<StockTradingActionMessage>(message).tracking_number));
+
+    EXPECT_EQ(187723569347532,
+              ArrayToUint48(get<StockTradingActionMessage>(message).timestamp));
+
+    EXPECT_EQ(expected_stock,
+              std::get<ITCH::StockTradingActionMessage>(message).stock);
+
+    EXPECT_EQ('P',
+              std::get<ITCH::StockTradingActionMessage>(message).trading_state);
+
     EXPECT_EQ('0', std::get<ITCH::StockTradingActionMessage>(message).reserved);
-    EXPECT_EQ(expected_reason, std::get<ITCH::StockTradingActionMessage>(message).reason);
+
+    EXPECT_EQ(expected_reason,
+              std::get<ITCH::StockTradingActionMessage>(message).reason);
 }
 
 TEST_F(ITCHPaserTest, RegSHOMessageTest) {
@@ -111,22 +133,30 @@ TEST_F(ITCHPaserTest, RegSHOMessageTest) {
     using namespace ITCH;
 
     CreateTestFile({
-        0x59,                                            // Message Type ('Y')
-        0x00, 0x0A,                                      // Stock Locate (10)
-        0x00, 0xFF,                                      // Tracking Number (255)
-        0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,              // Timestamp (16777215)
-        0x41, 0x50, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock ID ('APPL    ')
-        0x31,                                            // Reg SHO Action ('1')
+        0x59,                                // Message Type ('Y')
+        0x00, 0x0A,                          // Stock Locate (10)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (16777215)
+        0x41, 0x50, 0x50, 0x4C, 0x20, 0x20,
+        0x20, 0x20,  // Stock ID ('APPL    ')
+        0x31,        // Reg SHO Action ('1')
     });
 
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(MessageType::RegSHOMessage, get<RegSHOMessage>(message).message_type);
+    EXPECT_EQ(MessageType::RegSHOMessage,
+              get<RegSHOMessage>(message).message_type);
+
     EXPECT_EQ(10, FromBigEndian(get<RegSHOMessage>(message).stock_locate));
+
     EXPECT_EQ(255, FromBigEndian(get<RegSHOMessage>(message).tracking_number));
-    EXPECT_EQ(16777215, ArrayToUint48(get<ITCH::RegSHOMessage>(message).timestamp));
+
+    EXPECT_EQ(16777215,
+              ArrayToUint48(get<ITCH::RegSHOMessage>(message).timestamp));
+
     EXPECT_EQ("APPL    ", ArrayToString<8>(get<RegSHOMessage>(message).stock));
+
     EXPECT_EQ('1', get<RegSHOMessage>(message).reg_sho_action);
 }
 
@@ -136,15 +166,16 @@ TEST_F(ITCHPaserTest, MarketParticipantPositionMessageTest) {
     using namespace ITCH;
 
     CreateTestFile({
-        0x4C,                                            // Message Type ('L')
-        0x00, 0x0A,                                      // Stock Locate (10)
-        0x00, 0xFF,                                      // Tracking Number (255)
-        0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,              // Timestamp (16777215)
-        0x57, 0x58, 0x59, 0x5A,                          // MPID (WXYZ)
-        0x4E, 0x56, 0x44, 0x41, 0x20, 0x20, 0x20, 0x20,  // Stock ID ('NVDA    ')
-        0x4E,                                            // Market Maker ('N')
-        0x52,                                            // Marker Mode ('R')
-        0x45                                             // State ('E')
+        0x4C,                                // Message Type ('L')
+        0x00, 0x0A,                          // Stock Locate (10)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (16777215)
+        0x57, 0x58, 0x59, 0x5A,              // MPID (WXYZ)
+        0x4E, 0x56, 0x44, 0x41, 0x20, 0x20,
+        0x20, 0x20,  // Stock ID ('NVDA    ')
+        0x4E,        // Market Maker ('N')
+        0x52,        // Marker Mode ('R')
+        0x45         // State ('E')
     });
 
     ITCH_Parser paser(stringTempFilePath);
@@ -152,14 +183,34 @@ TEST_F(ITCHPaserTest, MarketParticipantPositionMessageTest) {
 
     EXPECT_EQ(MessageType::MarketParticipantPositionMessage,
               get<MarketParticipantPositionMessage>(message).message_type);
-    EXPECT_EQ(10, FromBigEndian(get<MarketParticipantPositionMessage>(message).stock_locate));
-    EXPECT_EQ(255, FromBigEndian(get<MarketParticipantPositionMessage>(message).tracking_number));
-    EXPECT_EQ(16777215, ArrayToUint48(get<MarketParticipantPositionMessage>(message).timestamp));
-    EXPECT_EQ("NVDA    ", ArrayToString<8>(get<MarketParticipantPositionMessage>(message).stock));
-    EXPECT_EQ("WXYZ", ArrayToString<4>(get<MarketParticipantPositionMessage>(message).mpid));
-    EXPECT_EQ('N', get<MarketParticipantPositionMessage>(message).primary_market_maker);
-    EXPECT_EQ('R', get<MarketParticipantPositionMessage>(message).market_maker_mode);
-    EXPECT_EQ('E', get<MarketParticipantPositionMessage>(message).market_participant_state);
+
+    EXPECT_EQ(10,
+              FromBigEndian(
+                  get<MarketParticipantPositionMessage>(message).stock_locate));
+
+    EXPECT_EQ(
+        255,
+        FromBigEndian(
+            get<MarketParticipantPositionMessage>(message).tracking_number));
+
+    EXPECT_EQ(16777215,
+              ArrayToUint48(
+                  get<MarketParticipantPositionMessage>(message).timestamp));
+    EXPECT_EQ(
+        "NVDA    ",
+        ArrayToString<8>(get<MarketParticipantPositionMessage>(message).stock));
+
+    EXPECT_EQ("WXYZ", ArrayToString<4>(
+                          get<MarketParticipantPositionMessage>(message).mpid));
+    EXPECT_EQ(
+        'N',
+        get<MarketParticipantPositionMessage>(message).primary_market_maker);
+
+    EXPECT_EQ('R',
+              get<MarketParticipantPositionMessage>(message).market_maker_mode);
+
+    EXPECT_EQ('E', get<MarketParticipantPositionMessage>(message)
+                       .market_participant_state);
 }
 
 TEST_F(ITCHPaserTest, MWCBDeclineLevelMessageTest) {
@@ -168,13 +219,16 @@ TEST_F(ITCHPaserTest, MWCBDeclineLevelMessageTest) {
     using namespace ITCH;
 
     CreateTestFile({
-        0x56,                                            // Message Type ('V')
-        0x00, 0x00,                                      // Stock Locate (0)
-        0x00, 0xFF,                                      // Tracking Number (255)
-        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,              // Timestamp (207588671094783)
-        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,  // Level 1 (280375465148160)
-        0x00, 0xAA, 0xFF, 0xBB, 0x00, 0xAA, 0xFF, 0xBB,  // Level 2 (48131924675985339)
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01   // Level 3 (1)
+        0x56,                                // Message Type ('V')
+        0x00, 0x00,                          // Stock Locate (0)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (207588671094783)
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00,
+        0xFF, 0x00,  // Level 1 (280375465148160)
+        0x00, 0xAA, 0xFF, 0xBB, 0x00, 0xAA,
+        0xFF, 0xBB,  // Level 2 (48131924675985339)
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x01  // Level 3 (1)
     });
 
     ITCH_Parser paser(stringTempFilePath);
@@ -183,11 +237,16 @@ TEST_F(ITCHPaserTest, MWCBDeclineLevelMessageTest) {
     EXPECT_EQ(MessageType::MWCBDeclineLevelMessage,
               get<MWCBDeclineLevelMessage>(message).message_type);
 
-    EXPECT_EQ(0, FromBigEndian(get<MWCBDeclineLevelMessage>(message).stock_locate));
-    EXPECT_EQ(255, FromBigEndian(get<MWCBDeclineLevelMessage>(message).tracking_number));
-    EXPECT_EQ(207588671094783, ArrayToUint48(get<MWCBDeclineLevelMessage>(message).timestamp));
-    EXPECT_EQ(280375465148160, FromBigEndian(get<MWCBDeclineLevelMessage>(message).level1));
-    EXPECT_EQ(48131924675985339, FromBigEndian(get<MWCBDeclineLevelMessage>(message).level2));
+    EXPECT_EQ(
+        0, FromBigEndian(get<MWCBDeclineLevelMessage>(message).stock_locate));
+    EXPECT_EQ(255, FromBigEndian(
+                       get<MWCBDeclineLevelMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783,
+              ArrayToUint48(get<MWCBDeclineLevelMessage>(message).timestamp));
+    EXPECT_EQ(280375465148160,
+              FromBigEndian(get<MWCBDeclineLevelMessage>(message).level1));
+    EXPECT_EQ(48131924675985339,
+              FromBigEndian(get<MWCBDeclineLevelMessage>(message).level2));
     EXPECT_EQ(1, FromBigEndian(get<MWCBDeclineLevelMessage>(message).level3));
 }
 
@@ -207,11 +266,14 @@ TEST_F(ITCHPaserTest, MWCBStatusMessageTest) {
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(MessageType::MWCBStatusMessage, get<MWCBStatusMessage>(message).message_type);
+    EXPECT_EQ(MessageType::MWCBStatusMessage,
+              get<MWCBStatusMessage>(message).message_type);
 
     EXPECT_EQ(0, FromBigEndian(get<MWCBStatusMessage>(message).stock_locate));
-    EXPECT_EQ(255, FromBigEndian(get<MWCBStatusMessage>(message).tracking_number));
-    EXPECT_EQ(207588671094783, ArrayToUint48(get<MWCBStatusMessage>(message).timestamp));
+    EXPECT_EQ(255,
+              FromBigEndian(get<MWCBStatusMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783,
+              ArrayToUint48(get<MWCBStatusMessage>(message).timestamp));
     EXPECT_EQ('3', get<MWCBStatusMessage>(message).breached_level);
 }
 
@@ -227,40 +289,51 @@ TEST_F(ITCHPaserTest, StockDirectoryMessageTest) {
         0x0A, 0x37, 0xD4, 0xD0, 0xD3, 0x09,              // Timestamp
         0x41, 0x50, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
         0x51,                                            // Market Category
-        0x4E,                                            // FinancialStatus Indicator
-        0x00, 0x00, 0x00, 0x64,                          // Round Lot Size
-        0x4E,                                            // Round Lots Only
-        0x43,                                            // Issue Classification
-        0x5A, 0x20,                                      // Issue Subtype
-        0x50,                                            // Authenticity
-        0x4E,                                            // Short Sale Threshold Indicator
-        0x4E,                                            // IPO Flag
-        0x31,                                            // LULDReference Price Tier
-        0x4E,                                            // ETP Flag
-        0x00, 0x00, 0x00, 0x00,                          // ETP Leverage Factor
-        0x4E                                             // Inverse Indicator
+        0x4E,                    // FinancialStatus Indicator
+        0x00, 0x00, 0x00, 0x64,  // Round Lot Size
+        0x4E,                    // Round Lots Only
+        0x43,                    // Issue Classification
+        0x5A, 0x20,              // Issue Subtype
+        0x50,                    // Authenticity
+        0x4E,                    // Short Sale Threshold Indicator
+        0x4E,                    // IPO Flag
+        0x31,                    // LULDReference Price Tier
+        0x4E,                    // ETP Flag
+        0x00, 0x00, 0x00, 0x00,  // ETP Leverage Factor
+        0x4E                     // Inverse Indicator
     });
 
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(MessageType::StockDirectoryMessage, get<StockDirectoryMessage>(message).message_type);
-    EXPECT_EQ(13, FromBigEndian(get<StockDirectoryMessage>(message).stock_locate));
-    EXPECT_EQ(0, FromBigEndian(get<StockDirectoryMessage>(message).tracking_number));
-    EXPECT_EQ(11234909934345, ArrayToUint48(get<StockDirectoryMessage>(message).timestamp));
-    EXPECT_EQ("APPL    ", ArrayToString(get<StockDirectoryMessage>(message).stock));
+    EXPECT_EQ(MessageType::StockDirectoryMessage,
+              get<StockDirectoryMessage>(message).message_type);
+    EXPECT_EQ(13,
+              FromBigEndian(get<StockDirectoryMessage>(message).stock_locate));
+    EXPECT_EQ(
+        0, FromBigEndian(get<StockDirectoryMessage>(message).tracking_number));
+    EXPECT_EQ(11234909934345,
+              ArrayToUint48(get<StockDirectoryMessage>(message).timestamp));
+    EXPECT_EQ("APPL    ",
+              ArrayToString(get<StockDirectoryMessage>(message).stock));
     EXPECT_EQ('Q', get<StockDirectoryMessage>(message).market_category);
-    EXPECT_EQ('N', get<StockDirectoryMessage>(message).financial_status_indicator);
-    EXPECT_EQ(100, FromBigEndian(get<StockDirectoryMessage>(message).round_lot_size));
+    EXPECT_EQ('N',
+              get<StockDirectoryMessage>(message).financial_status_indicator);
+    EXPECT_EQ(
+        100, FromBigEndian(get<StockDirectoryMessage>(message).round_lot_size));
     EXPECT_EQ('N', get<StockDirectoryMessage>(message).round_lots_only);
     EXPECT_EQ('C', get<StockDirectoryMessage>(message).issue_classification);
-    EXPECT_EQ("Z ", ArrayToString<2>(get<StockDirectoryMessage>(message).issue_sub_type));
+    EXPECT_EQ("Z ", ArrayToString<2>(
+                        get<StockDirectoryMessage>(message).issue_sub_type));
     EXPECT_EQ('P', get<StockDirectoryMessage>(message).authenticity);
-    EXPECT_EQ('N', get<StockDirectoryMessage>(message).short_sale_threshold_indicator);
+    EXPECT_EQ(
+        'N',
+        get<StockDirectoryMessage>(message).short_sale_threshold_indicator);
     EXPECT_EQ('N', get<StockDirectoryMessage>(message).ipo_flag);
     EXPECT_EQ('1', get<StockDirectoryMessage>(message).luld_ref);
     EXPECT_EQ('N', get<StockDirectoryMessage>(message).etp_flag);
-    EXPECT_EQ(0, FromBigEndian(get<StockDirectoryMessage>(message).etp_leverage_factor));
+    EXPECT_EQ(0, FromBigEndian(
+                     get<StockDirectoryMessage>(message).etp_leverage_factor));
     EXPECT_EQ('N', get<StockDirectoryMessage>(message).inverse_indicator);
 }
 
@@ -275,9 +348,9 @@ TEST_F(ITCHPaserTest, IPOQuotingPeriodUpdateMessageTest) {
         0x00, 0x00,                                      // Tracking Numbe
         0x0A, 0x37, 0xD4, 0xD0, 0xD3, 0x09,              // Timestamp
         0x41, 0x50, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
-        0x00, 0x00, 0x00, 0x64,                          // IPO Quotation Release Time
-        0x43,                                            // IPO Quotation Release Qualifier
-        0x00, 0x64, 0x00, 0x00                           // IPO Price
+        0x00, 0x00, 0x00, 0x64,  // IPO Quotation Release Time
+        0x43,                    // IPO Quotation Release Qualifier
+        0x00, 0x64, 0x00, 0x00   // IPO Price
     });
 
     ITCH_Parser paser(stringTempFilePath);
@@ -285,14 +358,24 @@ TEST_F(ITCHPaserTest, IPOQuotingPeriodUpdateMessageTest) {
 
     EXPECT_EQ(MessageType::IPOQuotingPeriodUpdateMessage,
               get<IPOQuotingPeriodUpdateMessage>(message).message_type);
-    EXPECT_EQ(13, FromBigEndian(get<IPOQuotingPeriodUpdateMessage>(message).stock_locate));
-    EXPECT_EQ(0, FromBigEndian(get<IPOQuotingPeriodUpdateMessage>(message).tracking_number));
-    EXPECT_EQ(11234909934345, ArrayToUint48(get<IPOQuotingPeriodUpdateMessage>(message).timestamp));
-    EXPECT_EQ("APPL    ", ArrayToString(get<IPOQuotingPeriodUpdateMessage>(message).stock));
+    EXPECT_EQ(13,
+              FromBigEndian(
+                  get<IPOQuotingPeriodUpdateMessage>(message).stock_locate));
+    EXPECT_EQ(0,
+              FromBigEndian(
+                  get<IPOQuotingPeriodUpdateMessage>(message).tracking_number));
     EXPECT_EQ(
-        100, FromBigEndian(get<IPOQuotingPeriodUpdateMessage>(message).ipo_quotation_release_time));
-    EXPECT_EQ('C', get<IPOQuotingPeriodUpdateMessage>(message).ipo_quotation_release_qualifier);
-    EXPECT_EQ(6553600, FromBigEndian(get<IPOQuotingPeriodUpdateMessage>(message).ipo_price));
+        11234909934345,
+        ArrayToUint48(get<IPOQuotingPeriodUpdateMessage>(message).timestamp));
+    EXPECT_EQ("APPL    ",
+              ArrayToString(get<IPOQuotingPeriodUpdateMessage>(message).stock));
+    EXPECT_EQ(100, FromBigEndian(get<IPOQuotingPeriodUpdateMessage>(message)
+                                     .ipo_quotation_release_time));
+    EXPECT_EQ('C', get<IPOQuotingPeriodUpdateMessage>(message)
+                       .ipo_quotation_release_qualifier);
+    EXPECT_EQ(
+        6553600,
+        FromBigEndian(get<IPOQuotingPeriodUpdateMessage>(message).ipo_price));
 }
 
 TEST_F(ITCHPaserTest, LULDAuctionCollarMessageTest) {
@@ -306,10 +389,10 @@ TEST_F(ITCHPaserTest, LULDAuctionCollarMessageTest) {
         0x00, 0x00,                                      // Tracking Numbe
         0x0A, 0x37, 0xD4, 0xD0, 0xD3, 0x09,              // Timestamp
         0x41, 0x50, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
-        0x00, 0x0F, 0x42, 0x40,                          // Auction Collar Reference Price
-        0x00, 0x10, 0x05, 0x90,                          // Upper Auction Collar Price
-        0x00, 0x0D, 0xBB, 0xA0,                          // Lower Auction Collar Price
-        0x00, 0x64, 0x00, 0x00                           // Auction Collar Extension
+        0x00, 0x0F, 0x42, 0x40,  // Auction Collar Reference Price
+        0x00, 0x10, 0x05, 0x90,  // Upper Auction Collar Price
+        0x00, 0x0D, 0xBB, 0xA0,  // Lower Auction Collar Price
+        0x00, 0x64, 0x00, 0x00   // Auction Collar Extension
     });
 
     ITCH_Parser paser(stringTempFilePath);
@@ -317,18 +400,28 @@ TEST_F(ITCHPaserTest, LULDAuctionCollarMessageTest) {
 
     EXPECT_EQ(MessageType::LULDAuctionCollarMessage,
               get<LULDAuctionCollarMessage>(message).message_type);
-    EXPECT_EQ(13, FromBigEndian(get<LULDAuctionCollarMessage>(message).stock_locate));
-    EXPECT_EQ(0, FromBigEndian(get<LULDAuctionCollarMessage>(message).tracking_number));
-    EXPECT_EQ(11234909934345, ArrayToUint48(get<LULDAuctionCollarMessage>(message).timestamp));
-    EXPECT_EQ("APPL    ", ArrayToString(get<LULDAuctionCollarMessage>(message).stock));
-    EXPECT_EQ(1000000,
-              FromBigEndian(get<LULDAuctionCollarMessage>(message).auction_collar_reference_price));
-    EXPECT_EQ(1050000,
-              FromBigEndian(get<LULDAuctionCollarMessage>(message).upper_auction_collar_price));
-    EXPECT_EQ(900000,
-              FromBigEndian(get<LULDAuctionCollarMessage>(message).lower_auction_collar_price));
-    EXPECT_EQ(6553600,
-              FromBigEndian(get<LULDAuctionCollarMessage>(message).auction_collar_extension));
+    EXPECT_EQ(
+        13, FromBigEndian(get<LULDAuctionCollarMessage>(message).stock_locate));
+    EXPECT_EQ(0, FromBigEndian(
+                     get<LULDAuctionCollarMessage>(message).tracking_number));
+    EXPECT_EQ(11234909934345,
+              ArrayToUint48(get<LULDAuctionCollarMessage>(message).timestamp));
+    EXPECT_EQ("APPL    ",
+              ArrayToString(get<LULDAuctionCollarMessage>(message).stock));
+    EXPECT_EQ(1000000, FromBigEndian(get<LULDAuctionCollarMessage>(message)
+                                         .auction_collar_reference_price));
+    EXPECT_EQ(
+        1050000,
+        FromBigEndian(
+            get<LULDAuctionCollarMessage>(message).upper_auction_collar_price));
+    EXPECT_EQ(
+        900000,
+        FromBigEndian(
+            get<LULDAuctionCollarMessage>(message).lower_auction_collar_price));
+    EXPECT_EQ(
+        6553600,
+        FromBigEndian(
+            get<LULDAuctionCollarMessage>(message).auction_collar_extension));
 }
 
 TEST_F(ITCHPaserTest, OperationalHaltMessageTest) {
@@ -343,7 +436,7 @@ TEST_F(ITCHPaserTest, OperationalHaltMessageTest) {
         0x0A, 0x37, 0xD4, 0xD0, 0xD3, 0x09,              // Timestamp
         0x41, 0x50, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
         0x51,                                            // Market Code
-        0x48                                             // Operational Halt Action
+        0x48  // Operational Halt Action
     });
 
     ITCH_Parser paser(stringTempFilePath);
@@ -351,12 +444,17 @@ TEST_F(ITCHPaserTest, OperationalHaltMessageTest) {
 
     EXPECT_EQ(MessageType::OperationalHaltMessage,
               get<OperationalHaltMessage>(message).message_type);
-    EXPECT_EQ(13, FromBigEndian(get<OperationalHaltMessage>(message).stock_locate));
-    EXPECT_EQ(0, FromBigEndian(get<OperationalHaltMessage>(message).tracking_number));
-    EXPECT_EQ(11234909934345, ArrayToUint48(get<OperationalHaltMessage>(message).timestamp));
-    EXPECT_EQ("APPL    ", ArrayToString(get<OperationalHaltMessage>(message).stock));
+    EXPECT_EQ(13,
+              FromBigEndian(get<OperationalHaltMessage>(message).stock_locate));
+    EXPECT_EQ(
+        0, FromBigEndian(get<OperationalHaltMessage>(message).tracking_number));
+    EXPECT_EQ(11234909934345,
+              ArrayToUint48(get<OperationalHaltMessage>(message).timestamp));
+    EXPECT_EQ("APPL    ",
+              ArrayToString(get<OperationalHaltMessage>(message).stock));
     EXPECT_EQ('Q', get<OperationalHaltMessage>(message).market_code);
-    EXPECT_EQ('H', get<OperationalHaltMessage>(message).operational_halt_action);
+    EXPECT_EQ('H',
+              get<OperationalHaltMessage>(message).operational_halt_action);
 }
 
 TEST_F(ITCHPaserTest, AddOrderMessageTest) {
@@ -379,11 +477,15 @@ TEST_F(ITCHPaserTest, AddOrderMessageTest) {
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(MessageType::AddOrderMessage, get<AddOrderMessage>(message).message_type);
+    EXPECT_EQ(MessageType::AddOrderMessage,
+              get<AddOrderMessage>(message).message_type);
     EXPECT_EQ(13, FromBigEndian(get<AddOrderMessage>(message).stock_locate));
     EXPECT_EQ(0, FromBigEndian(get<AddOrderMessage>(message).tracking_number));
-    EXPECT_EQ(14410980767525, ArrayToUint48(get<AddOrderMessage>(message).timestamp));
-    EXPECT_EQ(106517, FromBigEndian(get<AddOrderMessage>(message).order_reference_number));
+    EXPECT_EQ(14410980767525,
+              ArrayToUint48(get<AddOrderMessage>(message).timestamp));
+    EXPECT_EQ(
+        106517,
+        FromBigEndian(get<AddOrderMessage>(message).order_reference_number));
     EXPECT_EQ('B', get<AddOrderMessage>(message).buy_sell_indicator);
     EXPECT_EQ(100, FromBigEndian(get<AddOrderMessage>(message).shares));
     EXPECT_EQ("AAPL    ", ArrayToString(get<AddOrderMessage>(message).stock));
@@ -413,17 +515,29 @@ TEST_F(ITCHPaserTest, AddOrderMPIDAttributionMessageTest) {
 
     EXPECT_EQ(MessageType::AddOrderMPIDAttributionMessage,
               get<AddOrderMPIDAttributionMessage>(message).message_type);
-    EXPECT_EQ(13, FromBigEndian(get<AddOrderMPIDAttributionMessage>(message).stock_locate));
-    EXPECT_EQ(0, FromBigEndian(get<AddOrderMPIDAttributionMessage>(message).tracking_number));
-    EXPECT_EQ(14410980767525,
-              ArrayToUint48(get<AddOrderMPIDAttributionMessage>(message).timestamp));
-    EXPECT_EQ(106517,
-              FromBigEndian(get<AddOrderMPIDAttributionMessage>(message).order_reference_number));
-    EXPECT_EQ('S', get<AddOrderMPIDAttributionMessage>(message).buy_sell_indicator);
-    EXPECT_EQ(100, FromBigEndian(get<AddOrderMPIDAttributionMessage>(message).shares));
-    EXPECT_EQ("AAPL    ", ArrayToString(get<AddOrderMPIDAttributionMessage>(message).stock));
-    EXPECT_EQ(2800000, FromBigEndian(get<AddOrderMPIDAttributionMessage>(message).price));
-    EXPECT_EQ("TREE", ArrayToString(get<AddOrderMPIDAttributionMessage>(message).attribution));
+    EXPECT_EQ(13,
+              FromBigEndian(
+                  get<AddOrderMPIDAttributionMessage>(message).stock_locate));
+    EXPECT_EQ(
+        0, FromBigEndian(
+               get<AddOrderMPIDAttributionMessage>(message).tracking_number));
+    EXPECT_EQ(
+        14410980767525,
+        ArrayToUint48(get<AddOrderMPIDAttributionMessage>(message).timestamp));
+    EXPECT_EQ(106517, FromBigEndian(get<AddOrderMPIDAttributionMessage>(message)
+                                        .order_reference_number));
+    EXPECT_EQ('S',
+              get<AddOrderMPIDAttributionMessage>(message).buy_sell_indicator);
+    EXPECT_EQ(100, FromBigEndian(
+                       get<AddOrderMPIDAttributionMessage>(message).shares));
+    EXPECT_EQ(
+        "AAPL    ",
+        ArrayToString(get<AddOrderMPIDAttributionMessage>(message).stock));
+    EXPECT_EQ(2800000, FromBigEndian(
+                           get<AddOrderMPIDAttributionMessage>(message).price));
+    EXPECT_EQ("TREE",
+              ArrayToString(
+                  get<AddOrderMPIDAttributionMessage>(message).attribution));
 }
 
 TEST_F(ITCHPaserTest, OrderExecutedMessageTest) {
@@ -432,27 +546,37 @@ TEST_F(ITCHPaserTest, OrderExecutedMessageTest) {
     using namespace ITCH;
 
     CreateTestFile({
-        0x45,                                            // Message Type ('E')
-        0x00, 0x00,                                      // Stock Locate (0)
-        0x00, 0xFF,                                      // Tracking Number (255)
-        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,              // Timestamp (207588671094783)
-        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,  // Order Reference Number
-        0x00, 0xAA, 0xFF, 0xBB,                          // Excuted Shares
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xAA   // Match Number
+        0x45,                                // Message Type ('E')
+        0x00, 0x00,                          // Stock Locate (0)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (207588671094783)
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00,
+        0xFF, 0x00,              // Order Reference Number
+        0x00, 0xAA, 0xFF, 0xBB,  // Excuted Shares
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0xAA  // Match Number
     });
 
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(MessageType::OrderExecutedMessage, get<OrderExecutedMessage>(message).message_type);
+    EXPECT_EQ(MessageType::OrderExecutedMessage,
+              get<OrderExecutedMessage>(message).message_type);
 
-    EXPECT_EQ(0, FromBigEndian(get<OrderExecutedMessage>(message).stock_locate));
-    EXPECT_EQ(255, FromBigEndian(get<OrderExecutedMessage>(message).tracking_number));
-    EXPECT_EQ(207588671094783, ArrayToUint48(get<OrderExecutedMessage>(message).timestamp));
+    EXPECT_EQ(0,
+              FromBigEndian(get<OrderExecutedMessage>(message).stock_locate));
+    EXPECT_EQ(
+        255, FromBigEndian(get<OrderExecutedMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783,
+              ArrayToUint48(get<OrderExecutedMessage>(message).timestamp));
     EXPECT_EQ(280375465148160,
-              FromBigEndian(get<OrderExecutedMessage>(message).order_reference_number));
-    EXPECT_EQ(11206587, FromBigEndian(get<OrderExecutedMessage>(message).executed_shares));
-    EXPECT_EQ(170, FromBigEndian(get<OrderExecutedMessage>(message).match_number));
+              FromBigEndian(
+                  get<OrderExecutedMessage>(message).order_reference_number));
+    EXPECT_EQ(
+        11206587,
+        FromBigEndian(get<OrderExecutedMessage>(message).executed_shares));
+    EXPECT_EQ(170,
+              FromBigEndian(get<OrderExecutedMessage>(message).match_number));
 }
 
 TEST_F(ITCHPaserTest, OrderExecutedWithPriceMessageTest) {
@@ -461,15 +585,17 @@ TEST_F(ITCHPaserTest, OrderExecutedWithPriceMessageTest) {
     using namespace ITCH;
 
     CreateTestFile({
-        0x43,                                            // Message Type ('C')
-        0x00, 0x00,                                      // Stock Locate (0)
-        0x00, 0xFF,                                      // Tracking Number (255)
-        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,              // Timestamp (207588671094783)
-        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,  // Order Reference Number
-        0x00, 0xAA, 0xFF, 0xBB,                          // Excuted Shares
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xAA,  // Match Number
-        0x59,                                            // Printable
-        0x00, 0x2A, 0xB9, 0x80                           // Execution Price
+        0x43,                                // Message Type ('C')
+        0x00, 0x00,                          // Stock Locate (0)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (207588671094783)
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00,
+        0xFF, 0x00,              // Order Reference Number
+        0x00, 0xAA, 0xFF, 0xBB,  // Excuted Shares
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0xAA,             // Match Number
+        0x59,                   // Printable
+        0x00, 0x2A, 0xB9, 0x80  // Execution Price
     });
 
     ITCH_Parser paser(stringTempFilePath);
@@ -478,16 +604,27 @@ TEST_F(ITCHPaserTest, OrderExecutedWithPriceMessageTest) {
     EXPECT_EQ(MessageType::OrderExecutedWithPriceMessage,
               get<OrderExecutedWithPriceMessage>(message).message_type);
 
-    EXPECT_EQ(0, FromBigEndian(get<OrderExecutedWithPriceMessage>(message).stock_locate));
-    EXPECT_EQ(255, FromBigEndian(get<OrderExecutedWithPriceMessage>(message).tracking_number));
-    EXPECT_EQ(207588671094783,
-              ArrayToUint48(get<OrderExecutedWithPriceMessage>(message).timestamp));
+    EXPECT_EQ(0, FromBigEndian(
+                     get<OrderExecutedWithPriceMessage>(message).stock_locate));
+    EXPECT_EQ(255,
+              FromBigEndian(
+                  get<OrderExecutedWithPriceMessage>(message).tracking_number));
+    EXPECT_EQ(
+        207588671094783,
+        ArrayToUint48(get<OrderExecutedWithPriceMessage>(message).timestamp));
     EXPECT_EQ(280375465148160,
-              FromBigEndian(get<OrderExecutedWithPriceMessage>(message).order_reference_number));
-    EXPECT_EQ(11206587, FromBigEndian(get<OrderExecutedWithPriceMessage>(message).executed_shares));
-    EXPECT_EQ(170, FromBigEndian(get<OrderExecutedWithPriceMessage>(message).match_number));
+              FromBigEndian(get<OrderExecutedWithPriceMessage>(message)
+                                .order_reference_number));
+    EXPECT_EQ(11206587,
+              FromBigEndian(
+                  get<OrderExecutedWithPriceMessage>(message).executed_shares));
+    EXPECT_EQ(170,
+              FromBigEndian(
+                  get<OrderExecutedWithPriceMessage>(message).match_number));
     EXPECT_EQ('Y', get<OrderExecutedWithPriceMessage>(message).printable);
-    EXPECT_EQ(2800000, FromBigEndian(get<OrderExecutedWithPriceMessage>(message).execution_price));
+    EXPECT_EQ(2800000,
+              FromBigEndian(
+                  get<OrderExecutedWithPriceMessage>(message).execution_price));
 }
 
 TEST_F(ITCHPaserTest, OrderCancelMessageTest) {
@@ -496,25 +633,31 @@ TEST_F(ITCHPaserTest, OrderCancelMessageTest) {
     using namespace ITCH;
 
     CreateTestFile({
-        0x58,                                            // Message Type ('X')
-        0x00, 0x00,                                      // Stock Locate (0)
-        0x00, 0xFF,                                      // Tracking Number (255)
-        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,              // Timestamp (207588671094783)
-        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,  // Order Reference Number
-        0x00, 0xAA, 0xFF, 0xBB                           // Cancelled Shares
+        0x58,                                // Message Type ('X')
+        0x00, 0x00,                          // Stock Locate (0)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (207588671094783)
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00,
+        0xFF, 0x00,             // Order Reference Number
+        0x00, 0xAA, 0xFF, 0xBB  // Cancelled Shares
     });
 
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(MessageType::OrderCancelMessage, get<OrderCancelMessage>(message).message_type);
+    EXPECT_EQ(MessageType::OrderCancelMessage,
+              get<OrderCancelMessage>(message).message_type);
 
     EXPECT_EQ(0, FromBigEndian(get<OrderCancelMessage>(message).stock_locate));
-    EXPECT_EQ(255, FromBigEndian(get<OrderCancelMessage>(message).tracking_number));
-    EXPECT_EQ(207588671094783, ArrayToUint48(get<OrderCancelMessage>(message).timestamp));
-    EXPECT_EQ(280375465148160,
-              FromBigEndian(get<OrderCancelMessage>(message).order_reference_number));
-    EXPECT_EQ(11206587, FromBigEndian(get<OrderCancelMessage>(message).cancelled_shares));
+    EXPECT_EQ(255,
+              FromBigEndian(get<OrderCancelMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783,
+              ArrayToUint48(get<OrderCancelMessage>(message).timestamp));
+    EXPECT_EQ(
+        280375465148160,
+        FromBigEndian(get<OrderCancelMessage>(message).order_reference_number));
+    EXPECT_EQ(11206587,
+              FromBigEndian(get<OrderCancelMessage>(message).cancelled_shares));
 }
 
 TEST_F(ITCHPaserTest, OrderDeleteMessageTest) {
@@ -523,24 +666,29 @@ TEST_F(ITCHPaserTest, OrderDeleteMessageTest) {
     using namespace ITCH;
 
     CreateTestFile({
-        0x44,                                           // Message Type ('D')
-        0x00, 0x00,                                     // Stock Locate (0)
-        0x00, 0xFF,                                     // Tracking Number (255)
-        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,             // Timestamp (207588671094783)
-        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00  // Order Reference Number
+        0x44,                                // Message Type ('D')
+        0x00, 0x00,                          // Stock Locate (0)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (207588671094783)
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF,
+        0x00  // Order Reference Number
 
     });
 
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(MessageType::OrderDeleteMessage, get<OrderDeleteMessage>(message).message_type);
+    EXPECT_EQ(MessageType::OrderDeleteMessage,
+              get<OrderDeleteMessage>(message).message_type);
 
     EXPECT_EQ(0, FromBigEndian(get<OrderDeleteMessage>(message).stock_locate));
-    EXPECT_EQ(255, FromBigEndian(get<OrderDeleteMessage>(message).tracking_number));
-    EXPECT_EQ(207588671094783, ArrayToUint48(get<OrderDeleteMessage>(message).timestamp));
-    EXPECT_EQ(280375465148160,
-              FromBigEndian(get<OrderDeleteMessage>(message).order_reference_number));
+    EXPECT_EQ(255,
+              FromBigEndian(get<OrderDeleteMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783,
+              ArrayToUint48(get<OrderDeleteMessage>(message).timestamp));
+    EXPECT_EQ(
+        280375465148160,
+        FromBigEndian(get<OrderDeleteMessage>(message).order_reference_number));
 }
 
 TEST_F(ITCHPaserTest, OrderReplaceMessageTest) {
@@ -549,29 +697,38 @@ TEST_F(ITCHPaserTest, OrderReplaceMessageTest) {
     using namespace ITCH;
 
     CreateTestFile({
-        0x55,                                            // Message Type ('U')
-        0x00, 0x00,                                      // Stock Locate (0)
-        0x00, 0xFF,                                      // Tracking Number (255)
-        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,              // Timestamp (207588671094783)
-        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,  // Old Order Reference Number
-        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,  // New Order Reference Number
-        0x00, 0x2A, 0xB9, 0x80,                          // Shares
-        0x00, 0x2C, 0x40, 0x20                           // Price
+        0x55,                                // Message Type ('U')
+        0x00, 0x00,                          // Stock Locate (0)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (207588671094783)
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00,
+        0xFF, 0x00,  // Old Order Reference Number
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00,
+        0xFF, 0x00,              // New Order Reference Number
+        0x00, 0x2A, 0xB9, 0x80,  // Shares
+        0x00, 0x2C, 0x40, 0x20   // Price
 
     });
 
     ITCH_Parser paser(stringTempFilePath);
     Message message = paser.DecodeMessage();
 
-    EXPECT_EQ(MessageType::OrderReplaceMessage, get<OrderReplaceMessage>(message).message_type);
+    EXPECT_EQ(MessageType::OrderReplaceMessage,
+              get<OrderReplaceMessage>(message).message_type);
 
     EXPECT_EQ(0, FromBigEndian(get<OrderReplaceMessage>(message).stock_locate));
-    EXPECT_EQ(255, FromBigEndian(get<OrderReplaceMessage>(message).tracking_number));
-    EXPECT_EQ(207588671094783, ArrayToUint48(get<OrderReplaceMessage>(message).timestamp));
-    EXPECT_EQ(280375465148160,
-              FromBigEndian(get<OrderReplaceMessage>(message).original_order_reference_number));
-    EXPECT_EQ(280375465148160,
-              FromBigEndian(get<OrderReplaceMessage>(message).new_order_reference_number));
+    EXPECT_EQ(255,
+              FromBigEndian(get<OrderReplaceMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783,
+              ArrayToUint48(get<OrderReplaceMessage>(message).timestamp));
+    EXPECT_EQ(
+        280375465148160,
+        FromBigEndian(
+            get<OrderReplaceMessage>(message).original_order_reference_number));
+    EXPECT_EQ(
+        280375465148160,
+        FromBigEndian(
+            get<OrderReplaceMessage>(message).new_order_reference_number));
     EXPECT_EQ(2800000, FromBigEndian(get<OrderReplaceMessage>(message).shares));
     EXPECT_EQ(2900000, FromBigEndian(get<OrderReplaceMessage>(message).price));
 }
