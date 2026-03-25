@@ -733,4 +733,47 @@ TEST_F(ITCHPaserTest, OrderReplaceMessageTest) {
     EXPECT_EQ(2900000, FromBigEndian(get<OrderReplaceMessage>(message).price));
 }
 
+TEST_F(ITCHPaserTest, NonCrossTradeMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x50,                                // Message Type ('P')
+        0x00, 0x00,                          // Stock Locate (0)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (207588671094783)
+        0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00,  // Order Ref
+        0x53,                                            // Buy / Side
+        0xFF, 0x00, 0x00, 0xAA,                          // Excuted Shares
+        0x41, 0x41, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
+        0x00, 0x2C, 0x40, 0x20,                          // Price
+        0x00, 0x2A, 0xB9, 0x80, 0x00, 0x00, 0x00, 0x00   // Match Number
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::NonCrossTradeMessage,
+              get<NonCrossTradeMessage>(message).message_type);
+
+    EXPECT_EQ(0,
+              FromBigEndian(get<NonCrossTradeMessage>(message).stock_locate));
+    EXPECT_EQ(
+        255, FromBigEndian(get<NonCrossTradeMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783,
+              ArrayToUint48(get<NonCrossTradeMessage>(message).timestamp));
+    EXPECT_EQ(280375465082880,
+              FromBigEndian(
+                  get<NonCrossTradeMessage>(message).order_reference_number));
+    EXPECT_EQ('S', get<NonCrossTradeMessage>(message).buy_sell_indicator);
+    EXPECT_EQ(4278190250,
+              FromBigEndian(get<NonCrossTradeMessage>(message).shares));
+    EXPECT_EQ("AAPL    ",
+              ArrayToString(get<NonCrossTradeMessage>(message).stock));
+    EXPECT_EQ(2900000, FromBigEndian(get<NonCrossTradeMessage>(message).price));
+    EXPECT_EQ(12025908428800000,
+              FromBigEndian(get<NonCrossTradeMessage>(message).match_number));
+}
+
 // NOLINTEND

@@ -186,12 +186,14 @@ auto InternalPrintMessage(std::ostream& out, const OrderReplaceMessage& msg) {
 }
 
 auto InternalPrintMessage(std::ostream& out, const NonCrossTradeMessage& msg) {
-    // out << "Non-Cross Trade:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Stock: " << to_string(msg.stock, STOCK_LEN) << "\n"
-    //     << "  Side: " << msg.buy_sell_indicator << "\n"
-    //     << "  Shares: " << msg.shares << "\n"
-    //     << "  Price: " << msg.price / PRICE_DIVISOR;
+    out << "Non-Cross Trade:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Order Reference ID: " << msg.order_reference_number << "\n"
+        << "  Side: " << msg.buy_sell_indicator << "\n"
+        << "  Shares: " << msg.shares << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
+        << "  Price: " << msg.price / PRICE_DIVISOR << "\n"
+        << "  Matcg Number: " << msg.match_number;
 }
 
 auto InternalPrintMessage(std::ostream& out, const CrossTradeMessage& msg) {
@@ -236,6 +238,10 @@ auto InternalPrintMessage(std::ostream& out, const DLCRMessage& msg) {
     // out << "DLCR Message:\n"
     //     << "  Timestamp: " << msg.header.timestamp << "\n"
     //     << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+}
+
+auto InternalPrintMessage(std::ostream& out, const std::monostate& _) {
+    out << "Variant is Empty." << "\n";
 }
 
 auto PrintMessage(std::ostream& out, const Message& msg) -> void {
