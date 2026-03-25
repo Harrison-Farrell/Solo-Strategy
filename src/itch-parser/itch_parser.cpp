@@ -83,34 +83,12 @@ auto ITCH_Parser::OrderReplaceMessage() -> ITCH::Message {
     return m_File.Read<ITCH::OrderReplaceMessage>();
 }
 
-ITCH_Parser::ITCH_Parser(const std::string& file_path)
-    : m_File(file_path), m_MessageQueue(m_MessageQueueSize) {
-    using namespace ITCH;
-    // clang-format off
-    m_dispatch[MessageType::SystemEventMessage] = [this](){return SystemEventMessage();};
-    m_dispatch[MessageType::StockTradingActionMessage] = [this](){return StockTradingActionMessage();};
-    m_dispatch[MessageType::RegSHOMessage] = [this](){return RegSHOMessage();};
-    m_dispatch[MessageType::MarketParticipantPositionMessage] = [this](){return MarketParticipantPositionMessage();};
-    m_dispatch[MessageType::MWCBDeclineLevelMessage] = [this](){return MWCBDeclineLevelMessage();};
-    m_dispatch[MessageType::MWCBStatusMessage] = [this](){return MWCBStatusMessage();};
-    m_dispatch[MessageType::StockDirectoryMessage] = [this](){return StockDirectoryMessage();};
-    m_dispatch[MessageType::IPOQuotingPeriodUpdateMessage] = [this](){return IPOQuotingPeriodUpdateMessage();};
-    m_dispatch[MessageType::LULDAuctionCollarMessage] = [this](){return LULDAuctionCollarMessage();};
-    m_dispatch[MessageType::OperationalHaltMessage] = [this](){return OperationalHaltMessage();};
-    m_dispatch[MessageType::AddOrderMessage] = [this](){return AddOrderMessage();};
-    m_dispatch[MessageType::AddOrderMPIDAttributionMessage] = [this](){return AddOrderMPIDAttributionMessage();};
-    m_dispatch[MessageType::OrderExecutedMessage] = [this](){return OrderExecutedMessage();};
-    m_dispatch[MessageType::OrderExecutedWithPriceMessage] = [this](){return OrderExecutedWithPriceMessage();};
-    m_dispatch[MessageType::OrderDeleteMessage] = [this](){return OrderDeleteMessage();};
-    m_dispatch[MessageType::OrderCancelMessage] = [this](){return OrderCancelMessage();};
-    m_dispatch[MessageType::OrderReplaceMessage] = [this](){return OrderReplaceMessage();};
-    // clang-format on
+auto ITCH_Parser::NonCrossTradeMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::NonCrossTradeMessage>();
 }
 
-auto ITCH_Parser::NonCrossTradeMessage(const ITCH::MessageHeader& header) {
-    ITCH::NonCrossTradeMessage msg = {};
-    m_MessageQueue.Push(msg);
-}
+ITCH_Parser::ITCH_Parser(const std::string& file_path)
+    : m_File(file_path), m_MessageQueue(m_MessageQueueSize) {}
 
 auto ITCH_Parser::CrossTradeMessage(const ITCH::MessageHeader& header) {
     ITCH::CrossTradeMessage msg = {};
@@ -149,5 +127,77 @@ void ITCH_Parser::Execute() {
 
 ITCH::Message ITCH_Parser::DecodeMessage() {
     const auto type = m_File.Inspect<ITCH::MessageType>();
-    return m_dispatch[type]();
+    switch (type) {
+        case ITCH::MessageType::SystemEventMessage:
+            return SystemEventMessage();
+            break;
+        case ITCH::MessageType::StockDirectoryMessage:
+            return StockDirectoryMessage();
+            break;
+        case ITCH::MessageType::StockTradingActionMessage:
+            return StockTradingActionMessage();
+            break;
+        case ITCH::MessageType::RegSHOMessage:
+            return RegSHOMessage();
+            break;
+        case ITCH::MessageType::MarketParticipantPositionMessage:
+            return MarketParticipantPositionMessage();
+            break;
+        case ITCH::MessageType::MWCBDeclineLevelMessage:
+            return MWCBDeclineLevelMessage();
+            break;
+        case ITCH::MessageType::MWCBStatusMessage:
+            return MWCBStatusMessage();
+            break;
+        case ITCH::MessageType::IPOQuotingPeriodUpdateMessage:
+            return IPOQuotingPeriodUpdateMessage();
+            break;
+        case ITCH::MessageType::LULDAuctionCollarMessage:
+            return LULDAuctionCollarMessage();
+            break;
+        case ITCH::MessageType::OperationalHaltMessage:
+            return OperationalHaltMessage();
+            break;
+        case ITCH::MessageType::AddOrderMessage:
+            return AddOrderMessage();
+            break;
+        case ITCH::MessageType::AddOrderMPIDAttributionMessage:
+            return AddOrderMPIDAttributionMessage();
+            break;
+        case ITCH::MessageType::OrderExecutedMessage:
+            return OrderExecutedMessage();
+            break;
+        case ITCH::MessageType::OrderExecutedWithPriceMessage:
+            return OrderExecutedWithPriceMessage();
+            break;
+        case ITCH::MessageType::OrderCancelMessage:
+            return OrderCancelMessage();
+            break;
+        case ITCH::MessageType::OrderDeleteMessage:
+            return OrderDeleteMessage();
+            break;
+        case ITCH::MessageType::OrderReplaceMessage:
+            return OrderReplaceMessage();
+            break;
+        case ITCH::MessageType::NonCrossTradeMessage:
+            return NonCrossTradeMessage();
+            break;
+        // case ITCH::MessageType::CrossTradeMessage:
+        //     return CrossTradeMessage();
+        //     break;
+        // case ITCH::MessageType::BrokenTradeMessage:
+        //     return BrokenTradeMessage();
+        //     break;
+        // case ITCH::MessageType::NOIIMessage:
+        //     return NOIIMessage();
+        //     break;
+        // case ITCH::MessageType::DLCRMessage:
+        //     return DLCRMessage();
+        //     break;
+        // case ITCH::MessageType::RetailPriceImprovementIndicatorMessage:
+        //     return RetailPriceImprovementIndicatorMessage();
+        //     break;
+        default:
+            return ITCH::Message{};
+    }
 }

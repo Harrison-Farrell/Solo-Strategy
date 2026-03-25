@@ -288,6 +288,21 @@ struct OrderReplaceMessage {
     uint32_t shares;                           ///< New total shares
     uint32_t price;                            ///< New limit price
 };
+
+/// \struct NonCrossTradeMessage
+/// \brief Trade result from hidden orders (standard trade).
+struct NonCrossTradeMessage {
+    MessageType message_type;         ///< Message type
+    uint16_t stock_locate;            ///< Locate code for the security
+    uint16_t tracking_number;         ///< Nasdaq internal tracking number
+    Timestamp timestamp;              ///< Nanoseconds past midnight (48-bit)
+    uint64_t order_reference_number;  ///< Internal ID
+    char buy_sell_indicator;          ///< 'B' or 'S'
+    uint32_t shares;                  ///< Size
+    StockID stock;                    ///< Symbol
+    uint32_t price;                   ///< Price
+    uint64_t match_number;            ///< Execution ID
+};
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -298,19 +313,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct NonCrossTradeMessage
-/// \brief Trade result from hidden orders (standard trade).
-struct NonCrossTradeMessage {
-    MessageHeader header{MessageType::NonCrossTradeMessage, 0, 0,
-                         0};          ///< Message header
-    uint64_t order_reference_number;  ///< Internal ID
-    char buy_sell_indicator;          ///< 'B' or 'S'
-    uint32_t shares;                  ///< Size
-    char stock[8];                    ///< Symbol
-    uint32_t price;                   ///< Price
-    uint64_t match_number;            ///< Execution ID
 };
 
 /// \struct CrossTradeMessage
@@ -378,14 +380,15 @@ struct DLCRMessage {
 /// \typedef Message
 /// \brief Variant type holding any specific ITCH message structure.
 using Message = std::variant<
-    SystemEventMessage, StockDirectoryMessage, StockTradingActionMessage,
-    RegSHOMessage, MarketParticipantPositionMessage, MWCBDeclineLevelMessage,
-    MWCBStatusMessage, IPOQuotingPeriodUpdateMessage, LULDAuctionCollarMessage,
-    OperationalHaltMessage, AddOrderMessage, AddOrderMPIDAttributionMessage,
-    OrderExecutedMessage, OrderExecutedWithPriceMessage, OrderCancelMessage,
-    OrderDeleteMessage, OrderReplaceMessage, NonCrossTradeMessage,
-    CrossTradeMessage, BrokenTradeMessage, NOIIMessage,
-    RetailPriceImprovementIndicatorMessage, DLCRMessage>;
+    std::monostate, SystemEventMessage, StockDirectoryMessage,
+    StockTradingActionMessage, RegSHOMessage, MarketParticipantPositionMessage,
+    MWCBDeclineLevelMessage, MWCBStatusMessage, IPOQuotingPeriodUpdateMessage,
+    LULDAuctionCollarMessage, OperationalHaltMessage, AddOrderMessage,
+    AddOrderMPIDAttributionMessage, OrderExecutedMessage,
+    OrderExecutedWithPriceMessage, OrderCancelMessage, OrderDeleteMessage,
+    OrderReplaceMessage, NonCrossTradeMessage, CrossTradeMessage,
+    BrokenTradeMessage, NOIIMessage, RetailPriceImprovementIndicatorMessage,
+    DLCRMessage>;
 
 template <size_t N>
 std::string ArrayToString(const std::array<char, N>& arr) {
