@@ -16,6 +16,9 @@
 #include "itch-parser/messages/itch_messages.h"
 #include "memory-map/memory_map_file.h"
 
+ITCH_Parser::ITCH_Parser(const std::string& file_path)
+    : m_File(file_path), m_MessageQueue(m_MessageQueueSize) {}
+
 auto ITCH_Parser::SystemEventMessage() -> ITCH::Message {
     return m_File.Read<ITCH::SystemEventMessage>();
 }
@@ -87,12 +90,8 @@ auto ITCH_Parser::NonCrossTradeMessage() -> ITCH::Message {
     return m_File.Read<ITCH::NonCrossTradeMessage>();
 }
 
-ITCH_Parser::ITCH_Parser(const std::string& file_path)
-    : m_File(file_path), m_MessageQueue(m_MessageQueueSize) {}
-
-auto ITCH_Parser::CrossTradeMessage(const ITCH::MessageHeader& header) {
-    ITCH::CrossTradeMessage msg = {};
-    m_MessageQueue.Push(msg);
+auto ITCH_Parser::CrossTradeMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::CrossTradeMessage>();
 }
 
 auto ITCH_Parser::BrokenTradeMessage(const ITCH::MessageHeader& header) {
@@ -182,9 +181,9 @@ ITCH::Message ITCH_Parser::DecodeMessage() {
         case ITCH::MessageType::NonCrossTradeMessage:
             return NonCrossTradeMessage();
             break;
-        // case ITCH::MessageType::CrossTradeMessage:
-        //     return CrossTradeMessage();
-        //     break;
+        case ITCH::MessageType::CrossTradeMessage:
+            return CrossTradeMessage();
+            break;
         // case ITCH::MessageType::BrokenTradeMessage:
         //     return BrokenTradeMessage();
         //     break;

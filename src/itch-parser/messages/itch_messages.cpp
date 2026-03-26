@@ -197,13 +197,13 @@ auto InternalPrintMessage(std::ostream& out, const NonCrossTradeMessage& msg) {
 }
 
 auto InternalPrintMessage(std::ostream& out, const CrossTradeMessage& msg) {
-    // out << "Cross Trade:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Stock: " << to_string(msg.stock, STOCK_LEN) << "\n"
-    //     << "  Shares: " << msg.shares << "\n"
-    //     << "  Cross Price: " << msg.cross_price / PRICE_DIVISOR << "\n"
-    //     << "  Match#: " << msg.match_number << "\n"
-    //     << "  Cross Type: " << msg.cross_type;
+    out << "Cross Trade:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
+        << "  Shares: " << msg.shares << "\n"
+        << "  Cross Price: " << msg.cross_price / PRICE_DIVISOR << "\n"
+        << "  Match#: " << msg.match_number << "\n"
+        << "  Cross Type: " << msg.cross_type;
 }
 
 auto InternalPrintMessage(std::ostream& out, const BrokenTradeMessage& msg) {

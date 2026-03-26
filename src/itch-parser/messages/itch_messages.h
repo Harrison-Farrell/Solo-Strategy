@@ -303,6 +303,20 @@ struct NonCrossTradeMessage {
     uint32_t price;                   ///< Price
     uint64_t match_number;            ///< Execution ID
 };
+
+/// \struct CrossTradeMessage
+/// \brief Opening, closing, or halt-cross trade result.
+struct CrossTradeMessage {
+    MessageType message_type;  ///< Message type
+    uint16_t stock_locate;     ///< Locate code for the security
+    uint16_t tracking_number;  ///< Nasdaq internal tracking number
+    Timestamp timestamp;       ///< Nanoseconds past midnight (48-bit)
+    uint64_t shares;           ///< Total shares crossed
+    StockID stock;             ///< Symbol
+    uint32_t cross_price;      ///< Execution price
+    uint64_t match_number;     ///< Execution ID
+    char cross_type;           ///< 'O', 'C', 'H', or 'I'
+};
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -313,18 +327,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct CrossTradeMessage
-/// \brief Opening, closing, or halt-cross trade result.
-struct CrossTradeMessage {
-    MessageHeader header{MessageType::CrossTradeMessage, 0, 0,
-                         0};  ///< Message header
-    uint64_t shares;          ///< Total shares crossed
-    char stock[8];            ///< Symbol
-    uint32_t cross_price;     ///< Execution price
-    uint64_t match_number;    ///< Execution ID
-    char cross_type;          ///< 'O', 'C', 'H', or 'I'
 };
 
 /// \struct BrokenTradeMessage

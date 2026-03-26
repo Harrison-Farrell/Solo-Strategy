@@ -95,7 +95,6 @@ TEST_F(ITCHPaserTest, StockTradingActionMessageTest) {
         0x41, 0x42, 0x43, 0x44                           // Reason (ABCD)
     });
 
-    array<uint8_t, 6> expected_timestamp{0xAA, 0xBB, 0xCC, 0xAA, 0xBB, 0xCC};
     array<char, 8> expected_stock{'A', 'B', 'C', 'D', 'A', 'B', 'C', 'D'};
     array<char, 4> expected_reason{'A', 'B', 'C', 'D'};
 
@@ -774,6 +773,45 @@ TEST_F(ITCHPaserTest, NonCrossTradeMessageTest) {
     EXPECT_EQ(2900000, FromBigEndian(get<NonCrossTradeMessage>(message).price));
     EXPECT_EQ(12025908428800000,
               FromBigEndian(get<NonCrossTradeMessage>(message).match_number));
+}
+
+TEST_F(ITCHPaserTest, CrossTradeMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x51,                                // Message Type ('Q')
+        0x00, 0x00,                          // Stock Locate (0)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (207588671094783)
+        0x41, 0x41, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Shares
+        0x5A, 0x5A, 0x5A, 0x5A, 0x5A, 0x5A, 0x5A, 0x5A,  // Stock
+        0xFF, 0x00, 0x00, 0xAA,                          // Cross Price
+        0x41, 0x41, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Match Number
+        0x43                                             // Cross Type ('C')
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::CrossTradeMessage,
+              get<CrossTradeMessage>(message).message_type);
+
+    EXPECT_EQ(0, FromBigEndian(get<CrossTradeMessage>(message).stock_locate));
+    EXPECT_EQ(255,
+              FromBigEndian(get<CrossTradeMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783,
+              ArrayToUint48(get<CrossTradeMessage>(message).timestamp));
+    EXPECT_EQ(4702127773838221344,
+              FromBigEndian(get<CrossTradeMessage>(message).shares));
+    EXPECT_EQ("ZZZZZZZZ", ArrayToString(get<CrossTradeMessage>(message).stock));
+    EXPECT_EQ(4278190250,
+              FromBigEndian(get<CrossTradeMessage>(message).cross_price));
+    ;
+    EXPECT_EQ(4702127773838221344,
+              FromBigEndian(get<CrossTradeMessage>(message).match_number));
+    EXPECT_EQ('C', get<CrossTradeMessage>(message).cross_type);
 }
 
 // NOLINTEND

@@ -31,8 +31,6 @@ class ITCH_Parser {
     MemoryMappedFile m_File;
     const int m_MessageQueueSize = 1024;
     LockFreeQueue<ITCH::Message> m_MessageQueue;
-    std::unordered_map<ITCH::MessageType, std::function<ITCH::Message()>>
-        m_dispatch;
 
     /// \brief The system event message type is used to signal a market or data
     /// feed handler event
@@ -145,7 +143,7 @@ class ITCH_Parser {
     /// @brief The Trade Message is designed to provide execution details for
     /// normal match events involving nondisplayable order types.
     /// @return ITCH::Message Variant<CrossTradeMessage>
-    inline auto CrossTradeMessage(const ITCH::MessageHeader& header);
+    inline auto CrossTradeMessage() -> ITCH::Message;
 
     /// @brief The Broken Trade Message is sent whenever an execution on Nasdaq
     /// is broken. An execution may be broken if it is found to be “clearly
