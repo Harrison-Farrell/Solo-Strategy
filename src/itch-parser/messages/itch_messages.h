@@ -345,33 +345,15 @@ struct NOIIMessage {
     char cross_type;                   ///< 'O', 'C', or 'H'
     char price_variation_indicator;    ///< Degree of change
 };
-//==============================================================================
-/*
- * \struct MessageHeader
- * \brief Message header for all ITCH messages.
- */
-struct MessageHeader {
-    MessageType message_type;  ///< Message type
-    uint16_t stock_locate;     ///< Locate code for the security
-    uint16_t tracking_number;  ///< Nasdaq internal tracking number
-    uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct RetailPriceImprovementIndicatorMessage
-/// \brief RPI interest in a symbol.
-struct RetailPriceImprovementIndicatorMessage {
-    MessageHeader header{MessageType::RetailPriceImprovementIndicatorMessage, 0,
-                         0, 0};  ///< Message header
-    char stock[8];               ///< Symbol
-    char interest_flag;          ///< 'B', 'S', 'A', or 'N'
-};
 
 /// \struct DLCRMessage
 /// \brief Direct Listing Capital Raise information.
 struct DLCRMessage {
-    MessageHeader header{MessageType::DLCRMessage, 0, 0,
-                         0};            ///< Message header
-    char stock[8];                      ///< Symbol
+    MessageType message_type;           ///< Message type
+    uint16_t stock_locate;              ///< Locate code for the security
+    uint16_t tracking_number;           ///< Nasdaq internal tracking number
+    Timestamp timestamp;                ///< Nanoseconds past midnight (48-bit)
+    StockID stock;                      ///< Symbol
     char open_eligibility_status;       ///< Verified/Unverified
     uint32_t minimum_allowable_price;   ///< Minimum (4 decimals)
     uint32_t maximum_allowable_price;   ///< Maximum (4 decimals)
@@ -379,6 +361,17 @@ struct DLCRMessage {
     uint64_t near_execution_time;       ///< Target time
     uint32_t lower_price_range_collar;  ///< Floor (4 decimals)
     uint32_t upper_price_range_collar;  ///< Ceiling (4 decimals)
+};
+
+/// \struct RetailPriceImprovementIndicatorMessage
+/// \brief RPI interest in a symbol.
+struct RetailPriceImprovementIndicatorMessage {
+    MessageType message_type;  ///< Message type
+    uint16_t stock_locate;     ///< Locate code for the security
+    uint16_t tracking_number;  ///< Nasdaq internal tracking number
+    Timestamp timestamp;       ///< Nanoseconds past midnight (48-bit)
+    StockID stock;             ///< Symbol
+    char interest_flag;        ///< 'B', 'S', 'A', or 'N'
 };
 
 #pragma pack(pop)

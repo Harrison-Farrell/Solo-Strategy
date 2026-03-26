@@ -102,15 +102,12 @@ auto ITCH_Parser::NOIIMessage() -> ITCH::Message {
     return m_File.Read<ITCH::NOIIMessage>();
 }
 
-auto ITCH_Parser::DLCRMessage(const ITCH::MessageHeader& header) {
-    ITCH::DLCRMessage msg = {};
-    m_MessageQueue.Push(msg);
+auto ITCH_Parser::DLCRMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::DLCRMessage>();
 }
 
-auto ITCH_Parser::RetailPriceImprovementIndicatorMessage(
-    const ITCH::MessageHeader& header) {
-    ITCH::RetailPriceImprovementIndicatorMessage msg = {};
-    m_MessageQueue.Push(msg);
+auto ITCH_Parser::RetailPriceImprovementIndicatorMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::RetailPriceImprovementIndicatorMessage>();
 }
 
 void ITCH_Parser::Execute() {
@@ -188,12 +185,12 @@ ITCH::Message ITCH_Parser::DecodeMessage() {
         case ITCH::MessageType::NOIIMessage:
             return NOIIMessage();
             break;
-        // case ITCH::MessageType::DLCRMessage:
-        //     return DLCRMessage();
-        //     break;
-        // case ITCH::MessageType::RetailPriceImprovementIndicatorMessage:
-        //     return RetailPriceImprovementIndicatorMessage();
-        //     break;
+        case ITCH::MessageType::DLCRMessage:
+            return DLCRMessage();
+            break;
+        case ITCH::MessageType::RetailPriceImprovementIndicatorMessage:
+            return RetailPriceImprovementIndicatorMessage();
+            break;
         default:
             return ITCH::Message{};
     }

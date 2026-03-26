@@ -229,15 +229,27 @@ auto InternalPrintMessage(std::ostream& out, const NOIIMessage& msg) {
 
 auto InternalPrintMessage(std::ostream& out,
                           const RetailPriceImprovementIndicatorMessage& msg) {
-    // out << "RPII Message:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+    out << "RPII Message:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock);
 }
 
 auto InternalPrintMessage(std::ostream& out, const DLCRMessage& msg) {
-    // out << "DLCR Message:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Stock: " << to_string(msg.stock, STOCK_LEN);
+    out << "DLCR Message:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
+        << "  Open Eligibility Status: " << msg.open_eligibility_status << "\n"
+        << "  Minimum Allowable Price: "
+        << msg.minimum_allowable_price / PRICE_DIVISOR << "\n"
+        << "  Maximum Allowable Price: "
+        << msg.maximum_allowable_price / PRICE_DIVISOR << "\n"
+        << "  Near Execution Price: "
+        << msg.near_execution_price / PRICE_DIVISOR << "\n"
+        << "  Lower Price Range Collar: "
+        << "  Near Execution Time: " << msg.near_execution_time << "\n"
+        << msg.lower_price_range_collar / PRICE_DIVISOR << "\n"
+        << "  Upper Price Range Collar: "
+        << msg.upper_price_range_collar / PRICE_DIVISOR << "\n";
 }
 
 auto InternalPrintMessage(std::ostream& out, const std::monostate& _) {

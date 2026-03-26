@@ -170,13 +170,12 @@ class ITCH_Parser {
     /// messages once per second as soon as the DLCR volatility test has
     /// successfully passed.
     /// @return ITCH::Message Variant<DLCRMessage>
-    inline auto DLCRMessage(const ITCH::MessageHeader& header);
+    inline auto DLCRMessage() -> ITCH::Message;
 
     /// @brief Identifies a retail interest indication of the Bid, Ask or both
     /// the Bid and Ask for Nasdaq listed securities.
     /// @return ITCH::Message Variant<RetailPriceImprovementIndicatorMessage>
-    inline auto RetailPriceImprovementIndicatorMessage(
-        const ITCH::MessageHeader& header);
+    inline auto RetailPriceImprovementIndicatorMessage() -> ITCH::Message;
 };
 
 #endif  // SOLO_STRATEGY_SRC_ITCH_PARSER_ITCH_PARSER_H_
