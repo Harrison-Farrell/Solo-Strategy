@@ -34,6 +34,13 @@ class LockFreeQueue final {
     /// \param element_number The maximum number of elements the queue can hold.
     LockFreeQueue(std::size_t element_number) : m_Store(element_number, T()) {}
 
+    ~LockFreeQueue() = default;
+    LockFreeQueue() = delete;
+    LockFreeQueue(const LockFreeQueue&) = delete;
+    LockFreeQueue(const LockFreeQueue&&) = delete;
+    LockFreeQueue& operator=(const LockFreeQueue&) = delete;
+    LockFreeQueue& operator=(const LockFreeQueue&&) = delete;
+
     /// \brief Gets a pointer to the next writable element in the queue.
     /// \return Pointer to the next writable element.
     auto GetNextWrite() noexcept { return &m_Store[m_NextWrite]; }
@@ -103,12 +110,6 @@ class LockFreeQueue final {
     /// \brief Returns the current number of elements in the queue.
     /// \return The number of elements currently stored in the queue.
     auto Size() const noexcept { return m_Size.load(); }
-
-    LockFreeQueue() = delete;
-    LockFreeQueue(const LockFreeQueue&) = delete;
-    LockFreeQueue(const LockFreeQueue&&) = delete;
-    LockFreeQueue& operator=(const LockFreeQueue&) = delete;
-    LockFreeQueue& operator=(const LockFreeQueue&&) = delete;
 
    private:
     /// \brief The underlying storage for the queue elements.

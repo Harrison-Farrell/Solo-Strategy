@@ -13,12 +13,17 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <filesystem>
 #include <stdexcept>
-#include <string>
 
 #ifdef __WINDOWS_OS__
     #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
+    #include <fileapi.h>
+    #include <handleapi.h>
+    #include <memoryapi.h>
+    #include <minwindef.h>
+    #include <sysinfoapi.h>
+    #include <winnt.h>
 #else
     #include <errno.h>
     #include <fcntl.h>
@@ -30,18 +35,18 @@
 MemoryMappedFile::MemoryMappedFile() = default;
 
 MemoryMappedFile::MemoryMappedFile(const std::filesystem::path& filename,
-                                   size_t mappedBytes, CacheHint hint) {
-    if (!open(filename, mappedBytes, hint)) {
+                                   size_t mapped_bytes, CacheHint hint) {
+    if (!Open(filename, mapped_bytes, hint)) {
         throw std::runtime_error(
             "MemoryMappedFile::MemoryMappedFile() : failed to open file");
     }
 }
 
-MemoryMappedFile::~MemoryMappedFile() { close(); }
+MemoryMappedFile::~MemoryMappedFile() { Close(); }
 
-bool MemoryMappedFile::open(const std::filesystem::path& filename,
-                            size_t mappedBytes, CacheHint hint) {
-    close();
+bool MemoryMappedFile::Open(const std::filesystem::path& filename,
+                            size_t mapped_bytes, CacheHint hint) {
+    Close();
 
     if (!osOpen(filename)) {
         return false;
@@ -56,7 +61,7 @@ bool MemoryMappedFile::open(const std::filesystem::path& filename,
         return false;
     }
 
-    if (!osMap(0, mappedBytes)) {
+    if (!osMap(0, mapped_bytes)) {
         osClose();
         return false;
     }
@@ -64,7 +69,7 @@ bool MemoryMappedFile::open(const std::filesystem::path& filename,
     return true;
 }
 
-void MemoryMappedFile::close() {
+void MemoryMappedFile::Close() {
     osUnmap();
     osClose();
 
@@ -74,17 +79,18 @@ void MemoryMappedFile::close() {
     mCursor = 0;
 }
 
-bool MemoryMappedFile::remap(uint64_t offset, size_t mappedBytes) {
+bool MemoryMappedFile::remap(uint64_t offset, size_t mapped_bytes) {
     if (!isValid()) {
         return false;
     }
 
-    if (offset + mappedBytes > mFilesize && mappedBytes != WholeFile) {
+    if (offset + mapped_bytes > mFilesize &&
+        mapped_bytes != static_cast<size_t>(MapRange::WholeFile)) {
         return false;
     }
 
     osUnmap();
-    return osMap(offset, mappedBytes);
+    return osMap(offset, mapped_bytes);
 }
 
 uint8_t MemoryMappedFile::operator[](size_t offset) const {
@@ -116,14 +122,22 @@ size_t MemoryMappedFile::mappedSize() const { return mMappedBytes; }
 
 uint64_t MemoryMappedFile::Read48() {
     const uint8_t* ptr = static_cast<const uint8_t*>(mMappedView) + mCursor;
-    uint64_t value = (static_cast<uint64_t>(ptr[0]) << 40) |
-                     (static_cast<uint64_t>(ptr[1]) << 32) |
-                     (static_cast<uint64_t>(ptr[2]) << 24) |
-                     (static_cast<uint64_t>(ptr[3]) << 16) |
-                     (static_cast<uint64_t>(ptr[4]) << 8) |
-                     (static_cast<uint64_t>(ptr[5]));
 
-    mCursor += 6;
+    constexpr int byte_size = 6;
+    constexpr int first = 0;
+    constexpr int second = 8;
+    constexpr int third = 16;
+    constexpr int fourth = 24;
+    constexpr int fifth = 32;
+    constexpr int sixth = 40;
+
+    const uint64_t value = (static_cast<uint64_t>(ptr[0]) << sixth) |
+                           (static_cast<uint64_t>(ptr[1]) << fifth) |
+                           (static_cast<uint64_t>(ptr[2]) << fourth) |
+                           (static_cast<uint64_t>(ptr[3]) << third) |
+                           (static_cast<uint64_t>(ptr[4]) << second) |
+                           (static_cast<uint64_t>(ptr[5]) << first);
+    mCursor += byte_size;
     return value;
 }
 
@@ -140,45 +154,45 @@ bool MemoryMappedFile::osOpen(const std::filesystem::path& filename) {
 }
 
 void MemoryMappedFile::osClose() {
-    if (mFileHandle && mFileHandle != INVALID_HANDLE_VALUE) {
+    if (static_cast<bool>(mFileHandle) && mFileHandle != INVALID_HANDLE_VALUE) {
         ::CloseHandle(mFileHandle);
         mFileHandle = nullptr;
     }
 }
 
-bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
-    if (mappedBytes == WholeFile) {
-        mappedBytes = static_cast<size_t>(mFilesize - offset);
+bool MemoryMappedFile::osMap(uint64_t offset, size_t mapped_bytes) {
+    if (mapped_bytes == static_cast<size_t>(MapRange::WholeFile)) {
+        mapped_bytes = static_cast<size_t>(mFilesize - offset);
     }
 
     mMappingHandle = ::CreateFileMappingW(mFileHandle, nullptr, PAGE_READONLY,
                                           0, 0, nullptr);
-    if (!mMappingHandle) {
+    if (!static_cast<bool>(mMappingHandle)) {
         return false;
     }
 
-    const DWORD offsetHigh = static_cast<DWORD>(offset >> 32);
-    const DWORD offsetLow = static_cast<DWORD>(offset & 0xFFFFFFFF);
+    const auto offset_high = static_cast<DWORD>(offset >> 32);
+    const auto offset_low = static_cast<DWORD>(offset & 0xFFFFFFFF);
 
-    mMappedView = ::MapViewOfFile(mMappingHandle, FILE_MAP_READ, offsetHigh,
-                                  offsetLow, mappedBytes);
+    mMappedView = ::MapViewOfFile(mMappingHandle, FILE_MAP_READ, offset_high,
+                                  offset_low, mapped_bytes);
 
-    if (!mMappedView) {
+    if (!static_cast<bool>(mMappedView)) {
         ::CloseHandle(mMappingHandle);
         mMappingHandle = nullptr;
         return false;
     }
 
-    mMappedBytes = mappedBytes;
+    mMappedBytes = mapped_bytes;
     return true;
 }
 
 void MemoryMappedFile::osUnmap() {
-    if (mMappedView) {
+    if (static_cast<bool>(mMappedView)) {
         ::UnmapViewOfFile(mMappedView);
         mMappedView = nullptr;
     }
-    if (mMappingHandle) {
+    if (static_cast<bool>(mMappingHandle)) {
         ::CloseHandle(mMappingHandle);
         mMappingHandle = nullptr;
     }
@@ -193,9 +207,9 @@ uint64_t MemoryMappedFile::osGetFileSize() const {
 }
 
 uint32_t MemoryMappedFile::getPageSize() {
-    SYSTEM_INFO si;
-    ::GetSystemInfo(&si);
-    return si.dwAllocationGranularity;
+    SYSTEM_INFO info;
+    ::GetSystemInfo(&info);
+    return info.dwAllocationGranularity;
 }
 
 #else  // Unix
@@ -212,38 +226,38 @@ void MemoryMappedFile::osClose() {
     }
 }
 
-bool MemoryMappedFile::osMap(uint64_t offset, size_t mappedBytes) {
-    if (mappedBytes == WholeFile) {
-        mappedBytes = static_cast<size_t>(mFilesize - offset);
+bool MemoryMappedFile::osMap(uint64_t offset, size_t mapped_bytes) {
+    if (mapped_bytes == static_cast<size_t>(MapRange::WholeFile)) {
+        mapped_bytes = static_cast<size_t>(mFilesize - offset);
     }
 
     int flags = MAP_SHARED;
     #ifdef MAP_POPULATE
-    if (mHint == SequentialScan) {
+    if (mHint == CacheHint::SequentialScan) {
         flags |= MAP_POPULATE;
     }
     #endif
 
     mMappedView =
-        ::mmap(nullptr, mappedBytes, PROT_READ, flags, mFileHandle, offset);
+        ::mmap(nullptr, mapped_bytes, PROT_READ, flags, mFileHandle, offset);
 
-    if (mMappedView == MAP_FAILED) {
+    if (static_cast<bool>(mMappedView) == MAP_FAILED) {
         mMappedView = nullptr;
         return false;
     }
 
     #ifdef MADV_SEQUENTIAL
-    if (mHint == SequentialScan) {
-        ::madvise(mMappedView, mappedBytes, MADV_SEQUENTIAL);
+    if (mHint == CacheHint::SequentialScan) {
+        ::madvise(mMappedView, mapped_bytes, MADV_SEQUENTIAL);
     }
     #endif
 
-    mMappedBytes = mappedBytes;
+    mMappedBytes = mapped_bytes;
     return true;
 }
 
 void MemoryMappedFile::osUnmap() {
-    if (mMappedView) {
+    if (static_cast<bool>(mMappedView)) {
         ::munmap(mMappedView, mMappedBytes);
         mMappedView = nullptr;
     }

@@ -47,12 +47,12 @@ TEST_F(MemoryMappedFileTest, OpenAndCloseValidFile) {
     CreateTestFile({0x01, 0x02, 0x03, 0x04});
 
     MemoryMappedFile mappedFile;
-    EXPECT_TRUE(mappedFile.open(tempFilePath));
+    EXPECT_TRUE(mappedFile.Open(tempFilePath));
     EXPECT_TRUE(mappedFile.isValid());
     EXPECT_EQ(mappedFile.size(), 4);
     EXPECT_EQ(mappedFile.mappedSize(), 4);
 
-    mappedFile.close();
+    mappedFile.Close();
     EXPECT_FALSE(mappedFile.isValid());
     EXPECT_EQ(mappedFile.size(), 0);
     EXPECT_EQ(mappedFile.mappedSize(), 0);
@@ -62,7 +62,7 @@ TEST_F(MemoryMappedFileTest, OpenInvalidFile) {
     MemoryMappedFile mappedFile;
     std::filesystem::path nonExistentPath =
         std::filesystem::temp_directory_path() / "does_not_exist_file.bin";
-    EXPECT_FALSE(mappedFile.open(nonExistentPath));
+    EXPECT_FALSE(mappedFile.Open(nonExistentPath));
     EXPECT_FALSE(mappedFile.isValid());
 }
 
@@ -70,7 +70,7 @@ TEST_F(MemoryMappedFileTest, ArrayAccessValidAndInvalid) {
     CreateTestFile({0x11, 0x22, 0x33, 0x44});
 
     MemoryMappedFile mappedFile;
-    ASSERT_TRUE(mappedFile.open(tempFilePath));
+    ASSERT_TRUE(mappedFile.Open(tempFilePath));
 
     EXPECT_EQ(mappedFile[0], 0x11);
     EXPECT_EQ(mappedFile[1], 0x22);
@@ -90,7 +90,7 @@ TEST_F(MemoryMappedFileTest, RemapOffsets) {
     CreateTestFile(data);
 
     MemoryMappedFile mappedFile;
-    ASSERT_TRUE(mappedFile.open(tempFilePath, 1024));
+    ASSERT_TRUE(mappedFile.Open(tempFilePath, 1024));
     EXPECT_EQ(mappedFile.mappedSize(), 1024);
 
     // remap testing (requires page size alignment typically, assuming 4096 here
@@ -112,7 +112,7 @@ TEST_F(MemoryMappedFileTest, CursorSequentialReadAndNavigation) {
     CreateTestFile({0x01, 0x02, 0x03, 0x04, 0x0A, 0x0B});
 
     MemoryMappedFile mappedFile;
-    ASSERT_TRUE(mappedFile.open(tempFilePath));
+    ASSERT_TRUE(mappedFile.Open(tempFilePath));
 
     EXPECT_EQ(mappedFile.tell(), 0);
 
@@ -139,7 +139,7 @@ TEST_F(MemoryMappedFileTest, ReadEndianness) {
                     0x03, 0x04, 0x05, 0x06, 0x07, 0x08});
 
     MemoryMappedFile mappedFile;
-    ASSERT_TRUE(mappedFile.open(tempFilePath));
+    ASSERT_TRUE(mappedFile.Open(tempFilePath));
 
     EXPECT_EQ(mappedFile.Read16(), 0x1234);
     EXPECT_EQ(mappedFile.Read32(), 0x11223344);
@@ -156,7 +156,7 @@ TEST_F(MemoryMappedFileTest, ReadStrings) {
                     'E', 'L', 'L'});
 
     MemoryMappedFile mappedFile;
-    ASSERT_TRUE(mappedFile.open(tempFilePath));
+    ASSERT_TRUE(mappedFile.Open(tempFilePath));
 
     std::array<char, 8> expected_result{'H', 'A', 'R', 'R', 'I', 'S', 'O', 'N'};
     EXPECT_EQ(mappedFile.ReadArray<8>(), expected_result);
@@ -173,7 +173,7 @@ TEST_F(MemoryMappedFileTest, Iterators) {
     CreateTestFile({0x55, 0xAA, 0xFF});
 
     MemoryMappedFile mappedFile;
-    ASSERT_TRUE(mappedFile.open(tempFilePath));
+    ASSERT_TRUE(mappedFile.Open(tempFilePath));
 
     auto it = mappedFile.begin();
     EXPECT_EQ(*it, 0x55);
