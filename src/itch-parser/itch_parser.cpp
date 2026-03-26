@@ -94,9 +94,8 @@ auto ITCH_Parser::CrossTradeMessage() -> ITCH::Message {
     return m_File.Read<ITCH::CrossTradeMessage>();
 }
 
-auto ITCH_Parser::BrokenTradeMessage(const ITCH::MessageHeader& header) {
-    ITCH::BrokenTradeMessage msg = {};
-    m_MessageQueue.Push(msg);
+auto ITCH_Parser::BrokenTradeMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::BrokenTradeMessage>();
 }
 
 auto ITCH_Parser::NOIIMessage(const ITCH::MessageHeader& header) {
@@ -184,9 +183,9 @@ ITCH::Message ITCH_Parser::DecodeMessage() {
         case ITCH::MessageType::CrossTradeMessage:
             return CrossTradeMessage();
             break;
-        // case ITCH::MessageType::BrokenTradeMessage:
-        //     return BrokenTradeMessage();
-        //     break;
+        case ITCH::MessageType::BrokenTradeMessage:
+            return BrokenTradeMessage();
+            break;
         // case ITCH::MessageType::NOIIMessage:
         //     return NOIIMessage();
         //     break;

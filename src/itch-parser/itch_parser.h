@@ -150,7 +150,7 @@ class ITCH_Parser {
     /// erroneous” pursuant to Nasdaq’s Clearly Erroneous Policy. A trade break
     /// is final; once a trade is broken, it cannot be reinstated.
     /// @return ITCH::Message Variant<BrokenTradeMessage>
-    inline auto BrokenTradeMessage(const ITCH::MessageHeader& header);
+    inline auto BrokenTradeMessage() -> ITCH::Message;
 
     /// @brief Nasdaq begins disseminating Net Order Imbalance Indicators (NOII)
     /// at 9:25 a.m. for the Opening Cross and 3:50 p.m. for the Closing Cross.

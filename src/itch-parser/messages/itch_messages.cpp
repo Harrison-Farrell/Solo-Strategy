@@ -207,9 +207,9 @@ auto InternalPrintMessage(std::ostream& out, const CrossTradeMessage& msg) {
 }
 
 auto InternalPrintMessage(std::ostream& out, const BrokenTradeMessage& msg) {
-    // out << "Broken Trade:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Match#: " << msg.match_number;
+    out << "Broken Trade:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Match#: " << msg.match_number;
 }
 
 auto InternalPrintMessage(std::ostream& out, const NOIIMessage& msg) {

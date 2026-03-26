@@ -27,7 +27,7 @@ jobs:
 
       - name: Install CMake and Ninja
         run: |
-          choco install cmake ninja -y
+          choco install cmake ninja llvm  mingw -y
         shell: powershell
 
       - name: Configure CMake

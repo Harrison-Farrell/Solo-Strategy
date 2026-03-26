@@ -317,6 +317,16 @@ struct CrossTradeMessage {
     uint64_t match_number;     ///< Execution ID
     char cross_type;           ///< 'O', 'C', 'H', or 'I'
 };
+
+/// \struct BrokenTradeMessage
+/// \brief Indicates a previous trade was cancelled.
+struct BrokenTradeMessage {
+    MessageType message_type;  ///< Message type
+    uint16_t stock_locate;     ///< Locate code for the security
+    uint16_t tracking_number;  ///< Nasdaq internal tracking number
+    Timestamp timestamp;       ///< Nanoseconds past midnight (48-bit)
+    uint64_t match_number;     ///< Match ID of the original trade
+};
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -327,14 +337,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct BrokenTradeMessage
-/// \brief Indicates a previous trade was cancelled.
-struct BrokenTradeMessage {
-    MessageHeader header{MessageType::BrokenTradeMessage, 0, 0,
-                         0};  ///< Message header
-    uint64_t match_number;    ///< Match ID of the original trade
 };
 
 /// \struct NOIIMessage

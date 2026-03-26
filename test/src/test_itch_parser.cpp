@@ -814,4 +814,32 @@ TEST_F(ITCHPaserTest, CrossTradeMessageTest) {
     EXPECT_EQ('C', get<CrossTradeMessage>(message).cross_type);
 }
 
+TEST_F(ITCHPaserTest, BrokenTradeMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x42,                                // Message Type ('B')
+        0x00, 0x00,                          // Stock Locate (0)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (207588671094783)
+        0x41, 0x41, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Match Number
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::BrokenTradeMessage,
+              get<BrokenTradeMessage>(message).message_type);
+
+    EXPECT_EQ(0, FromBigEndian(get<BrokenTradeMessage>(message).stock_locate));
+    EXPECT_EQ(255,
+              FromBigEndian(get<BrokenTradeMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783,
+              ArrayToUint48(get<BrokenTradeMessage>(message).timestamp));
+    EXPECT_EQ(4702127773838221344,
+              FromBigEndian(get<BrokenTradeMessage>(message).match_number));
+}
+
 // NOLINTEND
