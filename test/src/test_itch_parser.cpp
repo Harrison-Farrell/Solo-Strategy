@@ -842,4 +842,49 @@ TEST_F(ITCHPaserTest, BrokenTradeMessageTest) {
               FromBigEndian(get<BrokenTradeMessage>(message).match_number));
 }
 
+TEST_F(ITCHPaserTest, NOIIMessageTest) {
+    using namespace std;
+    using namespace endian;
+    using namespace ITCH;
+
+    CreateTestFile({
+        0x49,                                // Message Type ('I')
+        0x00, 0x00,                          // Stock Locate (0)
+        0x00, 0xFF,                          // Tracking Number (255)
+        0xBC, 0xCD, 0x00, 0xFF, 0xFF, 0xFF,  // Timestamp (207588671094783)
+        0x41, 0x41, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Paired Shares
+        0x5A, 0x5A, 0x5A, 0x5A, 0x5A, 0x5A, 0x5A, 0x5A,  // Imbalance Shares
+        0x4E,                                            // Imbalance direction
+        0x41, 0x41, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Stock
+        0xFF, 0x00, 0x00, 0xAA,                          // Far Price
+        0xFF, 0x00, 0x00, 0xAA,                          // Near Price
+        0xFF, 0x00, 0x00, 0xAA,                          // Current Price
+        0x43,                                            // Cross Type ('C')
+        0x43                                             // PRice Variation
+    });
+
+    ITCH_Parser paser(stringTempFilePath);
+    Message message = paser.DecodeMessage();
+
+    EXPECT_EQ(MessageType::NOIIMessage, get<NOIIMessage>(message).message_type);
+
+    EXPECT_EQ(0, FromBigEndian(get<NOIIMessage>(message).stock_locate));
+    EXPECT_EQ(255, FromBigEndian(get<NOIIMessage>(message).tracking_number));
+    EXPECT_EQ(207588671094783,
+              ArrayToUint48(get<NOIIMessage>(message).timestamp));
+    EXPECT_EQ(4702127773838221344,
+              FromBigEndian(get<NOIIMessage>(message).paired_shares));
+    EXPECT_EQ(6510615555426900570,
+              FromBigEndian(get<NOIIMessage>(message).imbalance_shares));
+    EXPECT_EQ('N', get<NOIIMessage>(message).imbalance_direction);
+    EXPECT_EQ("AAPL    ", ArrayToString(get<NOIIMessage>(message).stock));
+
+    EXPECT_EQ(4278190250, FromBigEndian(get<NOIIMessage>(message).far_price));
+    EXPECT_EQ(4278190250, FromBigEndian(get<NOIIMessage>(message).near_price));
+    EXPECT_EQ(4278190250,
+              FromBigEndian(get<NOIIMessage>(message).current_reference_price));
+    EXPECT_EQ('C', get<NOIIMessage>(message).cross_type);
+    EXPECT_EQ('C', get<NOIIMessage>(message).price_variation_indicator);
+}
+
 // NOLINTEND

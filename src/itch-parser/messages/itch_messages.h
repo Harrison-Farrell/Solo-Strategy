@@ -327,6 +327,24 @@ struct BrokenTradeMessage {
     Timestamp timestamp;       ///< Nanoseconds past midnight (48-bit)
     uint64_t match_number;     ///< Match ID of the original trade
 };
+
+/// \struct NOIIMessage
+/// \brief Net Order Imbalance Indicator.
+struct NOIIMessage {
+    MessageType message_type;          ///< Message type
+    uint16_t stock_locate;             ///< Locate code for the security
+    uint16_t tracking_number;          ///< Nasdaq internal tracking number
+    Timestamp timestamp;               ///< Nanoseconds past midnight (48-bit)
+    uint64_t paired_shares;            ///< Shares combined at reference price
+    uint64_t imbalance_shares;         ///< Remaining shares
+    char imbalance_direction;          ///< 'B', 'S', 'N', or 'O'
+    StockID stock;                     ///< Symbol
+    uint32_t far_price;                ///< Crossing price (4 decimals)
+    uint32_t near_price;               ///< Crossing price (4 decimals)
+    uint32_t current_reference_price;  ///< Market price (4 decimals)
+    char cross_type;                   ///< 'O', 'C', or 'H'
+    char price_variation_indicator;    ///< Degree of change
+};
 //==============================================================================
 /*
  * \struct MessageHeader
@@ -337,22 +355,6 @@ struct MessageHeader {
     uint16_t stock_locate;     ///< Locate code for the security
     uint16_t tracking_number;  ///< Nasdaq internal tracking number
     uint64_t timestamp;        ///< Nanoseconds past midnight (48-bit)
-};
-
-/// \struct NOIIMessage
-/// \brief Net Order Imbalance Indicator.
-struct NOIIMessage {
-    MessageHeader header{MessageType::NOIIMessage, 0, 0,
-                         0};           ///< Message header
-    uint64_t paired_shares;            ///< Shares combined at reference price
-    uint64_t imbalance_shares;         ///< Remaining shares
-    char imbalance_direction;          ///< 'B', 'S', 'N', or 'O'
-    char stock[8];                     ///< Symbol
-    uint32_t far_price;                ///< Crossing price (4 decimals)
-    uint32_t near_price;               ///< Crossing price (4 decimals)
-    uint32_t current_reference_price;  ///< Market price (4 decimals)
-    char cross_type;                   ///< 'O', 'C', or 'H'
-    char price_variation_indicator;    ///< Degree of change
 };
 
 /// \struct RetailPriceImprovementIndicatorMessage

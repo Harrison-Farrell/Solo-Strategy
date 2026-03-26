@@ -98,9 +98,8 @@ auto ITCH_Parser::BrokenTradeMessage() -> ITCH::Message {
     return m_File.Read<ITCH::BrokenTradeMessage>();
 }
 
-auto ITCH_Parser::NOIIMessage(const ITCH::MessageHeader& header) {
-    ITCH::NOIIMessage msg = {};
-    m_MessageQueue.Push(msg);
+auto ITCH_Parser::NOIIMessage() -> ITCH::Message {
+    return m_File.Read<ITCH::NOIIMessage>();
 }
 
 auto ITCH_Parser::DLCRMessage(const ITCH::MessageHeader& header) {
@@ -117,7 +116,7 @@ auto ITCH_Parser::RetailPriceImprovementIndicatorMessage(
 void ITCH_Parser::Execute() {
     while (m_File.tell() < m_File.size()) {
         // The first two bytes are message length as per moldupd64
-        // Skip, jumping to the message type char
+        // skip to the message type char
         m_File.seek(m_File.tell() + 2);
         m_MessageQueue.Push(DecodeMessage());
     }
@@ -186,9 +185,9 @@ ITCH::Message ITCH_Parser::DecodeMessage() {
         case ITCH::MessageType::BrokenTradeMessage:
             return BrokenTradeMessage();
             break;
-        // case ITCH::MessageType::NOIIMessage:
-        //     return NOIIMessage();
-        //     break;
+        case ITCH::MessageType::NOIIMessage:
+            return NOIIMessage();
+            break;
         // case ITCH::MessageType::DLCRMessage:
         //     return DLCRMessage();
         //     break;

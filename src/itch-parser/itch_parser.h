@@ -163,7 +163,7 @@ class ITCH_Parser {
     /// starting 1 second after quoting period starts /
     /// trading action is released.
     /// @return ITCH::Message Variant<NOIIMessage>
-    inline auto NOIIMessage(const ITCH::MessageHeader& header);
+    inline auto NOIIMessage() -> ITCH::Message;
 
     /// @brief The following message is disseminated only for Direct Listing
     /// with Capital Raise (DLCR) securities. Nasdaq begins disseminating

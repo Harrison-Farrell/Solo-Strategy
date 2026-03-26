@@ -213,18 +213,18 @@ auto InternalPrintMessage(std::ostream& out, const BrokenTradeMessage& msg) {
 }
 
 auto InternalPrintMessage(std::ostream& out, const NOIIMessage& msg) {
-    // out << "NOII Message:\n"
-    //     << "  Timestamp: " << msg.header.timestamp << "\n"
-    //     << "  Stock: " << to_string(msg.stock, STOCK_LEN) << "\n"
-    //     << "  Paired Shares: " << msg.paired_shares << "\n"
-    //     << "  Imbalance Shares: " << msg.imbalance_shares << "\n"
-    //     << "  Imbalance Direction: " << msg.imbalance_direction << "\n"
-    //     << "  Far Price: " << msg.far_price / PRICE_DIVISOR << "\n"
-    //     << "  Near Price: " << msg.near_price / PRICE_DIVISOR << "\n"
-    //     << "  Reference Price: " << msg.current_reference_price /
-    //     PRICE_DIVISOR << "\n"
-    //     << "  Cross Type: " << msg.cross_type << "\n"
-    //     << "  Price Variation Indicator: " << msg.price_variation_indicator;
+    out << "NOII Message:\n"
+        << "  Timestamp: " << ArrayToUint48(msg.timestamp) << "\n"
+        << "  Paired Shares: " << msg.paired_shares << "\n"
+        << "  Imbalance Shares: " << msg.imbalance_shares << "\n"
+        << "  Imbalance Direction: " << msg.imbalance_direction << "\n"
+        << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
+        << "  Far Price: " << msg.far_price / PRICE_DIVISOR << "\n"
+        << "  Near Price: " << msg.near_price / PRICE_DIVISOR << "\n"
+        << "  Reference Price: " << msg.current_reference_price / PRICE_DIVISOR
+        << "\n"
+        << "  Cross Type: " << msg.cross_type << "\n"
+        << "  Price Variation Indicator: " << msg.price_variation_indicator;
 }
 
 auto InternalPrintMessage(std::ostream& out,
