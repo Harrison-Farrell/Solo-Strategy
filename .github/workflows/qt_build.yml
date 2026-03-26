@@ -2,9 +2,9 @@ name: Build and Test Qt Project
 
 on:
   push:
-    branches: [ main, develop, feature/* ]
+    branches: [main, develop, feature/*]
   pull_request:
-    branches: [ main, develop, feature/* ]
+    branches: [main, develop, feature/*]
 
 jobs:
   build:
@@ -15,30 +15,30 @@ jobs:
         build-type: [Debug, Release]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: '6.9.1' # Specify the desired Qt version
-        cache: true
-        modules: 'qtcharts'
-    
-    - name: Install CMake and Ninja
-      run: |
-       choco install cmake ninja -y
-      shell: powershell
-    
-    - name: Configure CMake
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -G Ninja -DBUILD_TESTS=ON -DBUILD_DOXYGEN=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=ON
-      shell: powershell
-    
-    - name: Build
-      run: cmake --build build --config ${{ matrix.build-type }}
-      shell: powershell
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.9.1" # Specify the desired Qt version
+          cache: true
+          modules: "qtcharts"
 
-    - name: Run Unit Tests
-      run: |
-        cd build/test
-        ctest --build-config Debug --output-on-failure --verbose
+      - name: Install CMake and Ninja
+        run: |
+          choco install cmake ninja -y
+        shell: powershell
+
+      - name: Configure CMake
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -G Ninja -DBUILD_TESTS=ON -DBUILD_DOXYGEN=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=ON
+        shell: powershell
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.build-type }}
+        shell: powershell
+
+      - name: Run Unit Tests
+        run: |
+          cd build/test
+          ctest --build-config Debug --output-on-failure --verbose
