@@ -241,7 +241,7 @@ bool MemoryMappedFile::osMap(uint64_t offset, size_t mapped_bytes) {
     mMappedView =
         ::mmap(nullptr, mapped_bytes, PROT_READ, flags, mFileHandle, offset);
 
-    if (static_cast<bool>(mMappedView) == MAP_FAILED) {
+    if (mMappedView == MAP_FAILED) {
         mMappedView = nullptr;
         return false;
     }

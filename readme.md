@@ -1,28 +1,20 @@
-[![Linux OS Build](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/linux_build.yml/badge.svg)](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/linux_build.yml)
-[![Windows OS Build](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/windows_build.yml/badge.svg)](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/windows_build.yml)
-[![Unit Tests](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/unit_tests.yml)
+| Linux OS Build | Windows OS Build | Unit Tests |
+| --- | --- | --- |
+| [![Linux OS Build](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/linux_build.yml/badge.svg)](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/linux_build.yml) | [![Windows OS Build](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/windows_build.yml/badge.svg)](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/windows_build.yml) | [![Unit Tests](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/Harrison-Farrell/Solo-Strategy/actions/workflows/unit_tests.yml) |
 
-# Trading Ecosystem Self-Learning Checklist
+# Solo-Strategy Trading System
 
-This checklist outlines the key topics to master when building a foundational understanding of the HFT ecosystem from a low-latency C++ perspective.
+Solo-Strategy is a high-performance, low-latency algorithmic trading ecosystem built in C++. It focuses on deterministic execution, ultra-fast market data parsing, order book reconstruction, and efficient lock-free concurrency for High-Frequency Trading (HFT).
 
-* [ ] **[Memory Pool](memory-pool/readme.md):** Pre-Allocated block of memory to reduce allocation overhead and ensure deterministic performance in low-latency HFT systems.
-* [ ] **[Lock Free Queue](lock-free-queue/readme.md):** A concurrent data structure designed to facilitate communication between different threads
-* [ ] **[Market Orders](market-orders):** The structures used to contain the information for each order. To be consumed by the Order books
-* [ ] **[Order Book](order-book/readme.md):** Electronic list of buy (bid) and sell (ask) orders for a financial instrument organized by price level.
-* [ ] **[ITCH Parser](itch-parser/readme.md):** Parses NASDAQ ITCH protocol messages to extract market data.
+## Modular Ecosystem Checklist
 
+This repository is constructed from several core modules. Review the Readme for each component to master the foundational concepts of this low-latency C++ trading architecture:
 
-
-Source References
-https://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTVITCHspecification.pdf
-https://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/moldudp64.pdf
-https://www.asxonline.com/content/dam/asxonline/public/documents/asx-trade-refresh-manuals/asx-trade-itch-message-specification.pdf
-
-
-https://gitlab.inf.unibz.it/Sebastian.Cavada/Machine-Learning-for-Algorithmic-Trading-Second-Edition_Original/-/blob/v2/02_market_and_fundamental_data/01_NASDAQ_TotalView-ITCH_Order_Book/01_build_itch_order_book.py
-
-https://simontoth.substack.com/p/daily-bite-of-c-optimizing-code-to?r=1g4l8a&utm_campaign=post&utm_medium=web&triedRedirect=true 
-
-https://github.com/runk/itch/tree/master
-https://github.com/bbalouki/itchcpp/tree/main
+* [ ] **[ITCH Parser](src/itch-parser/readme.md):** Parses NASDAQ ITCH 5.0 protocol messages to extract market data directly from binary feeds.
+* [ ] **[Lock-Free Queue](src/lock-free-queue/readme.md):** A high-performance concurrent queue designed for inter-thread communication.
+* [ ] **[Market Orders](src/market-orders/readme.md):** Defines order structures, price level aggregations, and matching engine update events.
+* [ ] **[Memory Mapped File](src/memory-map/readme.md):** Cross-platform memory-mapped file to read blocks of binary data without I/O overhead.
+* [ ] **[Memory Pool](src/memory-pool/readme.md):** Pre-allocates memory blocks to prevent dynamic allocation fragmentation improving latency.
+* [ ] **[Order Book](src/order-book/readme.md):** Aggregates limit buy (bid) and sell (ask) updates ordered by price and FIFO priority.
+* [ ] **[Thread Affinity](src/thread/readme.md):** OS-agnostic CPU thread isolation (pinning), ensuring critical-path logic runs on dedicated cores.
+* [ ] **[Utilities](src/utilities/readme.md):** System-wide type aliases, catastrophic failure assert macros, and endian-network swap helpers.
