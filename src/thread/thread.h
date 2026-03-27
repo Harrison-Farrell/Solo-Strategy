@@ -16,6 +16,7 @@
 #include <chrono>
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <thread>
 
@@ -54,23 +55,24 @@ inline auto CreateAndStartThread(int core_id, const std::string& name, T&& func,
     // Captured by value [=] or specific copy/forwarding is safer here to
     // prevent dangling references if the parent scope finishes execution before
     // the thread spins up.
-    auto t = new std::thread([core_id, name, func = std::forward<T>(func),
-                              ... args = std::forward<A>(args)]() mutable {
-        if (core_id >= 0 && !SetThreadCore(core_id)) {
-            std::cerr << "Failed to set core affinity for " << name
+    auto object_thread = std::make_shared<std::thread>(
+        [core_id, name, func = std::forward<T>(func),
+         ... args = std::forward<A>(args)]() mutable {
+            if (core_id >= 0 && !SetThreadCore(core_id)) {
+                std::cerr << "Failed to set core affinity for " << name
+                          << " to core " << core_id << "\n";
+                std::quick_exit(EXIT_FAILURE);
+            }
+            std::cerr << "Successfully set core affinity for " << name
                       << " to core " << core_id << "\n";
-            std::quick_exit(EXIT_FAILURE);
-        }
-        std::cerr << "Successfully set core affinity for " << name
-                  << " to core " << core_id << "\n";
 
-        std::invoke(std::move(func), std::move(args)...);
-    });
+            std::invoke(std::move(func), std::move(args)...);
+        });
 
     using namespace std::literals::chrono_literals;
     std::this_thread::sleep_for(1s);
 
-    return t;
+    return object_thread;
 }
 
 #endif  // SOLO_STRATEGY_SRC_THREAD_AFFINITY_THREAD_AFFINITY_H_

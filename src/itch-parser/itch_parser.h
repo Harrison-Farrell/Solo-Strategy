@@ -12,8 +12,11 @@
 #ifndef SOLO_STRATEGY_SRC_ITCH_PARSER_ITCH_PARSER_H_
 #define SOLO_STRATEGY_SRC_ITCH_PARSER_ITCH_PARSER_H_
 
+#include <atomic>
 #include <functional>
+#include <memory>
 #include <string>
+#include <thread>
 #include <unordered_map>
 
 #include "itch-parser/messages/itch_messages.h"
@@ -22,15 +25,23 @@
 
 class ITCH_Parser {
    public:
-    ITCH_Parser(const std::string& file_path);
+    ITCH_Parser(const std::string& file_path,
+                std::shared_ptr<LockFreeQueue<ITCH::Message>>& queue_pointer);
 
-    void Execute();
+    /// \brief Executes the Execute() function on the newly created thread
+    std::shared_ptr<std::thread> Start();
+
+    /// \brief Iterates over the length of a binary file until it's completed
+    /// each decoded itch message is pushed into the lock free queue
+    auto Execute();
+
+    /// \brief Decodes a single ITCH Message from the file buffer
+    /// \return ITCH Message variant
     ITCH::Message DecodeMessage();
 
    private:
     MemoryMappedFile m_File;
-    const int m_MessageQueueSize = 1024;
-    LockFreeQueue<ITCH::Message> m_MessageQueue;
+    std::shared_ptr<LockFreeQueue<ITCH::Message>> m_MessageQueue;
 
     /// \brief The system event message type is used to signal a market or data
     /// feed handler event
@@ -118,13 +129,13 @@ class ITCH_Parser {
     /// \return ITCH::Message Variant<OrderCancelMessage>
     inline auto OrderCancelMessage() -> ITCH::Message;
 
-    /// @brief This message is sent whenever an order on the book is being
+    /// \brief This message is sent whenever an order on the book is being
     /// cancelled. All remaining shares are no longer accessible so the order
     /// must be removed from the book.
-    /// @return ITCH::Message Variant<OrderDeleteMessage>
+    /// \return ITCH::Message Variant<OrderDeleteMessage>
     inline auto OrderDeleteMessage() -> ITCH::Message;
 
-    /// @brief This message is sent whenever an order on the book has been
+    /// \brief This message is sent whenever an order on the book has been
     /// cancel replaced. All remaining shares from the original order are no
     /// longer accessible, and must be removed. The new order details are
     /// provided for the replacement, along with a new order reference number
@@ -132,7 +143,7 @@ class ITCH_Parser {
     /// attribution (if any) cannot be changed by an Order Replace event, these
     /// fields are not included in the message. Firms should retain the
     /// side,stock symbol and MPID from the original Add Order message.
-    /// @return ITCH::Message Variant<OrderReplaceMessage>
+    /// \return ITCH::Message Variant<OrderReplaceMessage>
     inline auto OrderReplaceMessage() -> ITCH::Message;
 
     /// \brief The Trade Message is designed to provide execution details for
@@ -140,19 +151,19 @@ class ITCH_Parser {
     /// \return ITCH::Message Variant<NonCrossTradeMessage>
     inline auto NonCrossTradeMessage() -> ITCH::Message;
 
-    /// @brief The Trade Message is designed to provide execution details for
+    /// \brief The Trade Message is designed to provide execution details for
     /// normal match events involving nondisplayable order types.
-    /// @return ITCH::Message Variant<CrossTradeMessage>
+    /// \return ITCH::Message Variant<CrossTradeMessage>
     inline auto CrossTradeMessage() -> ITCH::Message;
 
-    /// @brief The Broken Trade Message is sent whenever an execution on Nasdaq
+    /// \brief The Broken Trade Message is sent whenever an execution on Nasdaq
     /// is broken. An execution may be broken if it is found to be “clearly
     /// erroneous” pursuant to Nasdaq’s Clearly Erroneous Policy. A trade break
     /// is final; once a trade is broken, it cannot be reinstated.
-    /// @return ITCH::Message Variant<BrokenTradeMessage>
+    /// \return ITCH::Message Variant<BrokenTradeMessage>
     inline auto BrokenTradeMessage() -> ITCH::Message;
 
-    /// @brief Nasdaq begins disseminating Net Order Imbalance Indicators (NOII)
+    /// \brief Nasdaq begins disseminating Net Order Imbalance Indicators (NOII)
     /// at 9:25 a.m. for the Opening Cross and 3:50 p.m. for the Closing Cross.
     /// • Between 9 : 25 and 9 : 28 a.m.and 3 : 50 and 3 : 55 p.m.,
     /// Nasdaq disseminates the NOII information every 10 seconds.
@@ -162,19 +173,19 @@ class ITCH_Parser {
     /// NOII messages will be disseminated at 1 second intervals
     /// starting 1 second after quoting period starts /
     /// trading action is released.
-    /// @return ITCH::Message Variant<NOIIMessage>
+    /// \return ITCH::Message Variant<NOIIMessage>
     inline auto NOIIMessage() -> ITCH::Message;
 
-    /// @brief The following message is disseminated only for Direct Listing
+    /// \brief The following message is disseminated only for Direct Listing
     /// with Capital Raise (DLCR) securities. Nasdaq begins disseminating
     /// messages once per second as soon as the DLCR volatility test has
     /// successfully passed.
-    /// @return ITCH::Message Variant<DLCRMessage>
+    /// \return ITCH::Message Variant<DLCRMessage>
     inline auto DLCRMessage() -> ITCH::Message;
 
-    /// @brief Identifies a retail interest indication of the Bid, Ask or both
+    /// \brief Identifies a retail interest indication of the Bid, Ask or both
     /// the Bid and Ask for Nasdaq listed securities.
-    /// @return ITCH::Message Variant<RetailPriceImprovementIndicatorMessage>
+    /// \return ITCH::Message Variant<RetailPriceImprovementIndicatorMessage>
     inline auto RetailPriceImprovementIndicatorMessage() -> ITCH::Message;
 };
 

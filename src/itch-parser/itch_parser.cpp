@@ -11,13 +11,21 @@
 
 #include "itch-parser/itch_parser.h"
 
+#include <atomic>
+#include <memory>
 #include <string>
+#include <thread>
 
 #include "itch-parser/messages/itch_messages.h"
+#include "lock-free-queue/lock_free_queue.h"
 #include "memory-map/memory_map_file.h"
+#include "thread/thread.h"
+#include "utilities/macros.h"
 
-ITCH_Parser::ITCH_Parser(const std::string& file_path)
-    : m_File(file_path), m_MessageQueue(m_MessageQueueSize) {}
+ITCH_Parser::ITCH_Parser(
+    const std::string& file_path,
+    std::shared_ptr<LockFreeQueue<ITCH::Message>>& queue_pointer)
+    : m_File(file_path), m_MessageQueue(queue_pointer) {}
 
 auto ITCH_Parser::SystemEventMessage() -> ITCH::Message {
     return m_File.Read<ITCH::SystemEventMessage>();
@@ -110,13 +118,18 @@ auto ITCH_Parser::RetailPriceImprovementIndicatorMessage() -> ITCH::Message {
     return m_File.Read<ITCH::RetailPriceImprovementIndicatorMessage>();
 }
 
-void ITCH_Parser::Execute() {
+auto ITCH_Parser::Execute() {
     while (m_File.tell() < m_File.size()) {
         // The first two bytes are message length as per moldupd64
         // skip to the message type char
         m_File.seek(m_File.tell() + 2);
-        m_MessageQueue.Push(DecodeMessage());
+
+        m_MessageQueue->Push(DecodeMessage());
     }
+}
+
+std::shared_ptr<std::thread> ITCH_Parser::Start() {
+    return CreateAndStartThread(1, "ITCH Parser", [this]() { Execute(); });
 }
 
 ITCH::Message ITCH_Parser::DecodeMessage() {

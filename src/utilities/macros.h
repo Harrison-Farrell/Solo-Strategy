@@ -9,8 +9,8 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
-/// @file macros.h
-/// @brief Utility macros for error handling and assertions.
+/// \file macros.h
+/// \brief Utility macros for error handling and assertions.
 
 #ifndef SOLO_STRATEGY_SRC_UTILITIES_MACROS_H_
 #define SOLO_STRATEGY_SRC_UTILITIES_MACROS_H_
@@ -19,9 +19,9 @@
 #include <cstring>
 #include <iostream>
 
-/// @brief Asserts a condition and terminates the program if it's false.
-/// @param cond The condition to evaluate.
-/// @param msg The message to print to stderr if the assertion fails.
+/// \brief Asserts a condition and terminates the program if it's false.
+/// \param cond The condition to evaluate.
+/// \param msg The message to print to stderr if the assertion fails.
 inline auto ASSERT(bool cond, const std::string& msg) noexcept {
     if (!cond) [[unlikely]] {
         std::cerr << "ASSERT : " << msg << "\n";
@@ -29,8 +29,8 @@ inline auto ASSERT(bool cond, const std::string& msg) noexcept {
     }
 }
 
-/// @brief Prints a fatal error message and terminates the program.
-/// @param msg The descriptive fatal error message.
+/// \brief Prints a fatal error message and terminates the program.
+/// \param msg The descriptive fatal error message.
 inline auto FATAL(const std::string& msg) noexcept {
     std::cerr << "FATAL : " << msg << "\n";
 

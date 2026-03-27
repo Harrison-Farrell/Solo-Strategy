@@ -50,6 +50,7 @@ endif()
 
 
 add_subdirectory(src)
+add_subdirectory(app)
 
 if(BUILD_TESTS)
     add_subdirectory(test)

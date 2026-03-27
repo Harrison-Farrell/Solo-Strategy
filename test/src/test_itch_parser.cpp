@@ -16,22 +16,27 @@
 #include <filesystem>
 #include <fstream>
 #include <vector>
+#include <memory>
 
 #include "itch-parser/itch_parser.h"
 #include "itch-parser/messages/itch_messages.h"
 #include "memory-map/memory_map_file.h"
 #include "utilities/endian_utils.h"
+#include "lock-free-queue/lock_free_queue.h"
 
 class ITCHPaserTest : public ::testing::Test {
    protected:
     std::filesystem::path tempFilePath;
     std::string stringTempFilePath;
+    std::shared_ptr<LockFreeQueue<ITCH::Message>> tempQueue;
+
 
     void SetUp() override {
         // Create a temporary file path for testing
         auto tempDir = std::filesystem::temp_directory_path();
         tempFilePath = tempDir / "test_memory_map_data.bin";
         stringTempFilePath = tempFilePath.generic_string();
+        tempQueue = std::make_shared<LockFreeQueue<ITCH::Message>>(1024);
     }
 
     void TearDown() override {
@@ -64,7 +69,7 @@ TEST_F(ITCHPaserTest, SystemEventMessageTest) {
 
     array<uint8_t, 6> expected_timestamp{'A', 'A', 'A', 'A', 'A', 'A'};
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::SystemEventMessage,get<SystemEventMessage>(message).message_type);
@@ -93,7 +98,7 @@ TEST_F(ITCHPaserTest, StockTradingActionMessageTest) {
     array<char, 8> expected_stock{'A', 'B', 'C', 'D', 'A', 'B', 'C', 'D'};
     array<char, 4> expected_reason{'A', 'B', 'C', 'D'};
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::StockTradingActionMessage,get<StockTradingActionMessage>(message).message_type);
@@ -121,7 +126,7 @@ TEST_F(ITCHPaserTest, RegSHOMessageTest) {
         0x31,        // Reg SHO Action ('1')
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::RegSHOMessage,get<RegSHOMessage>(message).message_type);
@@ -150,7 +155,7 @@ TEST_F(ITCHPaserTest, MarketParticipantPositionMessageTest) {
         0x45         // State ('E')
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::MarketParticipantPositionMessage,get<MarketParticipantPositionMessage>(message).message_type);
@@ -182,7 +187,7 @@ TEST_F(ITCHPaserTest, MWCBDeclineLevelMessageTest) {
         0x00, 0x01  // Level 3 (1)
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::MWCBDeclineLevelMessage,
@@ -209,7 +214,7 @@ TEST_F(ITCHPaserTest, MWCBStatusMessageTest) {
         0x33                                 // Breached Level ('3')
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::MWCBStatusMessage,get<MWCBStatusMessage>(message).message_type);
@@ -245,7 +250,7 @@ TEST_F(ITCHPaserTest, StockDirectoryMessageTest) {
         0x4E                     // Inverse Indicator
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::StockDirectoryMessage,get<StockDirectoryMessage>(message).message_type);
@@ -284,7 +289,7 @@ TEST_F(ITCHPaserTest, IPOQuotingPeriodUpdateMessageTest) {
         0x00, 0x64, 0x00, 0x00   // IPO Price
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::IPOQuotingPeriodUpdateMessage,get<IPOQuotingPeriodUpdateMessage>(message).message_type);
@@ -314,7 +319,7 @@ TEST_F(ITCHPaserTest, LULDAuctionCollarMessageTest) {
         0x00, 0x64, 0x00, 0x00   // Auction Collar Extension
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::LULDAuctionCollarMessage,get<LULDAuctionCollarMessage>(message).message_type);
@@ -343,7 +348,7 @@ TEST_F(ITCHPaserTest, OperationalHaltMessageTest) {
         0x48  // Operational Halt Action
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::OperationalHaltMessage,get<OperationalHaltMessage>(message).message_type);
@@ -372,7 +377,7 @@ TEST_F(ITCHPaserTest, AddOrderMessageTest) {
         0x00, 0x2A, 0xB9, 0x80                           // Price
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::AddOrderMessage,get<AddOrderMessage>(message).message_type);
@@ -404,7 +409,7 @@ TEST_F(ITCHPaserTest, AddOrderMPIDAttributionMessageTest) {
         0x54, 0x52, 0x45, 0x45                           // Price
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::AddOrderMPIDAttributionMessage,get<AddOrderMPIDAttributionMessage>(message).message_type);
@@ -436,7 +441,7 @@ TEST_F(ITCHPaserTest, OrderExecutedMessageTest) {
         0x00, 0xAA  // Match Number
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::OrderExecutedMessage,get<OrderExecutedMessage>(message).message_type);
@@ -467,7 +472,7 @@ TEST_F(ITCHPaserTest, OrderExecutedWithPriceMessageTest) {
         0x00, 0x2A, 0xB9, 0x80  // Execution Price
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::OrderExecutedWithPriceMessage,get<OrderExecutedWithPriceMessage>(message).message_type);
@@ -496,7 +501,7 @@ TEST_F(ITCHPaserTest, OrderCancelMessageTest) {
         0x00, 0xAA, 0xFF, 0xBB  // Cancelled Shares
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::OrderCancelMessage,get<OrderCancelMessage>(message).message_type);
@@ -522,7 +527,7 @@ TEST_F(ITCHPaserTest, OrderDeleteMessageTest) {
 
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::OrderDeleteMessage,get<OrderDeleteMessage>(message).message_type);
@@ -551,7 +556,7 @@ TEST_F(ITCHPaserTest, OrderReplaceMessageTest) {
 
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::OrderReplaceMessage,get<OrderReplaceMessage>(message).message_type);
@@ -582,7 +587,7 @@ TEST_F(ITCHPaserTest, NonCrossTradeMessageTest) {
         0x00, 0x2A, 0xB9, 0x80, 0x00, 0x00, 0x00, 0x00   // Match Number
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::NonCrossTradeMessage,get<NonCrossTradeMessage>(message).message_type);
@@ -614,7 +619,7 @@ TEST_F(ITCHPaserTest, CrossTradeMessageTest) {
         0x43                                             // Cross Type ('C')
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::CrossTradeMessage,get<CrossTradeMessage>(message).message_type);
@@ -641,7 +646,7 @@ TEST_F(ITCHPaserTest, BrokenTradeMessageTest) {
         0x41, 0x41, 0x50, 0x4C, 0x20, 0x20, 0x20, 0x20,  // Match Number
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::BrokenTradeMessage,get<BrokenTradeMessage>(message).message_type);
@@ -672,7 +677,7 @@ TEST_F(ITCHPaserTest, NOIIMessageTest) {
         0x43                                             // PRice Variation
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::NOIIMessage, get<NOIIMessage>(message).message_type);
@@ -704,7 +709,7 @@ TEST_F(ITCHPaserTest, RetailPriceImprovementIndicatorMessageTest) {
         0x41                                             // Interest Flag
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::RetailPriceImprovementIndicatorMessage,get<RetailPriceImprovementIndicatorMessage>(message).message_type);
@@ -735,7 +740,7 @@ TEST_F(ITCHPaserTest, DLCRMessageTest) {
         0xFF, 0x00, 0x00, 0xAA                           // Upper Price
     });
 
-    ITCH_Parser paser(stringTempFilePath);
+    ITCH_Parser paser(stringTempFilePath, tempQueue);
     Message message = paser.DecodeMessage();
 
     EXPECT_EQ(MessageType::DLCRMessage, get<DLCRMessage>(message).message_type);

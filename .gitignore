@@ -3,6 +3,7 @@ build/
 cmake-build-*/
 out/
 .vs/
+CPTCMakeBuild/
 
 # Large Sample Resources
 test/sample_set/large_sets

@@ -9,42 +9,45 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
+#include <iostream>
+#include <memory>
 #include <thread>
+#include <utility>
 #include <vector>
 
 #include "thread/thread.h"
 
+namespace {
 // A dummy function representing some heavy business logic
-void heavyWork(int id, int iterations) {
+void HeavyWork(int id, int iterations) {
     long long counter = 0;
     for (int i = 0; i < iterations; ++i) {
         counter += i;
     }
     std::cout << "Thread [" << id << "] finished computing. Result: " << counter
-              << std::endl;
+              << "\n";
 }
+}  // namespace
 
 int main() {
-    std::cout << "--- Starting Cross-Platform Thread Affinity Example ---"
-              << std::endl;
+    std::cout << "Starting Cross-Platform Thread Affinity Example" << "\n";
+
+    constexpr int worker_one_iterations = 10000;
+    constexpr int worker_two_iterations = 30000;
 
     // Create a pool of threads pinned to different cores (Core 0, Core 1, etc.)
-    std::vector<std::thread*> threads;
+    std::vector<std::shared_ptr<std::thread>> threads;
 
-    threads.push_back(
-        CreateAndStartThread(0, "Worker_0", heavyWork, 0, 10'000));
-    threads.push_back(
-        CreateAndStartThread(1, "Worker_1", heavyWork, 1, 20'000));
+    threads.push_back(CreateAndStartThread(0, "Worker_0", HeavyWork, 0,
+                                           worker_one_iterations));
 
-    // Wait for threads to finish their execution
-    for (auto* t : threads) {
-        if (t && t->joinable()) {
-            t->join();
-            delete t;  // Clean up the raw pointer allocated by
-                       // CreateAndStartThread
-        }
+    threads.push_back(CreateAndStartThread(1, "Worker_1", HeavyWork, 1,
+                                           worker_two_iterations));
+
+    for (const auto& worker : threads) {
+        worker->join();
     }
 
-    std::cout << "--- Application Finished Successfully ---" << std::endl;
+    std::cout << "Application Finished Successfully" << "\n ";
     return 0;
 }
