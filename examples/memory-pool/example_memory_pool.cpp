@@ -9,9 +9,10 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
+// system includes
 #include <array>
 #include <iostream>
-
+// local includes
 #include "memory-pool/memory_pool.h"
 
 namespace {
@@ -33,16 +34,20 @@ int main() {
 
         auto* s_ret = struct_pool.Allocate(MyStruct{i, i + 1, i + 2});
 
-        std::cout << "prim elem:" << *p_ret << " Allocated at:" << p_ret << "\n";
+        std::cout << "prim elem:" << *p_ret << " Allocated at:" << p_ret
+                  << "\n";
 
-        std::cout << "struct elem:" << s_ret->data.at(0) << "," << s_ret->data.at(1) << ","
-                  << s_ret->data.at(2) << " Allocated at:" << s_ret << "\n";
+        std::cout << "struct elem:" << s_ret->data.at(0) << ","
+                  << s_ret->data.at(1) << "," << s_ret->data.at(2)
+                  << " Allocated at:" << s_ret << "\n";
 
         if (i % deallcate_modulus == 0) {
-            std::cout << "deallocating prim elem:" << *p_ret << " from:" << p_ret << "\n";
+            std::cout << "deallocating prim elem:" << *p_ret
+                      << " from:" << p_ret << "\n";
 
-            std::cout << "deallocating struct elem:" << s_ret->data.at(0) << ", "
-                      << s_ret->data.at(1) << "," << s_ret->data.at(2) << " from:" << s_ret << "\n";
+            std::cout << "deallocating struct elem:" << s_ret->data.at(0)
+                      << ", " << s_ret->data.at(1) << "," << s_ret->data.at(2)
+                      << " from:" << s_ret << "\n";
 
             prim_pool.Deallocate(p_ret);
             struct_pool.Deallocate(s_ret);

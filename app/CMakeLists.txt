@@ -31,4 +31,6 @@ set_target_properties(${APPLICATION}
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
+AddBuildInfo(${APPLICATION})
+
 file(COPY ${CMAKE_SOURCE_DIR}/test/sample_set/locate-13-10k.bin DESTINATION ${CMAKE_BINARY_DIR}/bin)

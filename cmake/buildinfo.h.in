@@ -1,0 +1,38 @@
+// -----------------------------------------------------------------------------
+// Author:      Harrison Farrell
+// Project:     Solo-Strategy Trading System
+// Copyright:   (c) 2026 Harrison Farrell. All Rights Reserved.
+//
+// Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
+// This program is distributed WITHOUT ANY WARRANTY; without even the
+// implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+// See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
+// -----------------------------------------------------------------------------
+
+#ifndef BUILD_INFO_H_
+#define BUILD_INFO_H_
+
+#include <string>
+#include <string_view>
+
+namespace {
+struct BuildInfo {
+    static inline const std::string_view COMMIT_SHA{"@GIT_COMMIT@"};
+    static inline const std::string_view COMMIT_DATE{"@GIT_DATE@"};
+    static inline const std::string_view BRANCH{"@GIT_BRANCH@"};
+    static inline const std::string_view TAG{"@GIT_TAG@"};
+    static inline const std::string_view VERSION{"@PROJECT_VERSION@"};
+    static inline const std::string_view BUILD_TIMESTAMP{"@TIMESTAMP@"};
+
+    static std::string PrintBuildInfo() noexcept {
+        return "Build Date:\t\t" + std::string(BUILD_TIMESTAMP) + "\n" +
+               "Build Commit Date:\t" + std::string(COMMIT_DATE) + "\n" +
+               "Build Branch:\t\t" + std::string(BRANCH) + "\n" +
+               "Build Tag:\t\t" + std::string(TAG) + "\n" +
+               "Build Version:\t\t" + std::string(VERSION) + "\n" +
+               "Build Commit:\t\t" + std::string(COMMIT_SHA);
+    }
+};
+}  // namespace
+
+#endif  // BUILD_INFO_H_

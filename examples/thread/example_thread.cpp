@@ -9,12 +9,12 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
+// system includes
 #include <iostream>
 #include <memory>
 #include <thread>
-#include <utility>
 #include <vector>
-
+// local includes
 #include "thread/thread.h"
 
 namespace {
@@ -38,11 +38,11 @@ int main() {
     // Create a pool of threads pinned to different cores (Core 0, Core 1, etc.)
     std::vector<std::shared_ptr<std::thread>> threads;
 
-    threads.push_back(CreateAndStartThread(0, "Worker_0", HeavyWork, 0,
-                                           worker_one_iterations));
+    threads.emplace_back(CreateAndStartThread(0, "Worker_0", HeavyWork, 0,
+                                              worker_one_iterations));
 
-    threads.push_back(CreateAndStartThread(1, "Worker_1", HeavyWork, 1,
-                                           worker_two_iterations));
+    threads.emplace_back(CreateAndStartThread(1, "Worker_1", HeavyWork, 1,
+                                              worker_two_iterations));
 
     for (const auto& worker : threads) {
         worker->join();

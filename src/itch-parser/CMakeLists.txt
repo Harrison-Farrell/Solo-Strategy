@@ -26,3 +26,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     solo_strategy::lock_free_queue
     solo_strategy::memory_map
 )
+
+# Enable code coverage for this target
+CleanCoverage(${PROJECT_NAME})

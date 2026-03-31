@@ -12,6 +12,7 @@
 #ifndef SOLO_STRATEGY_SRC_ITCH_PARSER_ITCH_PARSER_H_
 #define SOLO_STRATEGY_SRC_ITCH_PARSER_ITCH_PARSER_H_
 
+// system includes
 #include <atomic>
 #include <functional>
 #include <memory>
@@ -19,6 +20,7 @@
 #include <thread>
 #include <unordered_map>
 
+// local includes
 #include "itch-parser/messages/itch_messages.h"
 #include "lock-free-queue/lock_free_queue.h"
 #include "memory-map/memory_map_file.h"
@@ -29,7 +31,8 @@ class ITCH_Parser {
                 std::shared_ptr<LockFreeQueue<ITCH::Message>>& queue_pointer);
 
     /// \brief Executes the Execute() function on the newly created thread
-    std::shared_ptr<std::thread> Start();
+    /// \param int core id to pin the thread affinity onto
+    std::shared_ptr<std::thread> Start(int core_id);
 
     /// \brief Iterates over the length of a binary file until it's completed
     /// each decoded itch message is pushed into the lock free queue
@@ -45,7 +48,7 @@ class ITCH_Parser {
 
     /// \brief The system event message type is used to signal a market or data
     /// feed handler event
-    /// \return ITCH::Message Variant<SystemEventMesaage>
+    /// \return ITCH::Message Variant<SystemEventMessage>
     inline auto SystemEventMessage() -> ITCH::Message;
 
     /// \brief  At the start of each trading day, Nasdaq disseminates stock

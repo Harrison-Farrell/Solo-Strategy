@@ -48,6 +48,8 @@ elseif(MSVC)
     endif()
 endif()
 
+include(Coverage)
+include(BuildInfo)
 
 add_subdirectory(src)
 add_subdirectory(app)

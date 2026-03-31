@@ -11,16 +11,16 @@
 
 #include "itch-parser/itch_parser.h"
 
-#include <atomic>
+// system includes
 #include <memory>
 #include <string>
 #include <thread>
 
+// local includes
 #include "itch-parser/messages/itch_messages.h"
 #include "lock-free-queue/lock_free_queue.h"
 #include "memory-map/memory_map_file.h"
 #include "thread/thread.h"
-#include "utilities/macros.h"
 
 ITCH_Parser::ITCH_Parser(
     const std::string& file_path,
@@ -128,8 +128,9 @@ auto ITCH_Parser::Execute() {
     }
 }
 
-std::shared_ptr<std::thread> ITCH_Parser::Start() {
-    return CreateAndStartThread(1, "ITCH Parser", [this]() { Execute(); });
+std::shared_ptr<std::thread> ITCH_Parser::Start(int core_id) {
+    return CreateAndStartThread(core_id, "ITCH Parser",
+                                [this]() { Execute(); });
 }
 
 ITCH::Message ITCH_Parser::DecodeMessage() {

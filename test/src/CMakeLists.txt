@@ -15,3 +15,5 @@ AddTests(test_endian_utils)
 AddTests(test_macros)
 AddTests(test_itch_parser)
 # AddTests(test_thread)
+
+EnableCoverage(test_itch_parser)

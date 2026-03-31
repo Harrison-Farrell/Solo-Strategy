@@ -9,22 +9,23 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
-/// \file itch_messages.h
-/// \brief Structure definitions for Nasdaq TotalView ITCH 5.0 messages.
-///
-/// This file contains packed structures representing each message type in the
-/// ITCH protocol. These structures can be directly mapped to memory-mapped
-/// file contents for high-performance parsing.
-
 #ifndef SOLO_STRATEGY_SRC_ITCH_PARSER_MESSAGES_ITCH_MESSAGES_H_
 #define SOLO_STRATEGY_SRC_ITCH_PARSER_MESSAGES_ITCH_MESSAGES_H_
 
+// system includes
 #include <array>
 #include <cstdint>
 #include <iostream>
 #include <string>
 #include <variant>
 #include <vector>
+
+/// \file itch_messages.h
+/// \brief Structure definitions for Nasdaq TotalView ITCH 5.0 messages.
+///
+/// This file contains packed structures representing each message type in the
+/// ITCH protocol. These structures can be directly mapped to memory-mapped
+/// file contents for high-performance parsing.
 
 namespace ITCH {
 

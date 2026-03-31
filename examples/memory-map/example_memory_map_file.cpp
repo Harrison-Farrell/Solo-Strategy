@@ -9,12 +9,13 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
+// system includes
 #include <bitset>
 #include <cstdlib>
 #include <iostream>
 #include <print>
 #include <string>
-
+// local includes
 #include "memory-map/memory_map_file.h"
 
 int main(int argc, char* argv[]) {
@@ -36,10 +37,14 @@ int main(int argc, char* argv[]) {
     constexpr int bit_32 = 32;
     constexpr int bit_64 = 64;
 
-    std::cout << "Offset:Value \t" << std::bitset<bit_08>{mapped_file.Read8()} << "\n";
-    std::cout << "Offset:Value \t" << std::bitset<bit_16>{mapped_file.Read16()} << "\n";
-    std::cout << "Offset:Value \t" << std::bitset<bit_32>{mapped_file.Read32()} << "\n";
-    std::cout << "Offset:Value \t" << std::bitset<bit_64>{mapped_file.Read64()} << "\n";
+    std::cout << "Offset:Value \t" << std::bitset<bit_08>{mapped_file.Read8()}
+              << "\n";
+    std::cout << "Offset:Value \t" << std::bitset<bit_16>{mapped_file.Read16()}
+              << "\n";
+    std::cout << "Offset:Value \t" << std::bitset<bit_32>{mapped_file.Read32()}
+              << "\n";
+    std::cout << "Offset:Value \t" << std::bitset<bit_64>{mapped_file.Read64()}
+              << "\n";
 
     return 0;
 }

@@ -9,11 +9,12 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
+// system includes
 #include <array>
 #include <chrono>
 #include <print>
 #include <thread>
-
+// local includes
 #include "lock-free-queue/lock_free_queue.h"
 
 namespace {
@@ -34,8 +35,9 @@ auto ConsumeFunction(LockFreeQueue<MyStruct>* data_queue) {
 
         data_queue->UpdateReadIndex();
 
-        std::println("ConsumeFunction read elem: {}, {}, {} size: {}", block->data.at(0),
-                     block->data.at(1), block->data.at(2), data_queue->Size());
+        std::println("ConsumeFunction read elem: {}, {}, {} size: {}",
+                     block->data.at(0), block->data.at(1), block->data.at(2),
+                     data_queue->Size());
 
         std::this_thread::sleep_for(loop_sleep_in_seconds);
     }
@@ -57,8 +59,9 @@ int main() {
         *data_queue.GetNextWrite() = block;
         data_queue.UpdateWriteIndex();
 
-        std::println("main constructed elem: {}, {}, {} size: {}", block.data.at(0),
-                     block.data.at(1), block.data.at(2), data_queue.Size());
+        std::println("main constructed elem: {}, {}, {} size: {}",
+                     block.data.at(0), block.data.at(1), block.data.at(2),
+                     data_queue.Size());
 
         using namespace std::literals::chrono_literals;
         std::this_thread::sleep_for(loop_sleep_in_seconds);

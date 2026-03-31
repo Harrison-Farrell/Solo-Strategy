@@ -9,6 +9,7 @@
 // See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 // -----------------------------------------------------------------------------
 
+// system includes
 #include <chrono>
 #include <csignal>
 #include <cstdlib>
@@ -16,7 +17,8 @@
 #include <memory>
 #include <string>
 #include <thread>
-
+// local includes
+#include "buildinfo/buildinfo.h"
 #include "itch-parser/itch_parser.h"
 #include "itch-parser/messages/itch_messages.h"
 #include "lock-free-queue/lock_free_queue.h"
@@ -40,6 +42,9 @@ void PrintingPress(const std::shared_ptr<LockFreeQueue<ITCH::Message>>& queue) {
 int main(int argc, char* argv[]) {
     std::signal(SIGINT, ExitSignal);
 
+    std::cout << "Solo-Strategy Trading System - ITCH Parser" << "\n";
+    std::cout << BuildInfo::PrintBuildInfo() << "\n";
+
     constexpr int buffer_size = 1024 * 1024;
 
     if (argc < 2 || argc > 3) {
@@ -51,12 +56,12 @@ int main(int argc, char* argv[]) {
     // disable cppcoreguidelines-pro-bounds-pointer-arithmetic
     const std::string input_file_path(argv[1]);  // NOLINT
 
-    std::cout << "File Path to  read: " << input_file_path << "\n";
+    std::cout << "File Path to read: " << input_file_path << "\n";
 
     auto queue = std::make_shared<LockFreeQueue<ITCH::Message>>(buffer_size);
 
     ITCH_Parser read_binary(input_file_path, queue);
-    auto writing_thread = read_binary.Start();
+    auto writing_thread = read_binary.Start(1);
 
     auto printing_thread =
         CreateAndStartThread(2, "Printing Worker", PrintingPress, queue);
