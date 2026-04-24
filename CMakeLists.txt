@@ -58,10 +58,6 @@ if(BUILD_TESTS)
     add_subdirectory(test)
 endif()
 
-if(BUILD_BENCHMARKS)
-    add_subdirectory(theory_src)
-endif()
-
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
