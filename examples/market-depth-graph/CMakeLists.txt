@@ -23,7 +23,7 @@ FetchContent_MakeAvailable(glfw)
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
-    GIT_TAG v1.90.8-docking
+    GIT_TAG v1.92.7
 )
 FetchContent_MakeAvailable(imgui)
 
@@ -31,7 +31,7 @@ FetchContent_MakeAvailable(imgui)
 FetchContent_Declare(
     implot
     GIT_REPOSITORY https://github.com/epezent/implot.git
-    GIT_TAG v0.16
+    GIT_TAG v1.0
 )
 FetchContent_MakeAvailable(implot)
 

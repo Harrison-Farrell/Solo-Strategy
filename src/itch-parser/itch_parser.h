@@ -23,173 +23,59 @@
 // local includes
 #include "itch-parser/messages/itch_messages.h"
 #include "lock-free-queue/lock_free_queue.h"
-#include "memory-map/memory_map_file.h"
+
+/// \brief A fixed-size packet to safely pass raw ITCH messages across lock-free queues
+struct RawItchPacket {
+    std::array<uint8_t, 64> data;
+    uint16_t length;
+};
 
 class ITCH_Parser {
    public:
-    ITCH_Parser(const std::string& file_path,
-                std::shared_ptr<LockFreeQueue<ITCH::Message>>& queue_pointer);
+    ITCH_Parser(std::shared_ptr<LockFreeQueue<RawItchPacket>>& input_queue,
+                std::shared_ptr<LockFreeQueue<ITCH::Message>>& output_queue);
 
     /// \brief Executes the Execute() function on the newly created thread
     /// \param int core id to pin the thread affinity onto
     std::shared_ptr<std::thread> Start(int core_id);
 
-    /// \brief Iterates over the length of a binary file until it's completed
-    /// each decoded itch message is pushed into the lock free queue
-    auto Execute();
+    /// \brief Iterates over the input queue until a packet with length 0 is received
+    /// each decoded itch message is pushed into the output lock free queue
+    auto Execute() -> void;
 
-    /// \brief Decodes a single ITCH Message from the file buffer
+    /// \brief Decodes a single ITCH Message from the raw buffer
+    /// \param buffer Pointer to the raw bytes
     /// \return ITCH Message variant
-    ITCH::Message DecodeMessage();
+    static ITCH::Message DecodeMessage(const uint8_t* buffer);
 
    private:
-    MemoryMappedFile m_File;
-    std::shared_ptr<LockFreeQueue<ITCH::Message>> m_MessageQueue;
+    std::shared_ptr<LockFreeQueue<RawItchPacket>> m_InputQueue;
+    std::shared_ptr<LockFreeQueue<ITCH::Message>> m_OutputQueue;
 
-    /// \brief The system event message type is used to signal a market or data
-    /// feed handler event
-    /// \return ITCH::Message Variant<SystemEventMessage>
-    inline auto SystemEventMessage();
-
-    /// \brief  At the start of each trading day, Nasdaq disseminates stock
-    /// directory messages for all active symbols in the Nasdaq execution
-    /// system.
-    /// \return ITCH::Message Variant<StockDirectoryMessage>
-    inline auto StockDirectoryMessage();
-
-    /// \brief Nasdaq uses this administrative message to indicate the current
-    /// trading status of a security to the trading community
-    /// \return ITCH::Message Variant<StockTradingActionMessage>
-    inline auto StockTradingActionMessage();
-
-    /// \brief  The Reg SHO Short Sale Price Test Restricted Indicator signifies
-    /// that Rule 201 has been triggered for a specific security because it
-    /// dropped 10% or more from the previous day's close
-    /// \return ITCH::Message Variant<RegSHOMessage>
-    inline auto RegSHOMessage();
-
-    /// \brief  At the start of each trading day, Nasdaq disseminates a spin of
-    /// market participant position messages. The message provides the Primary
-    /// Market Maker status, Market Maker mode and Market Participant state for
-    /// each Nasdaq market participant firm registered in an issue.
-    /// \return ITCH::Message Variant<MarketParticipantPositionMessage>
-    inline auto MarketParticipantPositionMessage();
-
-    /// \brief Informs data recipients what the daily MWCB breach points are set
-    /// to for the current trading day.
-    /// \return ITCH::Message Variant<MWCBDeclineLevelMessage>
-    inline auto MWCBDeclineLevelMessage();
-
-    /// \brief Informs data recipients when a MWCB has breached one of the
-    /// established levels
-    /// \return ITCH::Message Variant<MWCBStatusMessage>
-    inline auto MWCBStatusMessage();
-
-    /// \brief Indicates the anticipated IPO quotation release time of a
-    /// security.
-    /// \return ITCH::Message Variant<IPOQuotingPeriodUpdateMessage>
-    inline auto IPOQuotingPeriodUpdateMessage();
-
-    /// \brief Indicates the auction collar thresholds within which a paused
-    /// security can reopen following a LULD Trading Pause.
-    /// \return ITCH::Message Variant<LULDAuctionCollarMessage>
-    inline auto LULDAuctionCollarMessage();
-
-    /// \brief The Exchange uses this message to indicate the current
-    /// Operational Status of a security to the trading community.
-    /// \return ITCH::Message Variant<OperationalHaltMessage>
-    inline auto OperationalHaltMessage();
-
-    /// \brief This message will be generated for unattributed orders accepted
-    /// by the Nasdaq system. (Note: If a firm wants to display a MPID for
-    /// unattributed orders, Nasdaq recommends that it use the MPID of “NSDQ”.)
-    /// \return ITCH::Message Variant<AddOrderMessage>
-    inline auto AddOrderMessage();
-
-    /// \brief This message will be generated for attributed orders and
-    /// quotations accepted by the Nasdaq system.
-    /// \return ITCH::Message Variant<AddOrderMPIDAttributionMessage>
-    inline auto AddOrderMPIDAttributionMessage();
-
-    /// \brief This message is sent whenever an order on the book is executed in
-    /// whole or in part. It is possible to receive several Order Executed
-    /// Messages for the same order reference number if that order is executed
-    /// in several parts. The multiple Order Executed Messages on the same order
-    /// are cumulative.
-    /// \return ITCH::Message Variant<OrderExecutedMessage>
-    inline auto OrderExecutedMessage();
-
-    /// \brief This message is sent whenever an order on the book is executed
-    /// in whole or in part at a price different from the initial display price.
-    /// Since the execution price is different than the display price of the
-    /// original Add Order, Nasdaq includes a price field within this execution
-    /// message.
-    /// \return ITCH::Message Variant<OrderExecutedWithPriceMessage>
-    inline auto OrderExecutedWithPriceMessage();
-
-    /// \brief This message is sent whenever an order on the book is modified as
-    /// a result of a partial cancellation.
-    /// \return ITCH::Message Variant<OrderCancelMessage>
-    inline auto OrderCancelMessage();
-
-    /// \brief This message is sent whenever an order on the book is being
-    /// cancelled. All remaining shares are no longer accessible so the order
-    /// must be removed from the book.
-    /// \return ITCH::Message Variant<OrderDeleteMessage>
-    inline auto OrderDeleteMessage();
-
-    /// \brief This message is sent whenever an order on the book has been
-    /// cancel replaced. All remaining shares from the original order are no
-    /// longer accessible, and must be removed. The new order details are
-    /// provided for the replacement, along with a new order reference number
-    /// which will be used henceforth. Since the side, stock symbol and
-    /// attribution (if any) cannot be changed by an Order Replace event, these
-    /// fields are not included in the message. Firms should retain the
-    /// side,stock symbol and MPID from the original Add Order message.
-    /// \return ITCH::Message Variant<OrderReplaceMessage>
-    inline auto OrderReplaceMessage();
-
-    /// \brief The Trade Message is designed to provide execution details for
-    /// normal match events involving nondisplayable order types.
-    /// \return ITCH::Message Variant<NonCrossTradeMessage>
-    inline auto NonCrossTradeMessage();
-
-    /// \brief The Trade Message is designed to provide execution details for
-    /// normal match events involving nondisplayable order types.
-    /// \return ITCH::Message Variant<CrossTradeMessage>
-    inline auto CrossTradeMessage();
-
-    /// \brief The Broken Trade Message is sent whenever an execution on Nasdaq
-    /// is broken. An execution may be broken if it is found to be “clearly
-    /// erroneous” pursuant to Nasdaq’s Clearly Erroneous Policy. A trade break
-    /// is final; once a trade is broken, it cannot be reinstated.
-    /// \return ITCH::Message Variant<BrokenTradeMessage>
-    inline auto BrokenTradeMessage();
-
-    /// \brief Nasdaq begins disseminating Net Order Imbalance Indicators (NOII)
-    /// at 9:25 a.m. for the Opening Cross and 3:50 p.m. for the Closing Cross.
-    /// • Between 9 : 25 and 9 : 28 a.m.and 3 : 50 and 3 : 55 p.m.,
-    /// Nasdaq disseminates the NOII information every 10 seconds.
-    /// • Between 9 : 28 and 9 : 30 a.m.and 3 : 55 and 4 : 00 p.m.,
-    /// Nasdaq disseminates the NOII information every second.
-    /// • For Nasdaq Halt, IPO and Pauses,
-    /// NOII messages will be disseminated at 1 second intervals
-    /// starting 1 second after quoting period starts /
-    /// trading action is released.
-    /// \return ITCH::Message Variant<NOIIMessage>
-    inline auto NOIIMessage();
-
-    /// \brief The following message is disseminated only for Direct Listing
-    /// with Capital Raise (DLCR) securities. Nasdaq begins disseminating
-    /// messages once per second as soon as the DLCR volatility test has
-    /// successfully passed.
-    /// \return ITCH::Message Variant<DLCRMessage>
-    inline auto DLCRMessage();
-
-    /// \brief Identifies a retail interest indication of the Bid, Ask or both
-    /// the Bid and Ask for Nasdaq listed securities.
-    /// \return ITCH::Message Variant<RetailPriceImprovementIndicatorMessage>
-    inline auto RetailPriceImprovementIndicatorMessage();
+    /// \brief Parsing helpers
+    static inline auto SystemEventMessage(const uint8_t* buffer) -> ITCH::SystemEventMessage;
+    static inline auto StockTradingActionMessage(const uint8_t* buffer) -> ITCH::StockTradingActionMessage;
+    static inline auto RegSHOMessage(const uint8_t* buffer) -> ITCH::RegSHOMessage;
+    static inline auto MarketParticipantPositionMessage(const uint8_t* buffer) -> ITCH::MarketParticipantPositionMessage;
+    static inline auto MWCBDeclineLevelMessage(const uint8_t* buffer) -> ITCH::MWCBDeclineLevelMessage;
+    static inline auto MWCBStatusMessage(const uint8_t* buffer) -> ITCH::MWCBStatusMessage;
+    static inline auto StockDirectoryMessage(const uint8_t* buffer) -> ITCH::StockDirectoryMessage;
+    static inline auto IPOQuotingPeriodUpdateMessage(const uint8_t* buffer) -> ITCH::IPOQuotingPeriodUpdateMessage;
+    static inline auto LULDAuctionCollarMessage(const uint8_t* buffer) -> ITCH::LULDAuctionCollarMessage;
+    static inline auto OperationalHaltMessage(const uint8_t* buffer) -> ITCH::OperationalHaltMessage;
+    static inline auto AddOrderMessage(const uint8_t* buffer) -> ITCH::AddOrderMessage;
+    static inline auto AddOrderMPIDAttributionMessage(const uint8_t* buffer) -> ITCH::AddOrderMPIDAttributionMessage;
+    static inline auto OrderExecutedMessage(const uint8_t* buffer) -> ITCH::OrderExecutedMessage;
+    static inline auto OrderExecutedWithPriceMessage(const uint8_t* buffer) -> ITCH::OrderExecutedWithPriceMessage;
+    static inline auto OrderCancelMessage(const uint8_t* buffer) -> ITCH::OrderCancelMessage;
+    static inline auto OrderDeleteMessage(const uint8_t* buffer) -> ITCH::OrderDeleteMessage;
+    static inline auto OrderReplaceMessage(const uint8_t* buffer) -> ITCH::OrderReplaceMessage;
+    static inline auto NonCrossTradeMessage(const uint8_t* buffer) -> ITCH::NonCrossTradeMessage;
+    static inline auto CrossTradeMessage(const uint8_t* buffer) -> ITCH::CrossTradeMessage;
+    static inline auto BrokenTradeMessage(const uint8_t* buffer) -> ITCH::BrokenTradeMessage;
+    static inline auto NOIIMessage(const uint8_t* buffer) -> ITCH::NOIIMessage;
+    static inline auto DLCRMessage(const uint8_t* buffer) -> ITCH::DLCRMessage;
+    static inline auto RetailPriceImprovementIndicatorMessage(const uint8_t* buffer) -> ITCH::RetailPriceImprovementIndicatorMessage;
 };
 
 #endif  // SOLO_STRATEGY_SRC_ITCH_PARSER_ITCH_PARSER_H_

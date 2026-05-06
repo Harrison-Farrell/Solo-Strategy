@@ -20,7 +20,6 @@
 #include "imgui_impl_opengl3.h"
 #include "implot.h"
 
-
 static void glfw_error_callback(int error, const char* description) {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
@@ -95,7 +94,7 @@ int main(int argc, char* argv[]) {
             if (midPrice > 150) midPrice = 150;
 
             // Generate buy side (bids) - 50 levels deep
-            double current_buy_price = midPrice - 0.02; // Small spread
+            double current_buy_price = midPrice - 0.02;  // Small spread
             double current_buy_vol = 0;
 
             for (int i = 0; i < num_levels; ++i) {
@@ -116,7 +115,7 @@ int main(int argc, char* argv[]) {
             }
 
             // Generate sell side (asks) - 50 levels deep
-            double current_sell_price = midPrice + 0.02; // Small spread
+            double current_sell_price = midPrice + 0.02;  // Small spread
             double current_sell_vol = 0;
 
             for (int i = 0; i < num_levels; ++i) {
@@ -145,25 +144,16 @@ int main(int argc, char* argv[]) {
         if (ImPlot::BeginPlot("##MarketDepth", ImVec2(-1, -1))) {
             ImPlot::SetupAxes("Price ($)", "Cumulative Volume",
                               ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-            ImPlot::SetupAxesLimits(midPrice - 2.5, midPrice + 2.5, 0, 3000, ImGuiCond_Always);
+            ImPlot::SetupAxesLimits(midPrice - 2.5, midPrice + 2.5, 0, 3000,
+                                    ImGuiCond_Always);
 
             // Bids
-            ImPlot::PushStyleColor(ImPlotCol_Line,
-                                   ImVec4(0.0f, 0.78f, 0.31f, 1.0f));
-            ImPlot::PushStyleColor(ImPlotCol_Fill,
-                                   ImVec4(0.0f, 0.78f, 0.31f, 0.5f));
-            ImPlot::PlotShaded("Bids (Buy)", buyX, buyY, num_levels * 2);
-            ImPlot::PlotLine("Bids (Buy)", buyX, buyY, num_levels * 2);
-            ImPlot::PopStyleColor(2);
+            ImPlot::PlotShaded("Bids (Buy)", buyX, buyY, num_levels * 2, 0.0, ImPlotSpec(ImPlotProp_FillColor, ImVec4(0.0f, 0.78f, 0.31f, 0.5f)));
+            ImPlot::PlotLine("Bids (Buy)", buyX, buyY, num_levels * 2, ImPlotSpec(ImPlotProp_LineColor, ImVec4(0.0f, 0.78f, 0.31f, 1.0f)));
 
             // Asks
-            ImPlot::PushStyleColor(ImPlotCol_Line,
-                                   ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
-            ImPlot::PushStyleColor(ImPlotCol_Fill,
-                                   ImVec4(0.9f, 0.2f, 0.2f, 0.5f));
-            ImPlot::PlotShaded("Asks (Sell)", sellX, sellY, num_levels * 2);
-            ImPlot::PlotLine("Asks (Sell)", sellX, sellY, num_levels * 2);
-            ImPlot::PopStyleColor(2);
+            ImPlot::PlotShaded("Asks (Sell)", sellX, sellY, num_levels * 2, 0.0, ImPlotSpec(ImPlotProp_FillColor, ImVec4(0.9f, 0.2f, 0.2f, 0.5f)));
+            ImPlot::PlotLine("Asks (Sell)", sellX, sellY, num_levels * 2, ImPlotSpec(ImPlotProp_LineColor, ImVec4(0.9f, 0.2f, 0.2f, 1.0f)));
 
             ImPlot::EndPlot();
         }
