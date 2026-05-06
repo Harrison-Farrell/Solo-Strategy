@@ -28,186 +28,170 @@ class MarketOrderBook final {
     /// @param ticker_id The ticker identifier for the instrument.
     MarketOrderBook(TickerId ticker_id);
 
+    /// Deleted default, copy & move constructors and assignment-operators.
+    MarketOrderBook() = delete;
+    MarketOrderBook(const MarketOrderBook&) = delete;
+    MarketOrderBook(const MarketOrderBook&&) = delete;
+    MarketOrderBook& operator=(const MarketOrderBook&) = delete;
+    MarketOrderBook& operator=(const MarketOrderBook&&) = delete;
+
     /// @brief Destructor for MarketOrderBook.
     ~MarketOrderBook();
 
     /// @brief Processes a market update and updates the order book accordingly.
     /// Handles ADD, MODIFY, CANCEL, and CLEAR operations.
     /// @param market_update Pointer to the market update message.
-    auto onMarketUpdate(const MEMarketUpdate* market_update) noexcept -> void;
+    auto OnMarketUpdate(const MEMarketUpdate* market_update) noexcept -> void;
 
     /// @brief Updates the BestBidOffer view based on the current state of the
     /// book.
     /// @param update_bid Flag to update the bid side.
     /// @param update_ask Flag to update the ask side.
-    auto updateBestBidOffer(bool update_bid, bool update_ask) noexcept {
+    auto UpdateBestBidOffer(bool update_bid, bool update_ask) noexcept {
         if (update_bid) {
-            if (mBids_by_price) {
-                mBest_bid_offer.mBid_price = mBids_by_price->mPrice;
-                mBest_bid_offer.mBid_qty =
-                    mBids_by_price->mFirst_market_order->mQty;
-                for (auto order =
-                         mBids_by_price->mFirst_market_order->mNext_order;
-                     order != mBids_by_price->mFirst_market_order;
-                     order = order->mNext_order)
-                    mBest_bid_offer.mBid_qty += order->mQty;
+            if (static_cast<bool>(m_bidsByPrice)) {
+                m_bestBidOffer.m_bidPrice = m_bidsByPrice->m_price;
+                m_bestBidOffer.m_bidQty =
+                    m_bidsByPrice->m_firstMarketOrder->m_qty;
+                for (auto* order =
+                         m_bidsByPrice->m_firstMarketOrder->m_nextOrder;
+                     order != m_bidsByPrice->m_firstMarketOrder;
+                     order = order->m_nextOrder) {
+                    m_bestBidOffer.m_bidQty += order->m_qty;
+                }
             } else {
-                // There is no head the the mBids_by_price is nullptr
-                mBest_bid_offer.mBid_price = Price_INVALID;
-                mBest_bid_offer.mAsk_qty = Qty_INVALID;
+                // There is no head the the m_bidsByPrice is nullptr
+                m_bestBidOffer.m_bidPrice = Price_INVALID;
+                m_bestBidOffer.m_askQty = Qty_INVALID;
             }
         }
 
         if (update_ask) {
-            if (mAsks_by_price) {
-                mBest_bid_offer.mAsk_price = mAsks_by_price->mPrice;
-                mBest_bid_offer.mAsk_qty =
-                    mAsks_by_price->mFirst_market_order->mQty;
-                for (auto order =
-                         mAsks_by_price->mFirst_market_order->mNext_order;
-                     order != mAsks_by_price->mFirst_market_order;
-                     order = order->mNext_order)
-                    mBest_bid_offer.mAsk_qty += order->mQty;
+            if (static_cast<bool>(m_asksByPrice)) {
+                m_bestBidOffer.m_askPrice = m_asksByPrice->m_price;
+                m_bestBidOffer.m_askQty =
+                    m_asksByPrice->m_firstMarketOrder->m_qty;
+                for (auto* order =
+                         m_asksByPrice->m_firstMarketOrder->m_nextOrder;
+                     order != m_asksByPrice->m_firstMarketOrder;
+                     order = order->m_nextOrder) {
+                    m_bestBidOffer.m_askQty += order->m_qty;
+                }
             } else {
-                // There is no head the the mAsks_by_price is nullptr
-                mBest_bid_offer.mAsk_price = Price_INVALID;
-                mBest_bid_offer.mAsk_qty = Qty_INVALID;
+                // There is no head the the m_asksByPrice is nullptr
+                m_bestBidOffer.m_askPrice = Price_INVALID;
+                m_bestBidOffer.m_askQty = Qty_INVALID;
             }
         }
     }
 
     /// @brief Returns the current BestBidOffer view.
     /// @return Pointer to the BestBidOffer structure.
-    auto getBestBidOffer() const noexcept -> const BestBidOffer* {
-        return &mBest_bid_offer;
+    auto GetBestBidOffer() const noexcept -> const BestBidOffer* {
+        return &m_bestBidOffer;
     }
 
    private:
     /// @brief The ticker identifier for the instrument.
-    const TickerId mTicker_id;
-
+    const TickerId m_tickerId;
     /// @brief Array of orders indexed by their order id.
-    OrderArray mOrder_id_to_order;
+    OrderArray m_orderIdToOrder;
     /// @brief Memory pool for allocating MarketOrderAtPrice objects.
-    MemoryPool<MarketOrderAtPrice> mOrders_at_price_pool;
+    MemoryPool<MarketOrderAtPrice> m_ordersAtPricePool;
     /// @brief Head of the bids linked list (highest price first).
-    MarketOrderAtPrice* mBids_by_price = nullptr;
+    MarketOrderAtPrice* m_bidsByPrice = nullptr;
     /// @brief Head of the asks linked list (lowest price first).
-    MarketOrderAtPrice* mAsks_by_price = nullptr;
+    MarketOrderAtPrice* m_asksByPrice = nullptr;
     /// @brief Array of price levels indexed by hashed price.
-    OrdersAtPriceArray mPrice_orders_at_price;
+    OrdersAtPriceArray m_priceOrdersAtPrice;
     /// @brief Memory pool for allocating MarketOrder objects.
-    MemoryPool<MarketOrder> mOrder_pool;
-
+    MemoryPool<MarketOrder> m_orderPool;
     /// @brief current best bid and offer for the book.
-    BestBidOffer mBest_bid_offer;
+    BestBidOffer m_bestBidOffer;
     /// @brief Last update time string.
-    std::string mtime_str;
+    std::string m_timeString;
 
-   private:
     /// @brief Maps a price to an index for constant-time lookup.
     /// @param price The price value to map.
     /// @return Index in the range [0, ME_MAX_PRICE_LEVELS).
-    inline auto priceToIndex(Price price) const noexcept {
+    static auto PriceToIndex(Price price) noexcept {
         return price % ME_MAX_PRICE_LEVELS;
     }
 
     /// @brief Retrieves the price level container for a given price.
     /// @param price The price to look up.
     /// @return Pointer to MarketOrderAtPrice, or nullptr if none exists.
-    inline auto getOrdersAtPrice(Price price) const noexcept
-        -> MarketOrderAtPrice* {
-        return mPrice_orders_at_price.at(priceToIndex(price));
+    auto GetOrdersAtPrice(Price price) const noexcept -> MarketOrderAtPrice* {
+        return m_priceOrdersAtPrice.at(PriceToIndex(price));
     }
 
     /// @brief Adds a new price level to the sorted linked list.
     /// @param new_orders_at_price Pointer to the new price level container.
-    auto addOrdersAtPrice(MarketOrderAtPrice* new_orders_at_price) noexcept {
-        // Map the price to an index and store the new price level in the hash
-        // map
-        mPrice_orders_at_price.at(priceToIndex(new_orders_at_price->mPrice)) =
+    /// Add a new MarketOrderAtPrice at the correct price into the containers -
+    /// the hash map and the doubly linked list of price levels.
+    auto AddOrdersAtPrice(MarketOrderAtPrice* new_orders_at_price) noexcept {
+        m_priceOrdersAtPrice.at(PriceToIndex(new_orders_at_price->m_price)) =
             new_orders_at_price;
 
-        // Get the current best price level (head of the linked list) for this
-        // side
         const auto best_orders_by_price =
-            (new_orders_at_price->mSide == Side::BUY ? mBids_by_price
-                                                     : mAsks_by_price);
-
-        // If this is the first price level, initialize the circular linked list
+            (new_orders_at_price->m_side == Side::BUY ? m_bidsByPrice
+                                                      : m_asksByPrice);
         if (!best_orders_by_price) [[unlikely]] {
-            (new_orders_at_price->mSide == Side::BUY ? mBids_by_price
-                                                     : mAsks_by_price) =
+            (new_orders_at_price->m_side == Side::BUY ? m_bidsByPrice
+                                                      : m_asksByPrice) =
                 new_orders_at_price;
-            // Point to itself as it's the only element in the circular list
-            new_orders_at_price->mPrev_entry =
-                new_orders_at_price->mNext_entry = new_orders_at_price;
+            new_orders_at_price->m_prevEntry =
+                new_orders_at_price->m_nextEntry = new_orders_at_price;
         } else {
-            // Start with the best price level
             auto target = best_orders_by_price;
-
-            // Determine if the new price should be inserted after the best
-            // price For SELL orders: insert after if new price > best price For
-            // BUY orders: insert after if new price < best price
-            bool add_after = ((new_orders_at_price->mSide == Side::SELL &&
-                               new_orders_at_price->mPrice > target->mPrice) ||
-                              (new_orders_at_price->mSide == Side::BUY &&
-                               new_orders_at_price->mPrice < target->mPrice));
-
-            // Move to the next entry if add_after is true
+            bool add_after =
+                ((new_orders_at_price->m_side == Side::SELL &&
+                  new_orders_at_price->m_price > target->m_price) ||
+                 (new_orders_at_price->m_side == Side::BUY &&
+                  new_orders_at_price->m_price < target->m_price));
             if (add_after) {
-                target = target->mNext_entry;
-                // Re-check the condition with the next entry
-                add_after = ((new_orders_at_price->mSide == Side::SELL &&
-                              new_orders_at_price->mPrice > target->mPrice) ||
-                             (new_orders_at_price->mSide == Side::BUY &&
-                              new_orders_at_price->mPrice < target->mPrice));
+                target = target->m_nextEntry;
+                add_after = ((new_orders_at_price->m_side == Side::SELL &&
+                              new_orders_at_price->m_price > target->m_price) ||
+                             (new_orders_at_price->m_side == Side::BUY &&
+                              new_orders_at_price->m_price < target->m_price));
             }
-
-            // Traverse the linked list to find the correct insertion position
             while (add_after && target != best_orders_by_price) {
-                add_after = ((new_orders_at_price->mSide == Side::SELL &&
-                              new_orders_at_price->mPrice > target->mPrice) ||
-                             (new_orders_at_price->mSide == Side::BUY &&
-                              new_orders_at_price->mPrice < target->mPrice));
-                if (add_after) target = target->mNext_entry;
+                add_after = ((new_orders_at_price->m_side == Side::SELL &&
+                              new_orders_at_price->m_price > target->m_price) ||
+                             (new_orders_at_price->m_side == Side::BUY &&
+                              new_orders_at_price->m_price < target->m_price));
+                if (add_after) {
+                    target = target->m_nextEntry;
+                }
             }
 
-            if (add_after) {
-                // Insert new_orders_at_price after the target position
-                // If target is the best price, insert at the end of the list
+            if (add_after) {  // add new_orders_at_price after target.
                 if (target == best_orders_by_price) {
-                    target = best_orders_by_price->mPrev_entry;
+                    target = best_orders_by_price->m_prevEntry;
                 }
-                // Link the new entry into the list after target
-                new_orders_at_price->mPrev_entry = target;
-                target->mNext_entry->mPrev_entry = new_orders_at_price;
-                new_orders_at_price->mNext_entry = target->mNext_entry;
-                target->mNext_entry = new_orders_at_price;
-            } else {
-                // Insert new_orders_at_price before the target position
-                new_orders_at_price->mPrev_entry = target->mPrev_entry;
-                new_orders_at_price->mNext_entry = target;
-                target->mPrev_entry->mNext_entry = new_orders_at_price;
-                target->mPrev_entry = new_orders_at_price;
+                new_orders_at_price->m_prevEntry = target;
+                target->m_nextEntry->m_prevEntry = new_orders_at_price;
+                new_orders_at_price->m_nextEntry = target->m_nextEntry;
+                target->m_nextEntry = new_orders_at_price;
+            } else {  // add new_orders_at_price before target.
+                new_orders_at_price->m_prevEntry = target->m_prevEntry;
+                new_orders_at_price->m_nextEntry = target;
+                target->m_prevEntry->m_nextEntry = new_orders_at_price;
+                target->m_prevEntry = new_orders_at_price;
 
-                // Update the best price level if the new price is better
-                // For BUY: better price is higher
-                // For SELL: better price is lower
-                if ((new_orders_at_price->mSide == Side::BUY &&
-                     new_orders_at_price->mPrice >
-                         best_orders_by_price->mPrice) ||
-                    (new_orders_at_price->mSide == Side::SELL &&
-                     new_orders_at_price->mPrice <
-                         best_orders_by_price->mPrice)) {
-                    target->mNext_entry =
-                        (target->mNext_entry == best_orders_by_price
+                if ((new_orders_at_price->m_side == Side::BUY &&
+                     new_orders_at_price->m_price >
+                         best_orders_by_price->m_price) ||
+                    (new_orders_at_price->m_side == Side::SELL &&
+                     new_orders_at_price->m_price <
+                         best_orders_by_price->m_price)) {
+                    target->m_nextEntry =
+                        (target->m_nextEntry == best_orders_by_price
                              ? new_orders_at_price
-                             : target->mNext_entry);
-                    // Update the head pointer to point to the new best price
-                    // level
-                    (new_orders_at_price->mSide == Side::BUY ? mBids_by_price
-                                                             : mAsks_by_price) =
+                             : target->m_nextEntry);
+                    (new_orders_at_price->m_side == Side::BUY ? m_bidsByPrice
+                                                              : m_asksByPrice) =
                         new_orders_at_price;
                 }
             }
@@ -219,41 +203,87 @@ class MarketOrderBook final {
     /// @param order Pointer to the MarketOrder to add.
     auto addOrder(MarketOrder* order) noexcept -> void {
         // Look up the existing price level for this order's price
-        const auto orders_at_price = getOrdersAtPrice(order->mPrice);
+        const auto orders_at_price = GetOrdersAtPrice(order->m_price);
 
         if (!orders_at_price) {
             // No existing price level, so create a new one
             // Initialize the order as a circular doubly-linked list with itself
-            order->mNext_order = order->mPrev_order = order;
+            order->m_nextOrder = order->m_prevOrder = order;
 
             // Allocate a new MarketOrderAtPrice container for this price level
-            auto new_orders_at_price = mOrders_at_price_pool.Allocate(
-                order->mSide, order->mPrice, order, nullptr, nullptr);
+            auto new_orders_at_price = m_ordersAtPricePool.Allocate(
+                order->m_side, order->m_price, order, nullptr, nullptr);
             // Add the new price level to the price-level linked list
-            addOrdersAtPrice(new_orders_at_price);
+            AddOrdersAtPrice(new_orders_at_price);
         } else {
             // Price level already exists, append order to the FIFO queue at
             // this price
             auto first_order =
-                (orders_at_price ? orders_at_price->mFirst_market_order
+                (orders_at_price ? orders_at_price->m_firstMarketOrder
                                  : nullptr);
 
             // Insert the order at the end of the circular doubly-linked list
-            first_order->mPrev_order->mNext_order = order;
-            order->mPrev_order = first_order->mPrev_order;
-            order->mNext_order = first_order;
-            first_order->mPrev_order = order;
+            first_order->m_prevOrder->m_nextOrder = order;
+            order->m_prevOrder = first_order->m_prevOrder;
+            order->m_nextOrder = first_order;
+            first_order->m_prevOrder = order;
         }
 
         // Track the order in the order ID array for fast lookup
-        mOrder_id_to_order.at(order->mOrder_id) = order;
+        m_orderIdToOrder.at(order->m_orderId) = order;
     }
 
-    /// Remove the MarketOrdersAtPrice from the containers - the hash map and
+    /// Remove the MarketOrderAtPrice from the containers - the hash map and
     /// the doubly linked list of price levels.
-    auto removeOrdersAtPrice(Side side, Price price) noexcept {}
+    auto removeOrdersAtPrice(Side side, Price price) noexcept {
+        const auto best_orders_by_price =
+            (side == Side::BUY ? m_bidsByPrice : m_asksByPrice);
+        auto orders_at_price = GetOrdersAtPrice(price);
 
-    auto removeOrder(MarketOrder* order) noexcept -> void {}
+        if (orders_at_price->m_nextEntry == orders_at_price)
+            [[unlikely]] {  // empty side of book.
+            (side == Side::BUY ? m_bidsByPrice : m_asksByPrice) = nullptr;
+        } else {
+            orders_at_price->m_prevEntry->m_nextEntry =
+                orders_at_price->m_nextEntry;
+            orders_at_price->m_nextEntry->m_prevEntry =
+                orders_at_price->m_prevEntry;
+
+            if (orders_at_price == best_orders_by_price) {
+                (side == Side::BUY ? m_bidsByPrice : m_asksByPrice) =
+                    orders_at_price->m_nextEntry;
+            }
+
+            orders_at_price->m_prevEntry = orders_at_price->m_nextEntry =
+                nullptr;
+        }
+
+        m_priceOrdersAtPrice.at(PriceToIndex(price)) = nullptr;
+
+        m_ordersAtPricePool.Deallocate(orders_at_price);
+    }
+
+    auto removeOrder(MarketOrder* order) noexcept -> void {
+        auto orders_at_price = GetOrdersAtPrice(order->m_price);
+
+        if (order->m_prevOrder == order) {  // only one element.
+            removeOrdersAtPrice(order->m_side, order->m_price);
+        } else {  // remove the link.
+            const auto order_before = order->m_prevOrder;
+            const auto order_after = order->m_nextOrder;
+            order_before->m_nextOrder = order_after;
+            order_after->m_prevOrder = order_before;
+
+            if (orders_at_price->m_firstMarketOrder == order) {
+                orders_at_price->m_firstMarketOrder = order_after;
+            }
+
+            order->m_prevOrder = order->m_nextOrder = nullptr;
+        }
+
+        m_orderIdToOrder.at(order->m_orderId) = nullptr;
+        m_orderPool.Deallocate(order);
+    }
 };
 
 /// \typedef MarketOrderBookHashMap

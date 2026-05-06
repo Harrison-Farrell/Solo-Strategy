@@ -27,103 +27,96 @@ ITCH_Parser::ITCH_Parser(
     std::shared_ptr<LockFreeQueue<ITCH::Message>>& queue_pointer)
     : m_File(file_path), m_MessageQueue(queue_pointer) {}
 
-auto ITCH_Parser::SystemEventMessage() -> ITCH::Message {
+auto ITCH_Parser::SystemEventMessage() {
     return m_File.Read<ITCH::SystemEventMessage>();
 }
 
-auto ITCH_Parser::StockTradingActionMessage() -> ITCH::Message {
+auto ITCH_Parser::StockTradingActionMessage() {
     return m_File.Read<ITCH::StockTradingActionMessage>();
 }
 
-auto ITCH_Parser::RegSHOMessage() -> ITCH::Message {
-    return m_File.Read<ITCH::RegSHOMessage>();
-}
+auto ITCH_Parser::RegSHOMessage() { return m_File.Read<ITCH::RegSHOMessage>(); }
 
-auto ITCH_Parser::MarketParticipantPositionMessage() -> ITCH::Message {
+auto ITCH_Parser::MarketParticipantPositionMessage() {
     return m_File.Read<ITCH::MarketParticipantPositionMessage>();
 }
-auto ITCH_Parser::MWCBDeclineLevelMessage() -> ITCH::Message {
+auto ITCH_Parser::MWCBDeclineLevelMessage() {
     return m_File.Read<ITCH::MWCBDeclineLevelMessage>();
 }
 
-auto ITCH_Parser::MWCBStatusMessage() -> ITCH::Message {
+auto ITCH_Parser::MWCBStatusMessage() {
     return m_File.Read<ITCH::MWCBStatusMessage>();
 }
 
-auto ITCH_Parser::StockDirectoryMessage() -> ITCH::Message {
+auto ITCH_Parser::StockDirectoryMessage() {
     return m_File.Read<ITCH::StockDirectoryMessage>();
 }
 
-auto ITCH_Parser::IPOQuotingPeriodUpdateMessage() -> ITCH::Message {
+auto ITCH_Parser::IPOQuotingPeriodUpdateMessage() {
     return m_File.Read<ITCH::IPOQuotingPeriodUpdateMessage>();
 }
 
-auto ITCH_Parser::LULDAuctionCollarMessage() -> ITCH::Message {
+auto ITCH_Parser::LULDAuctionCollarMessage() {
     return m_File.Read<ITCH::LULDAuctionCollarMessage>();
 }
 
-auto ITCH_Parser::OperationalHaltMessage() -> ITCH::Message {
+auto ITCH_Parser::OperationalHaltMessage() {
     return m_File.Read<ITCH::OperationalHaltMessage>();
 }
 
-auto ITCH_Parser::AddOrderMessage() -> ITCH::Message {
+auto ITCH_Parser::AddOrderMessage() {
     return m_File.Read<ITCH::AddOrderMessage>();
 }
 
-auto ITCH_Parser::AddOrderMPIDAttributionMessage() -> ITCH::Message {
+auto ITCH_Parser::AddOrderMPIDAttributionMessage() {
     return m_File.Read<ITCH::AddOrderMPIDAttributionMessage>();
 }
 
-auto ITCH_Parser::OrderExecutedMessage() -> ITCH::Message {
+auto ITCH_Parser::OrderExecutedMessage() {
     return m_File.Read<ITCH::OrderExecutedMessage>();
 }
 
-auto ITCH_Parser::OrderExecutedWithPriceMessage() -> ITCH::Message {
+auto ITCH_Parser::OrderExecutedWithPriceMessage() {
     return m_File.Read<ITCH::OrderExecutedWithPriceMessage>();
 }
 
-auto ITCH_Parser::OrderCancelMessage() -> ITCH::Message {
+auto ITCH_Parser::OrderCancelMessage() {
     return m_File.Read<ITCH::OrderCancelMessage>();
 }
 
-auto ITCH_Parser::OrderDeleteMessage() -> ITCH::Message {
+auto ITCH_Parser::OrderDeleteMessage() {
     return m_File.Read<ITCH::OrderDeleteMessage>();
 }
 
-auto ITCH_Parser::OrderReplaceMessage() -> ITCH::Message {
+auto ITCH_Parser::OrderReplaceMessage() {
     return m_File.Read<ITCH::OrderReplaceMessage>();
 }
 
-auto ITCH_Parser::NonCrossTradeMessage() -> ITCH::Message {
+auto ITCH_Parser::NonCrossTradeMessage() {
     return m_File.Read<ITCH::NonCrossTradeMessage>();
 }
 
-auto ITCH_Parser::CrossTradeMessage() -> ITCH::Message {
+auto ITCH_Parser::CrossTradeMessage() {
     return m_File.Read<ITCH::CrossTradeMessage>();
 }
 
-auto ITCH_Parser::BrokenTradeMessage() -> ITCH::Message {
+auto ITCH_Parser::BrokenTradeMessage() {
     return m_File.Read<ITCH::BrokenTradeMessage>();
 }
 
-auto ITCH_Parser::NOIIMessage() -> ITCH::Message {
-    return m_File.Read<ITCH::NOIIMessage>();
-}
+auto ITCH_Parser::NOIIMessage() { return m_File.Read<ITCH::NOIIMessage>(); }
 
-auto ITCH_Parser::DLCRMessage() -> ITCH::Message {
-    return m_File.Read<ITCH::DLCRMessage>();
-}
+auto ITCH_Parser::DLCRMessage() { return m_File.Read<ITCH::DLCRMessage>(); }
 
-auto ITCH_Parser::RetailPriceImprovementIndicatorMessage() -> ITCH::Message {
+auto ITCH_Parser::RetailPriceImprovementIndicatorMessage() {
     return m_File.Read<ITCH::RetailPriceImprovementIndicatorMessage>();
 }
 
 auto ITCH_Parser::Execute() {
-    while (m_File.tell() < m_File.size()) {
+    while (m_File.Tell() < m_File.Size()) {
         // The first two bytes are message length as per moldupd64
         // skip to the message type char
-        m_File.seek(m_File.tell() + 2);
-
+        m_File.Seek(m_File.Tell() + 2);
         m_MessageQueue->Push(DecodeMessage());
     }
 }
@@ -134,7 +127,7 @@ std::shared_ptr<std::thread> ITCH_Parser::Start(int core_id) {
 }
 
 ITCH::Message ITCH_Parser::DecodeMessage() {
-    const auto type = m_File.Inspect<ITCH::MessageType>();
+    const auto& type = m_File.Inspect<ITCH::MessageType>();
     switch (type) {
         case ITCH::MessageType::SystemEventMessage:
             return SystemEventMessage();

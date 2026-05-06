@@ -27,14 +27,16 @@
 namespace {
 void ExitSignal(int exit_value) { std::quick_exit(exit_value); }
 
-void PrintingPress(const std::shared_ptr<LockFreeQueue<ITCH::Message>>& queue) {
+void PrintingPress(
+    const std::shared_ptr<LockFreeQueue<ITCH::Message>>& msg_queue) {
     using namespace std::literals::chrono_literals;
     std::this_thread::sleep_for(1s);
 
-    for (const auto* new_message = queue->GetNextRead();
-         static_cast<bool>(new_message); new_message = queue->GetNextRead()) {
+    for (const auto* new_message = msg_queue->GetNextRead();
+         static_cast<bool>(new_message);
+         new_message = msg_queue->GetNextRead()) {
         std::cout << *new_message << "\n";
-        queue->UpdateReadIndex();
+        msg_queue->UpdateReadIndex();
     }
 }
 }  // namespace
@@ -58,13 +60,14 @@ int main(int argc, char* argv[]) {
 
     std::cout << "File Path to read: " << input_file_path << "\n";
 
-    auto queue = std::make_shared<LockFreeQueue<ITCH::Message>>(buffer_size);
+    auto msg_queue =
+        std::make_shared<LockFreeQueue<ITCH::Message>>(buffer_size);
 
-    ITCH_Parser read_binary(input_file_path, queue);
+    ITCH_Parser read_binary(input_file_path, msg_queue);
     auto writing_thread = read_binary.Start(1);
 
     auto printing_thread =
-        CreateAndStartThread(2, "Printing Worker", PrintingPress, queue);
+        CreateAndStartThread(2, "Printing Worker", PrintingPress, msg_queue);
 
     writing_thread->join();
     printing_thread->join();

@@ -111,39 +111,39 @@ class MemoryMappedFile {
     /// \param offset Byte offset from the start of the mapping.
     /// \return Byte value at the specified offset.
     /// \throws std::out_of_range If offset is >= size().
-    [[nodiscard]] uint8_t at(size_t offset) const;
+    [[nodiscard]] uint8_t At(size_t offset) const;
 
     /// \brief Returns a raw pointer to the start of the memory mapping.
     /// \return Continuous memory pointer to the file content.
-    [[nodiscard]] const uint8_t* getData() const;
+    [[nodiscard]] const uint8_t* GetData() const;
 
     /// \brief STL-compatible iterator to the start of the mapped data.
     /// \return Constant pointer to the beginning.
-    [[nodiscard]] const uint8_t* begin() const;
+    [[nodiscard]] const uint8_t* Begin() const;
 
     /// \brief STL-compatible iterator to the byte after the last mapped byte.
     /// \return Constant pointer to the end.
-    [[nodiscard]] const uint8_t* end() const;
+    [[nodiscard]] const uint8_t* End() const;
 
     /// \brief Checks if the file is currently validly mapped.
     /// \return true if mapping is active.
-    [[nodiscard]] bool isValid() const;
+    [[nodiscard]] bool IsValid() const;
 
     /// \brief Gets the total size of the underlying file on disk.
     /// \return File size in bytes.
-    [[nodiscard]] uint64_t size() const;
+    [[nodiscard]] uint64_t Size() const;
 
     /// \brief Gets the number of bytes currently mapped into the process's
     /// address space.
     /// \return Number of mapped bytes.
-    [[nodiscard]] size_t mappedSize() const;
+    [[nodiscard]] size_t MappedSize() const;
 
     /// \brief Shifts the memory mapping window.
     /// \param offset New start offset in the file. Must be a multiple of OS
     /// page size.
     /// \param mapped_bytes Number of bytes to map from the new offset.
     /// \return true on success.
-    [[nodiscard]] bool remap(uint64_t offset, size_t mapped_bytes);
+    [[nodiscard]] bool Remap(uint64_t offset, size_t mapped_bytes);
 
     /// \brief Inpsects a value of type T from the current cursor.
     /// \tparam T Type to read (e.g., uint32_t, char).
@@ -153,7 +153,7 @@ class MemoryMappedFile {
     T Inspect() {
         // Direct memory access via pointer casting
         T value = *reinterpret_cast<const T*>(
-            static_cast<const uint8_t*>(mMappedView) + mCursor);
+            static_cast<const uint8_t*>(m_MappedView) + m_cursor);
         return value;
     }
 
@@ -165,8 +165,8 @@ class MemoryMappedFile {
     T Read() {
         // Direct memory access via pointer casting
         T value = *reinterpret_cast<const T*>(
-            static_cast<const uint8_t*>(mMappedView) + mCursor);
-        mCursor += sizeof(T);
+            static_cast<const uint8_t*>(m_MappedView) + m_cursor);
+        m_cursor += sizeof(T);
         return value;
     }
 
@@ -215,18 +215,18 @@ class MemoryMappedFile {
     std::array<char, N> ReadArray() {
         std::array<char, N> result{};
         std::memcpy(result.data(),
-                    static_cast<const char*>(mMappedView) + mCursor, N);
-        mCursor += N;
+                    static_cast<const char*>(m_MappedView) + m_cursor, N);
+        m_cursor += N;
         return result;
     }
 
     /// \brief Copies a fixed-length string and advances the cursor.
     /// \param dentation of the string copy.
     /// \param length Number of characters to read.
-    inline auto copyString(char* destination, size_t length) -> void {
+    auto CopyString(char* destination, size_t length) -> void {
         std::memcpy(destination,
-                    static_cast<const char*>(mMappedView) + mCursor, length);
-        mCursor += length;
+                    static_cast<const char*>(m_MappedView) + m_cursor, length);
+        m_cursor += length;
     }
 
     /// \brief Memory-mapped reading of an 8-character symbol.
@@ -234,43 +234,43 @@ class MemoryMappedFile {
     std::array<char, 8> ReadSymbol() { return ReadArray<8>(); }
     /// \brief Sets the internal cursor for the read() functions.
     /// \param pos New byte offset from the start of the file.
-    void seek(size_t pos) { mCursor = pos; }
+    void Seek(size_t pos) { m_cursor = pos; }
     /// \brief Gets current byte position of the cursor.
     /// \return Cursor offset in bytes.
-    [[nodiscard]] size_t tell() const { return mCursor; }
+    [[nodiscard]] size_t Tell() const { return m_cursor; }
 
    private:
     /// \brief Implementation detail for OS-specific file opening.
-    [[nodiscard]] bool osOpen(const std::filesystem::path& filename);
+    [[nodiscard]] bool OSOpen(const std::filesystem::path& filename);
     /// \brief Implementation detail for OS-specific handle closing.
-    void osClose();
+    void OSClose();
     /// \brief Implementation detail for OS-specific mapping.
-    [[nodiscard]] bool osMap(uint64_t offset, size_t mapped_bytes);
+    [[nodiscard]] bool OSMap(uint64_t offset, size_t mapped_bytes);
     /// \brief Implementation detail for OS-specific unmapping.
-    void osUnmap();
+    void OSUnmap();
     /// \brief Implementation detail for OS-specific file size retrieval.
-    [[nodiscard]] uint64_t osGetFileSize() const;
+    [[nodiscard]] uint64_t OSGetFileSize() const;
 
     /// \brief Helper to retrieve the granularity required for mmap offsets.
-    [[nodiscard]] static uint32_t getPageSize();
+    [[nodiscard]] static uint32_t GetPageSize();
 
-    std::filesystem::path mFilename;  ///< Canonical path of the opened file.
-    uint64_t mFilesize = 0;           ///< Cached size of the file in bytes.
-    size_t mCursor = 0;  ///< Current stream position for sequential reads.
-    CacheHint mHint = CacheHint::Normal;  ///< Active performance hint.
-    size_t mMappedBytes = 0;  ///< Actual bytes currently accessible in memory.
+    std::filesystem::path m_filename;  ///< Canonical path of the opened file.
+    uint64_t m_file_size = 0;          ///< Cached size of the file in bytes.
+    size_t m_cursor = 0;  ///< Current stream position for sequential reads.
+    CacheHint m_Hint = CacheHint::Normal;  ///< Active performance hint.
+    size_t m_MappedBytes = 0;  ///< Actual bytes currently accessible in memory.
 
 #ifdef __WINDOWS_OS__
     using FileHandle = void*;
-    FileHandle mFileHandle = nullptr;  ///< Native Windows file handle.
-    FileHandle mMappingHandle =
+    FileHandle m_FileHandle = nullptr;  ///< Native Windows file handle.
+    FileHandle m_MappingHandle =
         nullptr;  ///< Native Windows mapping object handle.
 #else
     using FileHandle = int;
-    FileHandle mFileHandle = -1;  ///< POSIX file descriptor.
+    FileHandle m_FileHandle = -1;  ///< POSIX file descriptor.
 #endif
 
-    void* mMappedView = nullptr;  ///< Pointer to shared memory region.
+    void* m_MappedView = nullptr;  ///< Pointer to shared memory region.
 };
 
 #endif  // SOLO_STRATEGY_SRC_MEMORY_MAP_FILE_H_

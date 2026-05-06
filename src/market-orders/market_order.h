@@ -22,24 +22,29 @@
 #include "utilities/macros.h"
 #include "utilities/types.h"
 
+class MarketOrderBook;
+
 /// @brief Represents a single market order in the order book.
-struct MarketOrder {
+class MarketOrder {
+    friend class MarketOrderBook;
+   private:
     /// @brief Order identifier.
-    OrderId mOrder_id = OrderId_INVALID;
+    OrderId m_orderId = OrderId_INVALID;
     /// @brief Side of the order (buy/sell).
-    Side mSide = Side::INVALID;
+    Side m_side = Side::INVALID;
     /// @brief Price of the order.
-    Price mPrice = Price_INVALID;
+    Price m_price = Price_INVALID;
     /// @brief Quantity of the order.
-    Qty mQty = Qty_INVALID;
+    Qty m_qty = Qty_INVALID;
     /// @brief Priority of the order.
-    Priority mPriority = Priority_INVALID;
+    Priority m_priority = Priority_INVALID;
 
     /// @brief Pointer to the previous order in the linked list.
-    MarketOrder* mPrev_order = nullptr;
+    MarketOrder* m_prevOrder = nullptr;
     /// @brief Pointer to the next order in the linked list.
-    MarketOrder* mNext_order = nullptr;
+    MarketOrder* m_nextOrder = nullptr;
 
+   public:
     /// @brief Default constructor. Only needed for use with the Memory Pool.
     MarketOrder() = default;
 
@@ -63,20 +68,23 @@ struct MarketOrder {
 typedef std::array<MarketOrder*, ME_MAX_ORDER_IDS> OrderArray;
 
 /// @brief Represents all market orders at a specific price level.
-struct MarketOrderAtPrice {
+class MarketOrderAtPrice {
+    friend class MarketOrderBook;
+   private:
     /// @brief Side of the orders at this price.
-    Side mSide = Side::INVALID;
+    Side m_side = Side::INVALID;
     /// @brief Price level.
-    Price mPrice = Price_INVALID;
+    Price m_price = Price_INVALID;
 
     /// @brief Pointer to the first market order at this price.
-    MarketOrder* mFirst_market_order = nullptr;
+    MarketOrder* m_firstMarketOrder = nullptr;
 
     /// @brief Pointer to the previous price entry in the linked list.
-    MarketOrderAtPrice* mPrev_entry = nullptr;
+    MarketOrderAtPrice* m_prevEntry = nullptr;
     /// @brief Pointer to the next price entry in the linked list.
-    MarketOrderAtPrice* mNext_entry = nullptr;
+    MarketOrderAtPrice* m_nextEntry = nullptr;
 
+   public:
     /// @brief Default constructor.
     MarketOrderAtPrice() = default;
 
@@ -97,17 +105,20 @@ struct MarketOrderAtPrice {
 
 typedef std::array<MarketOrderAtPrice*, ME_MAX_PRICE_LEVELS> OrdersAtPriceArray;
 /// @brief Represents the best bid and offer in the order book.
-struct BestBidOffer {
+class BestBidOffer {
+    friend class MarketOrderBook;
+   private:
     /// @brief Best bid price.
-    Price mBid_price = Price_INVALID;
+    Price m_bidPrice = Price_INVALID;
     /// @brief Best ask price.
-    Price mAsk_price = Price_INVALID;
+    Price m_askPrice = Price_INVALID;
 
     /// @brief Quantity at best bid.
-    Qty mBid_qty = Qty_INVALID;
+    Qty m_bidQty = Qty_INVALID;
     /// @brief Quantity at best ask.
-    Qty mAsk_qty = Qty_INVALID;
+    Qty m_askQty = Qty_INVALID;
 
+   public:
     /// @brief Returns a string representation of the BestBidOffer.
     /// @return String representation.
     auto toString() const -> std::string;

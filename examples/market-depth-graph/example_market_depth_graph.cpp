@@ -10,70 +10,186 @@
 // -----------------------------------------------------------------------------
 
 // 3rd party libraries
-#include <QtCharts/QAreaSeries>
-#include <QtCharts/QChartView>
-#include <QtCharts/QLineSeries>
-#include <QtCharts/QValueAxis>
-#include <QtGui/QColor>
-#include <QtGui/QPen>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QMainWindow>
+#include <GLFW/glfw3.h>
+
+#include <cstdio>
+#include <cstdlib>
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include "implot.h"
+
+
+static void glfw_error_callback(int error, const char* description) {
+    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+}
 
 int main(int argc, char* argv[]) {
-    QApplication a(argc, argv);
+    // Suppress unused parameter warnings
+    (void)argc;
+    (void)argv;
 
-    QLineSeries* buyLine = new QLineSeries();
-    QLineSeries* sellLine = new QLineSeries();
+    // Setup window
+    glfwSetErrorCallback(glfw_error_callback);
+    if (!glfwInit()) return 1;
 
-    // Buy Side (Bids): Volume increases as price decreases
-    // Logic: Add two points per level to create the "step"
-    *buyLine << QPointF(100, 0) << QPointF(100, 50) << QPointF(99, 50)
-             << QPointF(99, 120) << QPointF(98, 120) << QPointF(98, 200)
-             << QPointF(97, 200) << QPointF(97, 350);
+    const char* glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    // Sell Side (Asks): Volume increases as price increases
-    *sellLine << QPointF(102, 0) << QPointF(102, 50) << QPointF(103, 50)
-              << QPointF(103, 120) << QPointF(104, 120) << QPointF(104, 200)
-              << QPointF(105, 200) << QPointF(105, 350);
+    // Create window with graphics context
+    GLFWwindow* window =
+        glfwCreateWindow(800, 500, "Market Depth Chart", nullptr, nullptr);
+    if (window == nullptr) return 1;
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);  // Enable vsync
 
-    QAreaSeries* buyArea = new QAreaSeries(buyLine);
-    buyArea->setName("Bids (Buy)");
-    buyArea->setBrush(QColor(0, 200, 80, 150));  // Semi-transparent Green
-    buyArea->setPen(QPen(QColor(0, 200, 80), 2));
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImPlot::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |=
+        ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    io.ConfigFlags |=
+        ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
 
-    QAreaSeries* sellArea = new QAreaSeries(sellLine);
-    sellArea->setName("Asks (Sell)");
-    sellArea->setBrush(QColor(230, 50, 50, 150));  // Semi-transparent Red
-    sellArea->setPen(QPen(QColor(230, 50, 50), 2));
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
 
-    QChart* chart = new QChart();
-    chart->addSeries(buyArea);
-    chart->addSeries(sellArea);
-    chart->setTitle("Market Depth: AAPL");
-    chart->setAnimationOptions(QChart::SeriesAnimations);
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
 
-    QValueAxis* axisX = new QValueAxis();
-    axisX->setTitleText("Price ($)");
-    axisX->setLabelFormat("%.2f");
-    axisX->setRange(97, 105);
-    chart->addAxis(axisX, Qt::AlignBottom);
-    buyArea->attachAxis(axisX);
-    sellArea->attachAxis(axisX);
+    // Number of price levels to simulate on each side
+    const int num_levels = 50;
+    double buyX[num_levels * 2];
+    double buyY[num_levels * 2];
+    double sellX[num_levels * 2];
+    double sellY[num_levels * 2];
 
-    QValueAxis* axisY = new QValueAxis();
-    axisY->setTitleText("Cumulative Volume");
-    chart->addAxis(axisY, Qt::AlignLeft);
-    buyArea->attachAxis(axisY);
-    sellArea->attachAxis(axisY);
+    double midPrice = 101.0;
+    double last_update_time = 0.0;
 
-    QChartView* chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
+    // Main loop
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
 
-    QMainWindow window;
-    window.setCentralWidget(chartView);
-    window.resize(800, 500);
-    window.setWindowTitle("Market Depth Chart");
-    window.show();
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
-    return a.exec();
+        // Update market data simulation
+        double current_time = ImGui::GetTime();
+        if (current_time - last_update_time > 0.05) {  // 20Hz update rate
+            last_update_time = current_time;
+
+            // Random walk for mid price
+            double r = (double)rand() / RAND_MAX;
+            double mid_change = (r < 0.45) ? -0.02 : ((r > 0.55) ? 0.02 : 0);
+            midPrice += mid_change;
+            if (midPrice < 50) midPrice = 50;
+            if (midPrice > 150) midPrice = 150;
+
+            // Generate buy side (bids) - 50 levels deep
+            double current_buy_price = midPrice - 0.02; // Small spread
+            double current_buy_vol = 0;
+
+            for (int i = 0; i < num_levels; ++i) {
+                // Randomly vary the volume at each price level slightly
+                double vol_added = (rand() % 80) + 20;
+
+                int idx = (num_levels - 1 - i) * 2;
+
+                buyX[idx + 1] = current_buy_price;
+                buyY[idx + 1] = current_buy_vol;
+
+                current_buy_vol += vol_added;
+
+                buyX[idx] = current_buy_price;
+                buyY[idx] = current_buy_vol;
+
+                current_buy_price -= 0.05;  // tick size
+            }
+
+            // Generate sell side (asks) - 50 levels deep
+            double current_sell_price = midPrice + 0.02; // Small spread
+            double current_sell_vol = 0;
+
+            for (int i = 0; i < num_levels; ++i) {
+                double vol_added = (rand() % 80) + 20;
+
+                int idx = i * 2;
+
+                sellX[idx] = current_sell_price;
+                sellY[idx] = current_sell_vol;
+
+                current_sell_vol += vol_added;
+
+                sellX[idx + 1] = current_sell_price;
+                sellY[idx + 1] = current_sell_vol;
+
+                current_sell_price += 0.05;  // tick size
+            }
+        }
+
+        ImGui::SetNextWindowPos(ImVec2(0, 0));
+        ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+        ImGui::Begin("Market Depth: AAPL", nullptr,
+                     ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoBringToFrontOnFocus);
+
+        if (ImPlot::BeginPlot("##MarketDepth", ImVec2(-1, -1))) {
+            ImPlot::SetupAxes("Price ($)", "Cumulative Volume",
+                              ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+            ImPlot::SetupAxesLimits(midPrice - 2.5, midPrice + 2.5, 0, 3000, ImGuiCond_Always);
+
+            // Bids
+            ImPlot::PushStyleColor(ImPlotCol_Line,
+                                   ImVec4(0.0f, 0.78f, 0.31f, 1.0f));
+            ImPlot::PushStyleColor(ImPlotCol_Fill,
+                                   ImVec4(0.0f, 0.78f, 0.31f, 0.5f));
+            ImPlot::PlotShaded("Bids (Buy)", buyX, buyY, num_levels * 2);
+            ImPlot::PlotLine("Bids (Buy)", buyX, buyY, num_levels * 2);
+            ImPlot::PopStyleColor(2);
+
+            // Asks
+            ImPlot::PushStyleColor(ImPlotCol_Line,
+                                   ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+            ImPlot::PushStyleColor(ImPlotCol_Fill,
+                                   ImVec4(0.9f, 0.2f, 0.2f, 0.5f));
+            ImPlot::PlotShaded("Asks (Sell)", sellX, sellY, num_levels * 2);
+            ImPlot::PlotLine("Asks (Sell)", sellX, sellY, num_levels * 2);
+            ImPlot::PopStyleColor(2);
+
+            ImPlot::EndPlot();
+        }
+
+        ImGui::End();
+
+        // Rendering
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window);
+    }
+
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+
+    return 0;
 }

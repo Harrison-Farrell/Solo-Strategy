@@ -23,11 +23,11 @@ int main() {
     
     MEMarketUpdate update;
     // ... populate update with order details ...
-    order_book.onMarketUpdate(&update);
+    order_book.OnMarketUpdate(&update);
     
     // Update Best Bid and Offer
-    order_book.updateBestBidOffer(true, true);
-    const BestBidOffer* bbo = order_book.getBestBidOffer();
+    order_book.UpdateBestBidOffer(true, true);
+    const BestBidOffer* bbo = order_book.GetBestBidOffer();
     
     return 0;
 }

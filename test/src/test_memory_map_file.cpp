@@ -48,14 +48,14 @@ TEST_F(MemoryMappedFileTest, OpenAndCloseValidFile) {
 
     MemoryMappedFile mappedFile;
     EXPECT_TRUE(mappedFile.Open(tempFilePath));
-    EXPECT_TRUE(mappedFile.isValid());
-    EXPECT_EQ(mappedFile.size(), 4);
-    EXPECT_EQ(mappedFile.mappedSize(), 4);
+    EXPECT_TRUE(mappedFile.IsValid());
+    EXPECT_EQ(mappedFile.Size(), 4);
+    EXPECT_EQ(mappedFile.MappedSize(), 4);
 
     mappedFile.Close();
-    EXPECT_FALSE(mappedFile.isValid());
-    EXPECT_EQ(mappedFile.size(), 0);
-    EXPECT_EQ(mappedFile.mappedSize(), 0);
+    EXPECT_FALSE(mappedFile.IsValid());
+    EXPECT_EQ(mappedFile.Size(), 0);
+    EXPECT_EQ(mappedFile.MappedSize(), 0);
 }
 
 TEST_F(MemoryMappedFileTest, OpenInvalidFile) {
@@ -63,7 +63,7 @@ TEST_F(MemoryMappedFileTest, OpenInvalidFile) {
     std::filesystem::path nonExistentPath =
         std::filesystem::temp_directory_path() / "does_not_exist_file.bin";
     EXPECT_FALSE(mappedFile.Open(nonExistentPath));
-    EXPECT_FALSE(mappedFile.isValid());
+    EXPECT_FALSE(mappedFile.IsValid());
 }
 
 TEST_F(MemoryMappedFileTest, ArrayAccessValidAndInvalid) {
@@ -75,11 +75,11 @@ TEST_F(MemoryMappedFileTest, ArrayAccessValidAndInvalid) {
     EXPECT_EQ(mappedFile[0], 0x11);
     EXPECT_EQ(mappedFile[1], 0x22);
 
-    EXPECT_EQ(mappedFile.at(2), 0x33);
-    EXPECT_EQ(mappedFile.at(3), 0x44);
+    EXPECT_EQ(mappedFile.At(2), 0x33);
+    EXPECT_EQ(mappedFile.At(3), 0x44);
 
     // static casting to allow discarding the return value
-    EXPECT_THROW(static_cast<void>(mappedFile.at(4)), std::out_of_range);
+    EXPECT_THROW(static_cast<void>(mappedFile.At(4)), std::out_of_range);
 }
 
 TEST_F(MemoryMappedFileTest, RemapOffsets) {
@@ -91,11 +91,11 @@ TEST_F(MemoryMappedFileTest, RemapOffsets) {
 
     MemoryMappedFile mappedFile;
     ASSERT_TRUE(mappedFile.Open(tempFilePath, 1024));
-    EXPECT_EQ(mappedFile.mappedSize(), 1024);
+    EXPECT_EQ(mappedFile.MappedSize(), 1024);
 
     // remap testing (requires page size alignment typically, assuming 4096 here
     // for safety, offset 4096) using page boundary 4096
-    bool remapped = mappedFile.remap(4096, 2048);
+    bool remapped = mappedFile.Remap(4096, 2048);
     if (!remapped) {
         // Some OSes or specific page sizes might fail if offset is not aligned
         // to their page size. fallback to whole file map or skip specific
@@ -104,7 +104,7 @@ TEST_F(MemoryMappedFileTest, RemapOffsets) {
                      "test check.";
         return;
     }
-    EXPECT_EQ(mappedFile.mappedSize(), 2048);
+    EXPECT_EQ(mappedFile.MappedSize(), 2048);
     EXPECT_EQ(mappedFile[0], 4096 % 256);
 }
 
@@ -114,19 +114,19 @@ TEST_F(MemoryMappedFileTest, CursorSequentialReadAndNavigation) {
     MemoryMappedFile mappedFile;
     ASSERT_TRUE(mappedFile.Open(tempFilePath));
 
-    EXPECT_EQ(mappedFile.tell(), 0);
+    EXPECT_EQ(mappedFile.Tell(), 0);
 
     // Read8
     EXPECT_EQ(mappedFile.Read8(), 0x01);
-    EXPECT_EQ(mappedFile.tell(), 1);
+    EXPECT_EQ(mappedFile.Tell(), 1);
 
     // ReadChar
     EXPECT_EQ(mappedFile.ReadChar(), '\x02');
-    EXPECT_EQ(mappedFile.tell(), 2);
+    EXPECT_EQ(mappedFile.Tell(), 2);
 
     // seek
-    mappedFile.seek(4);
-    EXPECT_EQ(mappedFile.tell(), 4);
+    mappedFile.Seek(4);
+    EXPECT_EQ(mappedFile.Tell(), 4);
     EXPECT_EQ(mappedFile.Read8(), 0x0A);
 }
 
@@ -161,12 +161,12 @@ TEST_F(MemoryMappedFileTest, ReadStrings) {
     std::array<char, 8> expected_result{'H', 'A', 'R', 'R', 'I', 'S', 'O', 'N'};
     EXPECT_EQ(mappedFile.ReadArray<8>(), expected_result);
 
-    EXPECT_EQ(mappedFile.tell(), 8);
+    EXPECT_EQ(mappedFile.Tell(), 8);
 
     char buf[10] = {0};
-    mappedFile.copyString(buf, 7);
+    mappedFile.CopyString(buf, 7);
     EXPECT_STREQ(buf, "FARRELL");
-    EXPECT_EQ(mappedFile.tell(), 15);
+    EXPECT_EQ(mappedFile.Tell(), 15);
 }
 
 TEST_F(MemoryMappedFileTest, Iterators) {
@@ -175,12 +175,12 @@ TEST_F(MemoryMappedFileTest, Iterators) {
     MemoryMappedFile mappedFile;
     ASSERT_TRUE(mappedFile.Open(tempFilePath));
 
-    auto it = mappedFile.begin();
+    auto it = mappedFile.Begin();
     EXPECT_EQ(*it, 0x55);
     EXPECT_EQ(*(it + 1), 0xAA);
     EXPECT_EQ(*(it + 2), 0xFF);
 
-    EXPECT_EQ(mappedFile.end() - mappedFile.begin(), 3);
+    EXPECT_EQ(mappedFile.End() - mappedFile.Begin(), 3);
 }
 
 }  // namespace

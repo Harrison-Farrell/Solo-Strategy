@@ -20,17 +20,17 @@ auto MarketOrder::toString() const -> std::string {
     std::stringstream ss;
 
     ss << "MarketOrder" << "["
-       << "oid:" << OrderIdToString(mOrder_id) << " "
-       << "side:" << SideToString(mSide) << " "
-       << "price:" << PriceToString(mPrice) << " "
-       << "qty:" << QtyToString(mQty) << " "
-       << "prio:" << PriorityToString(mPriority) << " "
+       << "oid:" << OrderIdToString(m_orderId) << " "
+       << "side:" << SideToString(m_side) << " "
+       << "price:" << PriceToString(m_price) << " "
+       << "qty:" << QtyToString(m_qty) << " "
+       << "prio:" << PriorityToString(m_priority) << " "
        << "prev:"
-       << OrderIdToString(mPrev_order ? mPrev_order->mOrder_id
+       << OrderIdToString(m_prevOrder ? m_prevOrder->m_orderId
                                       : OrderId_INVALID)
        << " "
        << "next:"
-       << OrderIdToString(mNext_order ? mNext_order->mOrder_id
+       << OrderIdToString(m_nextOrder ? m_nextOrder->m_orderId
                                       : OrderId_INVALID)
        << "]";
     return ss.str();
@@ -39,16 +39,16 @@ auto MarketOrder::toString() const -> std::string {
 auto MarketOrderAtPrice::toString() const -> std::string {
     std::stringstream ss;
     ss << "MarketOrdersAtPrice["
-       << "side:" << SideToString(mSide) << " "
-       << "price:" << PriceToString(mPrice) << " "
+       << "side:" << SideToString(m_side) << " "
+       << "price:" << PriceToString(m_price) << " "
        << "first_mkt_order:"
-       << (mFirst_market_order ? mFirst_market_order->toString() : "null")
+       << (m_firstMarketOrder ? m_firstMarketOrder->toString() : "null")
        << " "
        << "prev:"
-       << PriceToString(mPrev_entry ? mPrev_entry->mPrice : Price_INVALID)
+       << PriceToString(m_prevEntry ? m_prevEntry->m_price : Price_INVALID)
        << " "
        << "next:"
-       << PriceToString(mNext_entry ? mNext_entry->mPrice : Price_INVALID)
+       << PriceToString(m_nextEntry ? m_nextEntry->m_price : Price_INVALID)
        << "]";
 
     return ss.str();
@@ -56,9 +56,9 @@ auto MarketOrderAtPrice::toString() const -> std::string {
 
 auto BestBidOffer::toString() const -> std::string {
     std::stringstream ss;
-    ss << "Best Bid Offer\t{" << QtyToString(mBid_qty) << "@"
-       << PriceToString(mBid_price) << "X" << PriceToString(mAsk_price) << "@"
-       << QtyToString(mAsk_qty) << "}";
+    ss << "Best Bid Offer\t{" << QtyToString(m_bidQty) << "@"
+       << PriceToString(m_bidPrice) << "X" << PriceToString(m_askPrice) << "@"
+       << QtyToString(m_askQty) << "}";
 
     return ss.str();
 }

@@ -9,15 +9,61 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # -----------------------------------------------------------------------------
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Charts)
+include(FetchContent)
 
-add_executable(market_depth_example example_market_depth_graph.cpp)
+# Fetch GLFW
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG 3.4
+)
+FetchContent_MakeAvailable(glfw)
 
-target_include_directories(market_depth_example PRIVATE ${CMAKE_SOURCE_DIR}/src)
+# Fetch ImGui
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.90.8-docking
+)
+FetchContent_MakeAvailable(imgui)
+
+# Fetch ImPlot
+FetchContent_Declare(
+    implot
+    GIT_REPOSITORY https://github.com/epezent/implot.git
+    GIT_TAG v0.16
+)
+FetchContent_MakeAvailable(implot)
+
+set(IMGUI_DIR ${imgui_SOURCE_DIR})
+set(IMPLOT_DIR ${implot_SOURCE_DIR})
+
+add_executable(market_depth_example 
+    example_market_depth_graph.cpp
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_demo.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+    ${IMPLOT_DIR}/implot.cpp
+    ${IMPLOT_DIR}/implot_items.cpp
+    ${IMPLOT_DIR}/implot_demo.cpp
+)
+
+target_include_directories(market_depth_example PRIVATE 
+    ${CMAKE_SOURCE_DIR}/src
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
+    ${IMPLOT_DIR}
+)
+
+find_package(OpenGL REQUIRED)
 
 target_link_libraries(market_depth_example PUBLIC 
-    Qt6::Widgets 
-    Qt6::Charts
+    glfw
+    OpenGL::GL
 )
 
 set_target_properties(market_depth_example

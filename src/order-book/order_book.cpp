@@ -12,33 +12,33 @@
 #include "order_book.h"
 
 MarketOrderBook::MarketOrderBook(TickerId ticker_id)
-    : mTicker_id(ticker_id),
-      mOrders_at_price_pool(ME_MAX_PRICE_LEVELS),
-      mOrder_pool(ME_MAX_ORDER_IDS) {};
+    : m_tickerId(ticker_id),
+      m_ordersAtPricePool(ME_MAX_PRICE_LEVELS),
+      m_orderPool(ME_MAX_ORDER_IDS) {};
 
 MarketOrderBook::~MarketOrderBook() {
     // reset the internal data members
-    mBids_by_price = nullptr;
-    mAsks_by_price = nullptr;
-    mOrder_id_to_order.fill(nullptr);
+    m_bidsByPrice = nullptr;
+    m_asksByPrice = nullptr;
+    m_orderIdToOrder.fill(nullptr);
 }
 
-auto MarketOrderBook::onMarketUpdate(
+auto MarketOrderBook::OnMarketUpdate(
     const MEMarketUpdate* market_update) noexcept -> void {
     // Check if the bid price level was updated by comparing side and price
     const auto bid_updated =
-        (mBids_by_price && market_update->side == Side::BUY &&
-         market_update->price >= mBids_by_price->mPrice);
+        (m_bidsByPrice && market_update->side == Side::BUY &&
+         market_update->price >= m_bidsByPrice->m_price);
     // Check if the ask price level was updated by comparing side and price
     const auto ask_updated =
-        (mAsks_by_price && market_update->side == Side::SELL &&
-         market_update->price <= mAsks_by_price->mPrice);
+        (m_asksByPrice && market_update->side == Side::SELL &&
+         market_update->price <= m_asksByPrice->m_price);
 
     // Process the market update based on its type
     switch (market_update->type) {
         case MarketUpdateType::ADD: {
             // Allocate a new order from the memory pool with update details
-            auto order = mOrder_pool.Allocate(
+            auto order = m_orderPool.Allocate(
                 market_update->order_id, market_update->side,
                 market_update->price, market_update->qty,
                 market_update->priority, nullptr, nullptr);
@@ -47,13 +47,13 @@ auto MarketOrderBook::onMarketUpdate(
         } break;
         case MarketUpdateType::MODIFY: {
             // Retrieve the existing order by its ID
-            auto order = mOrder_id_to_order.at(market_update->order_id);
+            auto order = m_orderIdToOrder.at(market_update->order_id);
             // Update the order quantity with the new quantity from the update
-            order->mOrder_id = market_update->qty;
+            order->m_qty = market_update->qty;
         } break;
         case MarketUpdateType::CANCEL: {
             // Retrieve the order to be cancelled by its ID
-            auto order = mOrder_id_to_order.at(market_update->order_id);
+            auto order = m_orderIdToOrder.at(market_update->order_id);
             // Remove the order from the order book
             removeOrder(order);
         } break;
@@ -65,30 +65,30 @@ auto MarketOrderBook::onMarketUpdate(
             // Clear the full limit order book and Deallocate all resources
 
             // Deallocate all individual orders from the memory pool
-            for (auto& order : mOrder_id_to_order) {
-                if (order) mOrder_pool.Deallocate(order);
+            for (auto& order : m_orderIdToOrder) {
+                if (order) m_orderPool.Deallocate(order);
             }
             // Reset the order ID mapping
-            mOrder_id_to_order.fill(nullptr);
+            m_orderIdToOrder.fill(nullptr);
 
             // Deallocate all bid price levels
-            if (mBids_by_price) {
-                for (auto bid = mBids_by_price->mNext_entry;
-                     bid != mBids_by_price; bid = bid->mNext_entry)
-                    mOrders_at_price_pool.Deallocate(bid);
-                mOrders_at_price_pool.Deallocate(mBids_by_price);
+            if (m_bidsByPrice) {
+                for (auto bid = m_bidsByPrice->m_nextEntry;
+                     bid != m_bidsByPrice; bid = bid->m_nextEntry)
+                    m_ordersAtPricePool.Deallocate(bid);
+                m_ordersAtPricePool.Deallocate(m_bidsByPrice);
             }
 
             // Deallocate all ask price levels
-            if (mAsks_by_price) {
-                for (auto ask = mAsks_by_price->mNext_entry;
-                     ask != mAsks_by_price; ask = ask->mNext_entry)
-                    mOrders_at_price_pool.Deallocate(ask);
-                mOrders_at_price_pool.Deallocate(mAsks_by_price);
+            if (m_asksByPrice) {
+                for (auto ask = m_asksByPrice->m_nextEntry;
+                     ask != m_asksByPrice; ask = ask->m_nextEntry)
+                    m_ordersAtPricePool.Deallocate(ask);
+                m_ordersAtPricePool.Deallocate(m_asksByPrice);
             }
 
             // Reset bid and ask pointers
-            mBids_by_price = mAsks_by_price = nullptr;
+            m_bidsByPrice = m_asksByPrice = nullptr;
         } break;
         case MarketUpdateType::INVALID:
         case MarketUpdateType::SNAPSHOT_START:
@@ -97,5 +97,5 @@ auto MarketOrderBook::onMarketUpdate(
             break;
     }
 
-    updateBestBidOffer(bid_updated, ask_updated);
+    UpdateBestBidOffer(bid_updated, ask_updated);
 }
