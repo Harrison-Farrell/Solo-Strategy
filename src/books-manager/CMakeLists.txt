@@ -9,19 +9,21 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # -----------------------------------------------------------------------------
 
-# Document the source code
-if(BUILD_DOXYGEN)
-    include(Doxygen)
-    Doxygen(src "${CMAKE_CURRENT_SOURCE_DIR}")
-endif()
+project(books_manager)
 
-# Add subdirectories
-add_subdirectory(utilities)
-add_subdirectory(thread)
-add_subdirectory(memory-map)
-add_subdirectory(memory-pool)
-add_subdirectory(lock-free-queue)
-add_subdirectory(market-orders)
-add_subdirectory(order-book)
-add_subdirectory(itch-parser)
-add_subdirectory(books-manager)
+add_library(${PROJECT_NAME} STATIC)
+add_library(${LIBRARY_PREFIX}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+target_sources(${PROJECT_NAME} PRIVATE
+    ${CURRENT_CMAKE_DIR}books_manager.cpp
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    solo_strategy::utilities
+    solo_strategy::lock_free_queue
+    solo_strategy::itch_parser
+    solo_strategy::order_book
+    solo_strategy::market_order
+)

@@ -26,11 +26,13 @@ ITCH_Parser::ITCH_Parser(
     std::shared_ptr<LockFreeQueue<ITCH::Message>>& output_queue)
     : m_InputQueue(input_queue), m_OutputQueue(output_queue) {}
 
-auto ITCH_Parser::SystemEventMessage(const uint8_t* buffer) -> ITCH::SystemEventMessage {
+auto ITCH_Parser::SystemEventMessage(const uint8_t* buffer)
+    -> ITCH::SystemEventMessage {
     return *reinterpret_cast<const ITCH::SystemEventMessage*>(buffer);
 }
 
-auto ITCH_Parser::StockTradingActionMessage(const uint8_t* buffer) -> ITCH::StockTradingActionMessage {
+auto ITCH_Parser::StockTradingActionMessage(const uint8_t* buffer)
+    -> ITCH::StockTradingActionMessage {
     return *reinterpret_cast<const ITCH::StockTradingActionMessage*>(buffer);
 }
 
@@ -38,71 +40,92 @@ auto ITCH_Parser::RegSHOMessage(const uint8_t* buffer) -> ITCH::RegSHOMessage {
     return *reinterpret_cast<const ITCH::RegSHOMessage*>(buffer);
 }
 
-auto ITCH_Parser::MarketParticipantPositionMessage(const uint8_t* buffer) -> ITCH::MarketParticipantPositionMessage {
-    return *reinterpret_cast<const ITCH::MarketParticipantPositionMessage*>(buffer);
+auto ITCH_Parser::MarketParticipantPositionMessage(const uint8_t* buffer)
+    -> ITCH::MarketParticipantPositionMessage {
+    return *reinterpret_cast<const ITCH::MarketParticipantPositionMessage*>(
+        buffer);
 }
 
-auto ITCH_Parser::MWCBDeclineLevelMessage(const uint8_t* buffer) -> ITCH::MWCBDeclineLevelMessage {
+auto ITCH_Parser::MWCBDeclineLevelMessage(const uint8_t* buffer)
+    -> ITCH::MWCBDeclineLevelMessage {
     return *reinterpret_cast<const ITCH::MWCBDeclineLevelMessage*>(buffer);
 }
 
-auto ITCH_Parser::MWCBStatusMessage(const uint8_t* buffer) -> ITCH::MWCBStatusMessage {
+auto ITCH_Parser::MWCBStatusMessage(const uint8_t* buffer)
+    -> ITCH::MWCBStatusMessage {
     return *reinterpret_cast<const ITCH::MWCBStatusMessage*>(buffer);
 }
 
-auto ITCH_Parser::StockDirectoryMessage(const uint8_t* buffer) -> ITCH::StockDirectoryMessage {
+auto ITCH_Parser::StockDirectoryMessage(const uint8_t* buffer)
+    -> ITCH::StockDirectoryMessage {
     return *reinterpret_cast<const ITCH::StockDirectoryMessage*>(buffer);
 }
 
-auto ITCH_Parser::IPOQuotingPeriodUpdateMessage(const uint8_t* buffer) -> ITCH::IPOQuotingPeriodUpdateMessage {
-    return *reinterpret_cast<const ITCH::IPOQuotingPeriodUpdateMessage*>(buffer);
+auto ITCH_Parser::IPOQuotingPeriodUpdateMessage(const uint8_t* buffer)
+    -> ITCH::IPOQuotingPeriodUpdateMessage {
+    return *reinterpret_cast<const ITCH::IPOQuotingPeriodUpdateMessage*>(
+        buffer);
 }
 
-auto ITCH_Parser::LULDAuctionCollarMessage(const uint8_t* buffer) -> ITCH::LULDAuctionCollarMessage {
+auto ITCH_Parser::LULDAuctionCollarMessage(const uint8_t* buffer)
+    -> ITCH::LULDAuctionCollarMessage {
     return *reinterpret_cast<const ITCH::LULDAuctionCollarMessage*>(buffer);
 }
 
-auto ITCH_Parser::OperationalHaltMessage(const uint8_t* buffer) -> ITCH::OperationalHaltMessage {
+auto ITCH_Parser::OperationalHaltMessage(const uint8_t* buffer)
+    -> ITCH::OperationalHaltMessage {
     return *reinterpret_cast<const ITCH::OperationalHaltMessage*>(buffer);
 }
 
-auto ITCH_Parser::AddOrderMessage(const uint8_t* buffer) -> ITCH::AddOrderMessage {
+auto ITCH_Parser::AddOrderMessage(const uint8_t* buffer)
+    -> ITCH::AddOrderMessage {
     return *reinterpret_cast<const ITCH::AddOrderMessage*>(buffer);
 }
 
-auto ITCH_Parser::AddOrderMPIDAttributionMessage(const uint8_t* buffer) -> ITCH::AddOrderMPIDAttributionMessage {
-    return *reinterpret_cast<const ITCH::AddOrderMPIDAttributionMessage*>(buffer);
+auto ITCH_Parser::AddOrderMPIDAttributionMessage(const uint8_t* buffer)
+    -> ITCH::AddOrderMPIDAttributionMessage {
+    return *reinterpret_cast<const ITCH::AddOrderMPIDAttributionMessage*>(
+        buffer);
 }
 
-auto ITCH_Parser::OrderExecutedMessage(const uint8_t* buffer) -> ITCH::OrderExecutedMessage {
+auto ITCH_Parser::OrderExecutedMessage(const uint8_t* buffer)
+    -> ITCH::OrderExecutedMessage {
     return *reinterpret_cast<const ITCH::OrderExecutedMessage*>(buffer);
 }
 
-auto ITCH_Parser::OrderExecutedWithPriceMessage(const uint8_t* buffer) -> ITCH::OrderExecutedWithPriceMessage {
-    return *reinterpret_cast<const ITCH::OrderExecutedWithPriceMessage*>(buffer);
+auto ITCH_Parser::OrderExecutedWithPriceMessage(const uint8_t* buffer)
+    -> ITCH::OrderExecutedWithPriceMessage {
+    return *reinterpret_cast<const ITCH::OrderExecutedWithPriceMessage*>(
+        buffer);
 }
 
-auto ITCH_Parser::OrderCancelMessage(const uint8_t* buffer) -> ITCH::OrderCancelMessage {
+auto ITCH_Parser::OrderCancelMessage(const uint8_t* buffer)
+    -> ITCH::OrderCancelMessage {
     return *reinterpret_cast<const ITCH::OrderCancelMessage*>(buffer);
 }
 
-auto ITCH_Parser::OrderDeleteMessage(const uint8_t* buffer) -> ITCH::OrderDeleteMessage {
+auto ITCH_Parser::OrderDeleteMessage(const uint8_t* buffer)
+    -> ITCH::OrderDeleteMessage {
     return *reinterpret_cast<const ITCH::OrderDeleteMessage*>(buffer);
 }
 
-auto ITCH_Parser::OrderReplaceMessage(const uint8_t* buffer) -> ITCH::OrderReplaceMessage {
+auto ITCH_Parser::OrderReplaceMessage(const uint8_t* buffer)
+    -> ITCH::OrderReplaceMessage {
     return *reinterpret_cast<const ITCH::OrderReplaceMessage*>(buffer);
 }
 
-auto ITCH_Parser::NonCrossTradeMessage(const uint8_t* buffer) -> ITCH::NonCrossTradeMessage {
+auto ITCH_Parser::NonCrossTradeMessage(const uint8_t* buffer)
+    -> ITCH::NonCrossTradeMessage {
     return *reinterpret_cast<const ITCH::NonCrossTradeMessage*>(buffer);
 }
 
-auto ITCH_Parser::CrossTradeMessage(const uint8_t* buffer) -> ITCH::CrossTradeMessage {
+auto ITCH_Parser::CrossTradeMessage(const uint8_t* buffer)
+    -> ITCH::CrossTradeMessage {
     return *reinterpret_cast<const ITCH::CrossTradeMessage*>(buffer);
 }
 
-auto ITCH_Parser::BrokenTradeMessage(const uint8_t* buffer) -> ITCH::BrokenTradeMessage {
+auto ITCH_Parser::BrokenTradeMessage(const uint8_t* buffer)
+    -> ITCH::BrokenTradeMessage {
     return *reinterpret_cast<const ITCH::BrokenTradeMessage*>(buffer);
 }
 
@@ -114,8 +137,10 @@ auto ITCH_Parser::DLCRMessage(const uint8_t* buffer) -> ITCH::DLCRMessage {
     return *reinterpret_cast<const ITCH::DLCRMessage*>(buffer);
 }
 
-auto ITCH_Parser::RetailPriceImprovementIndicatorMessage(const uint8_t* buffer) -> ITCH::RetailPriceImprovementIndicatorMessage {
-    return *reinterpret_cast<const ITCH::RetailPriceImprovementIndicatorMessage*>(buffer);
+auto ITCH_Parser::RetailPriceImprovementIndicatorMessage(const uint8_t* buffer)
+    -> ITCH::RetailPriceImprovementIndicatorMessage {
+    return *reinterpret_cast<
+        const ITCH::RetailPriceImprovementIndicatorMessage*>(buffer);
 }
 
 auto ITCH_Parser::Execute() -> void {

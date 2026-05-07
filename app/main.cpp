@@ -18,6 +18,7 @@
 #include <string>
 #include <thread>
 // local includes
+#include "books-manager/books_manager.h"
 #include "buildinfo/buildinfo.h"
 #include "itch-parser/itch_parser.h"
 #include "itch-parser/messages/itch_messages.h"
@@ -28,23 +29,9 @@
 namespace {
 void ExitSignal(int exit_value) { std::quick_exit(exit_value); }
 
-void PrintingPress(
-    const std::shared_ptr<LockFreeQueue<ITCH::Message>>& msg_queue) {
-    using namespace std::literals::chrono_literals;
-    std::this_thread::sleep_for(1s);
-
-    for (const auto* new_message = msg_queue->GetNextRead();
-         static_cast<bool>(new_message);
-         new_message = msg_queue->GetNextRead()) {
-        std::cout << *new_message << "\n";
-        msg_queue->UpdateReadIndex();
-    }
-}
-
-void ReadingWorker(
+void ReadWorker(
     const std::string& input_file_path,
     const std::shared_ptr<LockFreeQueue<RawItchPacket>>& input_queue) {
-    
     MemoryMappedFile m_File;
     if (!m_File.Open(input_file_path)) {
         std::cerr << "Failed to open file: " << input_file_path << "\n";
@@ -55,22 +42,23 @@ void ReadingWorker(
         // Read 2-byte length (moldupd64)
         // Nasdaq uses big-endian for this length header
         uint16_t length = m_File.ReadBE<uint16_t>();
-        
+
         RawItchPacket* packet = nullptr;
         while ((packet = input_queue->GetNextWrite()) == nullptr) {
             std::this_thread::yield();
         }
-        
+
         packet->length = length;
         if (length > 0 && length <= packet->data.size()) {
-            m_File.CopyString(reinterpret_cast<char*>(packet->data.data()), length);
+            m_File.CopyString(reinterpret_cast<char*>(packet->data.data()),
+                              length);
         } else {
             // Handle invalid length or skip
             m_File.Seek(m_File.Tell() + length);
         }
         input_queue->UpdateWriteIndex();
     }
-    
+
     // Sentinel packet to signal the end of the stream to the ITCH_Parser
     RawItchPacket* packet = nullptr;
     while ((packet = input_queue->GetNextWrite()) == nullptr) {
@@ -88,7 +76,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Solo-Strategy Trading System - ITCH Parser" << "\n";
     std::cout << BuildInfo::PrintBuildInfo() << "\n";
 
-    constexpr int buffer_size = 1024 * 1024;
+    constexpr size_t buffer_size = 1024 * 1024;
 
     if (argc < 2 || argc > 3) {
         std::cout << "Invalid Arguments!" << "\n";
@@ -101,23 +89,27 @@ int main(int argc, char* argv[]) {
 
     std::cout << "File Path to read: " << input_file_path << "\n";
 
-    auto input_queue =
-        std::make_shared<LockFreeQueue<RawItchPacket>>(buffer_size);
-    auto msg_queue =
-        std::make_shared<LockFreeQueue<ITCH::Message>>(buffer_size);
+    // clang-format off
+    // create the thread safe queues to pass data between threads
+    auto input_queue = std::make_shared<LockFreeQueue<RawItchPacket>>(buffer_size);
+    auto msg_queue = std::make_shared<LockFreeQueue<ITCH::Message>>(buffer_size);
+    // clang-format on
 
-    auto reading_thread =
-        CreateAndStartThread(0, "File Reader", ReadingWorker, input_file_path, input_queue);
+    auto reading_thread = CreateAndStartThread(0, "File Reader", ReadWorker,
+                                               input_file_path, input_queue);
 
     ITCH_Parser parser(input_queue, msg_queue);
-    auto parser_thread = parser.Start(1);
+    auto parsing_thread = parser.Start(1);
 
-    auto printing_thread =
-        CreateAndStartThread(2, "Printing Worker", PrintingPress, msg_queue);
+    BooksManager books(msg_queue);
+    auto books_thread = books.Start(2);
 
     reading_thread->join();
-    parser_thread->join();
-    printing_thread->join();
+    std::cout << "File reading completed" << "\n";
+    parsing_thread->join();
+    std::cout << "Parsing completed" << "\n";
+    books_thread->join();
+    std::cout << "Books manager completed" << "\n";
 
     return 0;
 }

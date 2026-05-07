@@ -16,10 +16,13 @@ add_executable(${APPLICATION} main.cpp)
 target_include_directories(${APPLICATION} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 target_link_libraries(${APPLICATION} PUBLIC 
+    solo_strategy::books_manager
     solo_strategy::itch_parser
     solo_strategy::lock_free_queue
     solo_strategy::memory_map
     solo_strategy::memory_pool
+    solo_strategy::order_book
+    solo_strategy::market_order
     solo_strategy::utilities
     solo_strategy::thread
 )
