@@ -16,6 +16,27 @@
 
 #include "utilities/types.h"
 
+MarketOrder::MarketOrder(OrderId order_id, Side side, Price price, Qty qty,
+                         Priority priority, MarketOrder* prev_order,
+                         MarketOrder* next_order) noexcept
+    : m_orderId{order_id},
+      m_side{side},
+      m_price{price},
+      m_qty{qty},
+      m_priority{priority},
+      m_prevOrder{prev_order},
+      m_nextOrder{next_order} {}
+
+MarketOrderAtPrice::MarketOrderAtPrice(Side side, Price price,
+                                       MarketOrder* first_market_order,
+                                       MarketOrderAtPrice* prev_entry,
+                                       MarketOrderAtPrice* next_entry) noexcept
+    : m_side{side},
+      m_price{price},
+      m_firstMarketOrder{first_market_order},
+      m_prevEntry{prev_entry},
+      m_nextEntry{next_entry} {}
+
 auto MarketOrder::toString() const -> std::string {
     std::stringstream ss;
 

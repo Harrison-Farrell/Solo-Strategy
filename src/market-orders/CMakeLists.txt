@@ -10,9 +10,10 @@
 # -----------------------------------------------------------------------------
 
 # Project name
-project(MarketOrder)
+project(market_order)
 
 add_library(${PROJECT_NAME} STATIC)
+add_library(${LIBRARY_PREFIX}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE
     ${CURRENT_CMAKE_DIR}market_order.cpp

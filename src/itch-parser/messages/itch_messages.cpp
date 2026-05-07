@@ -142,7 +142,7 @@ auto InternalPrintMessage(std::ostream& out,
         << "  Shares: " << msg.shares << "\n"
         << "  Stock: " << ArrayToString<STOCK_LEN>(msg.stock) << "\n"
         << "  Price: " << (msg.price / PRICE_DIVISOR) << "\n"
-        << "  Market Sarticipant ID: " << ArrayToString<4>(msg.attribution);
+        << "  Market Participant ID: " << ArrayToString<4>(msg.attribution);
 }
 
 auto InternalPrintMessage(std::ostream& out, const OrderExecutedMessage& msg) {

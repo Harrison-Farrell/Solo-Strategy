@@ -6,6 +6,26 @@
 
 Solo-Strategy is a high-performance, low-latency algorithmic trading ecosystem built in C++. It focuses on deterministic execution, ultra-fast market data parsing, order book reconstruction, and efficient lock-free concurrency for High-Frequency Trading (HFT).
 
+## System Architecture Pipeline
+
+```text
++--------------------+        +--------------------+        +--------------------+
+|    Read Worker     |        |    ITCH Parser     |        |   Books Manager    |
+|     (Core 0)       |        |     (Core 1)       |        |     (Core 2)       |
++--------------------+        +--------------------+        +--------------------+
+| Reads binary feed  |        | Reads raw packets  |        | Reads messages     |
+| via MemoryMap file |        | Parses into ITCH   |        | Updates & builds   |
+| extracts payload   |        | Message structs    |        | order books        |
++---------+----------+        +---------+----------+        +---------+----------+
+          |                             |                             |
+          |       +-------------+       |       +-------------+       |
+          +-----> | input_queue | ------+-----> |  msg_queue  | ------+
+                  | LockFree    |               | LockFree    |
+                  | Queue       |               | Queue       |
+                  +-------------+               +-------------+
+                  <RawItchPacket>               <ITCH::Message>
+```
+
 ## Modular Ecosystem Checklist
 
 This repository is constructed from several core modules. Review the Readme for each component to master the foundational concepts of this low-latency C++ trading architecture:

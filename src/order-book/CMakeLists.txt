@@ -10,9 +10,10 @@
 # -----------------------------------------------------------------------------
 
 # Project name
-project(OrderBook)
+project(order_book)
 
 add_library(${PROJECT_NAME} STATIC)
+add_library(${LIBRARY_PREFIX}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE
     ${CURRENT_CMAKE_DIR}order_book.cpp
@@ -20,4 +21,8 @@ target_sources(${PROJECT_NAME} PRIVATE
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE MarketOrder MemoryPool Utilities)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    solo_strategy::market_order
+    solo_strategy::memory_pool
+    solo_strategy::utilities
+)
