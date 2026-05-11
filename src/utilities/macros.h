@@ -18,12 +18,19 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <string>
+
+#include "quill/Frontend.h"
+#include "quill/LogMacros.h"
+#include "quill/backend/ThreadUtilities.h"
 
 /// \brief Asserts a condition and terminates the program if it's false.
 /// \param cond The condition to evaluate.
 /// \param msg The message to print to stderr if the assertion fails.
 inline auto ASSERT(bool cond, const std::string& msg) noexcept {
     if (!cond) [[unlikely]] {
+        auto* logger = quill::Frontend::get_logger("root");
+        if (logger) LOG_CRITICAL(logger, "ASSERT : {}", msg);
         std::cerr << "ASSERT : " << msg << "\n";
         std::quick_exit(EXIT_FAILURE);
     }
@@ -32,6 +39,8 @@ inline auto ASSERT(bool cond, const std::string& msg) noexcept {
 /// \brief Prints a fatal error message and terminates the program.
 /// \param msg The descriptive fatal error message.
 inline auto FATAL(const std::string& msg) noexcept {
+    auto* logger = quill::Frontend::get_logger("root");
+    if (logger) LOG_CRITICAL(logger, "FATAL : {}", msg);
     std::cerr << "FATAL : " << msg << "\n";
 
     std::quick_exit(EXIT_FAILURE);

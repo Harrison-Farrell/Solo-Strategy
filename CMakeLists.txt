@@ -22,6 +22,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Set global library ALIAS
 set(LIBRARY_PREFIX "solo_strategy")
 
+# Export compile commands for IDEs (clangd)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Build options
 option(BUILD_DOXYGEN "Build Doxygen documentation" ON)
 option(BUILD_TESTS "Build unit tests" ON)
@@ -50,6 +53,7 @@ endif()
 
 include(Coverage)
 include(BuildInfo)
+include(Quill)
 
 add_subdirectory(src)
 add_subdirectory(app)

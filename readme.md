@@ -10,7 +10,7 @@ Solo-Strategy is a high-performance, low-latency algorithmic trading ecosystem b
 
 ```text
 +--------------------+        +--------------------+        +--------------------+
-|    Read Worker     |        |    ITCH Parser     |        |   Books Manager    |
+|    Read Worker     |        |    ITCH Parser     |        |   Trading Engine   |
 |     (Core 0)       |        |     (Core 1)       |        |     (Core 2)       |
 +--------------------+        +--------------------+        +--------------------+
 | Reads binary feed  |        | Reads raw packets  |        | Reads messages     |

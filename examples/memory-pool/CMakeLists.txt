@@ -18,9 +18,8 @@ target_sources(${PROJECT_NAME} PRIVATE
     example_memory_pool.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    solo_strategy::memory_pool
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE solo_strategy::memory_pool)
+target_link_libraries(${PROJECT_NAME} INTERFACE quill::quill)
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES

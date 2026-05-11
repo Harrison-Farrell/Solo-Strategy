@@ -1,7 +1,7 @@
 ---
 SystemHeaders: false
-HeaderFilterRegex: '^(?!.*[\\/]VC[\\/]|.*[\\/]Windows Kits[\\/]).*|googletest|gmock|gtest|benchmark'
-ExcludeHeaderFilterRegex: 'llvm|clang|googletest|gmock|gtest|benchmark'
+HeaderFilterRegex: '^(?!.*[\\/]VC[\\/]|.*[\\/]Windows Kits[\\/]|.*[\\/]quill[\\/]).*'
+ExcludeHeaderFilterRegex: 'llvm|clang|googletest|gmock|gtest|benchmark|quill'
 FormatStyle: "file"
 WarningsAsErrors: ''
 Checks:

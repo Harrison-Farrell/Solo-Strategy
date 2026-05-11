@@ -19,6 +19,9 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include "quill/Frontend.h"
+#include "quill/LogMacros.h"
+#include "quill/backend/ThreadUtilities.h"
 
 #if defined(_WIN32) || defined(_WIN64)
     #include <windows.h>
@@ -58,13 +61,14 @@ inline auto CreateAndStartThread(int core_id, const std::string& name, T&& func,
     auto object_thread = std::make_shared<std::thread>(
         [core_id, name, func = std::forward<T>(func),
          ... args = std::forward<A>(args)]() mutable {
+
             if (core_id >= 0 && !SetThreadCore(core_id)) {
-                std::cerr << "Failed to set core affinity for " << name
-                          << " to core " << core_id << "\n";
+                auto* logger = quill::Frontend::get_logger("root");
+                if (logger) LOG_CRITICAL(logger, "Failed to set core affinity for {} to core {}", name, core_id);
                 std::quick_exit(EXIT_FAILURE);
             }
-            std::cerr << "Successfully set core affinity for " << name
-                      << " to core " << core_id << "\n";
+            auto* logger = quill::Frontend::get_logger("root");
+            if (logger) LOG_INFO(logger, "Successfully set core affinity for {} to core {}", name, core_id);
 
             std::invoke(std::move(func), std::move(args)...);
         });

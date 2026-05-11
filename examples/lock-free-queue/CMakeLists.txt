@@ -21,6 +21,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     solo_strategy::lock_free_queue
 )
 
+target_link_libraries(${PROJECT_NAME} INTERFACE quill::quill)
+
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/example"

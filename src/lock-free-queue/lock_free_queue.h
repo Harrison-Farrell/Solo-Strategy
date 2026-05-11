@@ -16,7 +16,6 @@
 #define SOLO_STRATEGY_SRC_LOCK_FREE_QUEUE_LOCK_FREE_QUEUE_H_
 
 #include <atomic>
-#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -110,6 +109,10 @@ class LockFreeQueue final {
     /// \brief Returns the current number of elements in the queue.
     /// \return The number of elements currently stored in the queue.
     auto Size() const noexcept { return m_Size.load(); }
+
+    /// \brief Returns the maximum number of elements the queue can hold.
+    /// \return The capacity of the queue.
+    auto Capacity() const noexcept { return m_Store.size(); }
 
    private:
     /// \brief The underlying storage for the queue elements.

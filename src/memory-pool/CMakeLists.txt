@@ -16,3 +16,4 @@ add_library(${PROJECT_NAME} INTERFACE)
 add_library(${LIBRARY_PREFIX}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(${PROJECT_NAME} INTERFACE quill::quill)

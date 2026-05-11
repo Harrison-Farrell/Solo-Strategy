@@ -27,16 +27,17 @@ enum class MarketUpdateType : uint8_t {
     CLEAR = 1,
     ADD = 2,
     MODIFY = 3,
-    CANCEL = 4,
-    TRADE = 5,
-    SNAPSHOT_START = 6,
-    SNAPSHOT_END = 7
+    CANCEL = 4,   ///< Partial quantity reduction (ITCH OrderCancelMessage).
+    DELETED = 5,  ///< Full order removal (ITCH OrderDeleteMessage).
+    TRADE = 6,    ///< Order execution (ITCH OrderExecuted[WithPrice]Message).
+    SNAPSHOT_START = 7,
+    SNAPSHOT_END = 8
 };
 
 /// @brief Converts a MarketUpdateType enum to its string representation.
 /// @param type The MarketUpdateType to convert.
 /// @return String representation of the type.
-inline std::string marketUpdateTypeToString(MarketUpdateType type) {
+inline std::string MarketUpdateTypeToString(MarketUpdateType type) {
     switch (type) {
         case MarketUpdateType::CLEAR:
             return "CLEAR";
@@ -46,6 +47,8 @@ inline std::string marketUpdateTypeToString(MarketUpdateType type) {
             return "MODIFY";
         case MarketUpdateType::CANCEL:
             return "CANCEL";
+        case MarketUpdateType::DELETED:
+            return "DELETE";
         case MarketUpdateType::TRADE:
             return "TRADE";
         case MarketUpdateType::SNAPSHOT_START:
@@ -61,31 +64,49 @@ inline std::string marketUpdateTypeToString(MarketUpdateType type) {
 /// are packed to remove system dependent extra padding.
 #pragma pack(push, 1)
 
-/// @brief Market update structure used internally by the matching engine.
-/// These structures are packed to ensure consistent binary layout across
-/// systems.
-struct MEMarketUpdate {
+/// @brief Market update structure used internally.
+/// Represents a normalized, protocol-agnostic view of a single order-book
+/// event derived from an ITCH 5.0 message.  The BooksManager layer is
+/// responsible for translating raw ITCH structures into this form before
+/// dispatching to the relevant OrderBook.
+struct MarketUpdate {
+    /// @brief The kind of order-book event this update represents.
     MarketUpdateType type = MarketUpdateType::INVALID;
+
+    /// @brief Exchange order reference number (ITCH order_reference_number).
+    /// For MODIFY events this holds the *new* order reference number.
     OrderId order_id = OrderId_INVALID;
+
+    /// @brief Internal ticker index identifying the instrument.
     TickerId ticker_id = TickerId_INVALID;
+
+    /// @brief Order side: BUY ('B') or SELL ('S').
+    /// Populated for ADD and MODIFY only; INVALID for CANCEL/DELETE/TRADE.
     Side side = Side::INVALID;
+
+    /// @brief Limit price in 4-decimal fixed-point units (matching ITCH
+    /// encoding). For TRADE events this holds the execution price.
     Price price = Price_INVALID;
+
+    /// @brief Share quantity.
     Qty qty = Qty_INVALID;
+
+    /// @brief Time-priority within a price level; assigned by the BooksManager.
     Priority priority = Priority_INVALID;
 
-    /// @brief Converts the MEMarketUpdate to a string representation.
+    /// @brief Converts the MarketUpdate to a string representation.
     /// @return String representation of the update.
-    auto toString() const {
-        std::stringstream ss;
-        ss << "MEMarketUpdate"
-           << " ["
-           << " type:" << marketUpdateTypeToString(type)
-           << " ticker:" << TickerIdToString(ticker_id)
-           << " oid:" << OrderIdToString(order_id)
-           << " side:" << SideToString(side) << " qty:" << QtyToString(qty)
-           << " price:" << PriceToString(price)
-           << " priority:" << PriorityToString(priority) << "]";
-        return ss.str();
+    auto ToString() const {
+        std::stringstream stream;
+        stream << "MarketUpdate"
+               << " ["
+               << " type:" << MarketUpdateTypeToString(type)
+               << " ticker:" << TickerIdToString(ticker_id)
+               << " oid:" << OrderIdToString(order_id)
+               << " side:" << SideToString(side) << " qty:" << QtyToString(qty)
+               << " price:" << PriceToString(price)
+               << " priority:" << PriorityToString(priority) << "]";
+        return stream.str();
     }
 };
 
@@ -93,25 +114,26 @@ struct MEMarketUpdate {
 /// Includes a sequence number for tracking and ordering.
 struct MDPMarketUpdate {
     size_t seq_num_ = 0;
-    MEMarketUpdate me_market_update_;
+    MarketUpdate market_update_;
 
     /// @brief Converts the MDPMarketUpdate to a string representation.
     /// @return String representation of the update.
-    auto toString() const {
-        std::stringstream ss;
-        ss << "MDPMarketUpdate"
-           << " ["
-           << " seq:" << seq_num_ << " " << me_market_update_.toString() << "]";
-        return ss.str();
+    auto ToString() const {
+        std::stringstream stream;
+        stream << "MDPMarketUpdate"
+               << " ["
+               << " seq:" << seq_num_ << " " << market_update_.ToString()
+               << "]";
+        return stream.str();
     }
 };
 
 /// \brief Undo the packed binary structure directive moving forward.
 #pragma pack(pop)
 
-/// \typedef MEMarketUpdateLFQueue
+/// \typedef MarketUpdateLFQueue
 /// \brief Lock free queue of matching engine market update messages.
-typedef LockFreeQueue<MEMarketUpdate> MEMarketUpdateLFQueue;
+typedef LockFreeQueue<MarketUpdate> MarketUpdateLFQueue;
 
 /// \typedef MDPMarketUpdateLFQueue
 /// \brief Lock free queue of market data publisher market update messages.

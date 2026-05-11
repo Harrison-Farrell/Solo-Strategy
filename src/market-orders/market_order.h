@@ -22,11 +22,12 @@
 #include "utilities/macros.h"
 #include "utilities/types.h"
 
-class MarketOrderBook;
+class OrderBook;
 
 /// @brief Represents a single market order in the order book.
 class MarketOrder {
-    friend class MarketOrderBook;
+    friend class OrderBook;
+
    private:
     /// @brief Order identifier.
     OrderId m_orderId = OrderId_INVALID;
@@ -62,14 +63,15 @@ class MarketOrder {
 
     /// @brief Returns a string representation of the MarketOrder.
     /// @return String representation.
-    auto toString() const -> std::string;
+    auto ToString() const -> std::string;
 };
 
-typedef std::array<MarketOrder*, ME_MAX_ORDER_IDS> OrderArray;
+using OrderArray = std::array<MarketOrder*, ME_MAX_ORDER_IDS>;
 
 /// @brief Represents all market orders at a specific price level.
 class MarketOrderAtPrice {
-    friend class MarketOrderBook;
+    friend class OrderBook;
+
    private:
     /// @brief Side of the orders at this price.
     Side m_side = Side::INVALID;
@@ -100,13 +102,14 @@ class MarketOrderAtPrice {
 
     /// @brief Returns a string representation of the MarketOrderAtPrice.
     /// @return String representation.
-    auto toString() const -> std::string;
+    auto ToString() const -> std::string;
 };
 
-typedef std::array<MarketOrderAtPrice*, ME_MAX_PRICE_LEVELS> OrdersAtPriceArray;
+using OrdersAtPriceArray = std::array<MarketOrderAtPrice*, ME_MAX_PRICE_LEVELS>;
 /// @brief Represents the best bid and offer in the order book.
 class BestBidOffer {
-    friend class MarketOrderBook;
+    friend class OrderBook;
+
    private:
     /// @brief Best bid price.
     Price m_bidPrice = Price_INVALID;
@@ -121,7 +124,7 @@ class BestBidOffer {
    public:
     /// @brief Returns a string representation of the BestBidOffer.
     /// @return String representation.
-    auto toString() const -> std::string;
+    auto ToString() const -> std::string;
 };
 
 #endif  // SOLO_STRATEGY_SRC_MARKET_ORDERS_MARKET_ORDER_H_

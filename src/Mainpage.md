@@ -14,4 +14,4 @@ The core design philosophy focuses on deterministic, ultra-low latency execution
 * **[ITCH Parser](@ref ITCH_Parser):** High-efficiency Nasdaq ITCH protocol parser with safe binary data handling and automatic endian conversion.
 * **[Lock-Free Queue](@ref LockFreeQueue):** Thread-safe, lock-free circular buffer for minimal-overhead inter-thread communication.
 * **[Memory Pool](@ref MemoryPool):** Pre-allocated object pools delivering predictable, rapid memory management.
-* **[Order Book](@ref MarketOrderBook):** Advanced Limit Order Book (LOB) implementation utilizing cache-friendly structures for real-time order processing.
+* **[Order Book](@ref OrderBook):** Advanced Limit Order Book (LOB) implementation utilizing cache-friendly structures for real-time order processing.

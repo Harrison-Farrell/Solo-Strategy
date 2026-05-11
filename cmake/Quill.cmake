@@ -9,19 +9,17 @@
 # See <https://www.gnu.org/licenses/agpl-3.0.html> for full details.
 # -----------------------------------------------------------------------------
 
-# Project name
-project(market_order)
+include(FetchContent)
 
-add_library(${PROJECT_NAME} STATIC)
-add_library(${LIBRARY_PREFIX}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-
-target_sources(${PROJECT_NAME} PRIVATE
-    ${CURRENT_CMAKE_DIR}market_order.cpp
+FetchContent_Declare(
+    quill
+    GIT_REPOSITORY https://github.com/odygrd/quill.git
+    GIT_TAG v11.0.2
+    GIT_SHALLOW 1
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(${PROJECT_NAME} INTERFACE quill::quill)
+# Prevent quill from building its own tests and examples
+set(QUILL_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(QUILL_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC 
-    solo_strategy::utilities
-)
+FetchContent_MakeAvailable(quill)

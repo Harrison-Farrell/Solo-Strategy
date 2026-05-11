@@ -5,7 +5,7 @@ Defines the core structures for individual orders and matching engine updates us
 ## Purpose
 - **Order Definition:** Provides the foundational `MarketOrder` structure that populates the Limit Order Book.
 - **Price Level Aggregation:** Provides the `MarketOrderAtPrice` structure which acts as a doubly-linked list node for a specific price level, aggregating individual orders at that price.
-- **Update Messages:** Defines `MEMarketUpdate` and `MDPMarketUpdate` structures used to communicate order additions, modifications, executions, and cancellations between system components.
+- **Update Messages:** Defines `MarketUpdate` and `MDPMarketUpdate` structures used to communicate order additions, modifications, executions, and cancellations between system components.
 
 ## Key Components
 - **`MarketOrder`**: A single limit order containing ID, side, price, quantity, priority, and intrusive linked-list pointers.
@@ -24,16 +24,16 @@ int main() {
     // Create a new BUY market order at price 100 with quantity 50
     MarketOrder order(12345, Side::BUY, 100, 50, 1, nullptr, nullptr);
     
-    std::cout << order.toString() << std::endl;
+    std::cout << order.ToString() << std::endl;
     
     // Create an update message for the matching engine
-    MEMarketUpdate update;
+    MarketUpdate update;
     update.type = MarketUpdateType::ADD;
     update.order_id = 12345;
     update.side = Side::BUY;
     update.price = 100;
     
-    std::cout << update.toString() << std::endl;
+    std::cout << update.ToString() << std::endl;
 
     return 0;
 }

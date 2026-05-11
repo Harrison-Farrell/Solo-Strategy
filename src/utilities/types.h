@@ -41,7 +41,7 @@ constexpr size_t ME_MAX_MARKET_UPDATES = static_cast<size_t>(256) * 1024;
 using OrderId = uint64_t;
 
 /// \brief Invalid value marker for OrderId.
-constexpr auto OrderId_INVALID = std::numeric_limits<OrderId>::max();
+constexpr auto OrderId_INVALID = (std::numeric_limits<OrderId>::max)();
 
 /// \brief Converts an OrderId to its string representation.
 /// \param order_id The OrderId to convert.
@@ -58,7 +58,7 @@ inline auto OrderIdToString(OrderId order_id) -> std::string {
 using TickerId = uint32_t;
 
 /// \brief Invalid value marker for TickerId.
-constexpr auto TickerId_INVALID = std::numeric_limits<TickerId>::max();
+constexpr auto TickerId_INVALID = (std::numeric_limits<TickerId>::max)();
 
 /// \brief Converts a TickerId to its string representation.
 /// \param ticker_id The TickerId to convert.
@@ -75,7 +75,7 @@ inline auto TickerIdToString(TickerId ticker_id) -> std::string {
 using ClientId = uint32_t;
 
 /// \brief Invalid value marker for ClientId.
-constexpr auto ClientId_INVALID = std::numeric_limits<ClientId>::max();
+constexpr auto ClientId_INVALID = (std::numeric_limits<ClientId>::max)();
 
 /// \brief Converts a ClientId to its string representation.
 /// \param client_id The ClientId to convert.
@@ -93,7 +93,7 @@ inline auto ClientIdToString(ClientId client_id) -> std::string {
 using Price = int64_t;
 
 /// \brief Invalid value marker for Price.
-constexpr auto Price_INVALID = std::numeric_limits<Price>::max();
+constexpr auto Price_INVALID = (std::numeric_limits<Price>::max)();
 
 /// \brief Converts a Price to its string representation.
 /// \param price The Price to convert.
@@ -110,7 +110,7 @@ inline auto PriceToString(Price price) -> std::string {
 using Qty = uint32_t;
 
 /// \brief Invalid value marker for Qty.
-constexpr auto Qty_INVALID = std::numeric_limits<Qty>::max();
+constexpr auto Qty_INVALID = (std::numeric_limits<Qty>::max)();
 
 /// \brief Converts a Qty to its string representation.
 /// \param qty The Qty to convert.
@@ -127,7 +127,7 @@ inline auto QtyToString(Qty qty) -> std::string {
 using Priority = uint64_t;
 
 /// \brief Invalid value marker for Priority.
-constexpr auto Priority_INVALID = std::numeric_limits<Priority>::max();
+constexpr auto Priority_INVALID = (std::numeric_limits<Priority>::max)();
 
 /// \brief Converts a Priority to its string representation.
 /// \param priority The Priority to convert.

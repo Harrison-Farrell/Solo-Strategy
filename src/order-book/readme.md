@@ -19,9 +19,9 @@ Designed for ultra-low latency access, typically using fast associative structur
 
 int main() {
     TickerId ticker = 1;
-    MarketOrderBook order_book(ticker);
+    OrderBook order_book(ticker);
     
-    MEMarketUpdate update;
+    MarketUpdate update;
     // ... populate update with order details ...
     order_book.OnMarketUpdate(&update);
     

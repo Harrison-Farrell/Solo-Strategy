@@ -22,6 +22,7 @@ target_link_libraries(${APPLICATION} PUBLIC
     solo_strategy::memory_pool
     solo_strategy::utilities
     solo_strategy::thread
+    solo_strategy::market_data_adapter
 )
 
 set_target_properties(${APPLICATION}
