@@ -19,7 +19,6 @@
 #include <array>
 #include <string>
 
-#include "utilities/macros.h"
 #include "utilities/types.h"
 
 class OrderBook;

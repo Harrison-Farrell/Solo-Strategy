@@ -13,16 +13,18 @@
 
 #include "thread/thread.h"
 
-MarketDataAdapter::MarketDataAdapter(std::shared_ptr<LockFreeQueue<ITCH::Message>>& input_queue,
-                                     std::shared_ptr<LockFreeQueue<MarketUpdate>>& output_queue)
-    : m_InputQueue(input_queue), m_OutputQueue(output_queue) {}
+MarketDataAdapter::MarketDataAdapter(
+    std::shared_ptr<LockFreeQueue<ITCH::Message>> input_queue,
+    std::shared_ptr<LockFreeQueue<MarketUpdate>> output_queue)
+    : m_InputQueue(std::move(input_queue)),
+      m_OutputQueue(std::move(output_queue)) {}
 
-std::shared_ptr<std::thread> MarketDataAdapter::Start(int core_id) {
+auto MarketDataAdapter::Start(int core_id) -> std::shared_ptr<std::thread> {
     return CreateAndStartThread(core_id, "MarketDataAdapter",
                                 &MarketDataAdapter::Execute, this);
 }
 
-void MarketDataAdapter::PushUpdate(const MarketUpdate& update) {
+auto MarketDataAdapter::PushUpdate(const MarketUpdate& update) -> void {
     while (!m_OutputQueue->Push(update)) {
         // Yield the thread to allow the consumer to drain the queue
         std::this_thread::yield();
@@ -103,21 +105,12 @@ auto MarketDataAdapter::ProcessMessage(const ITCH::Message& msg) -> void {
                 update.ticker_id = arg.stock_locate;
                 PushUpdate(update);
 
-                // Emit an ADD for the new order properties
-                // Side cannot be determined from OrderReplaceMessage in ITCH
-                // directly. Wait, ITCH OrderReplaceMessage does NOT contain a
-                // buy/sell indicator! However, the internal matching engine
-                // might need side to properly rebuild. Actually, we'll map side
-                // to Side::INVALID and let the BooksManager handle it, or the
-                // Book itself must look up the old order's side. But if it's a
-                // DELETE followed by an ADD, we don't have the side for ADD.
-                // Let's populate what we have and let the downstream logic
-                // resolve it.
                 update.type = MarketUpdateType::ADD;
                 update.order_id = arg.new_order_reference_number;
                 update.qty = arg.shares;
                 update.price = arg.price;
-                update.side = Side::INVALID;
+                update.side = Side::INVALID;  // OrderReplaceMessage does NOT
+                                              // contain a side.
                 PushUpdate(update);
 
             } else if constexpr (std::is_same_v<T, ITCH::SystemEventMessage>) {

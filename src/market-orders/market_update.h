@@ -18,7 +18,6 @@
 
 #include <sstream>
 
-#include "lock-free-queue/lock_free_queue.h"
 #include "utilities/types.h"
 
 /// @brief Represents the type of action in a market update message.
@@ -130,13 +129,5 @@ struct MDPMarketUpdate {
 
 /// \brief Undo the packed binary structure directive moving forward.
 #pragma pack(pop)
-
-/// \typedef MarketUpdateLFQueue
-/// \brief Lock free queue of matching engine market update messages.
-typedef LockFreeQueue<MarketUpdate> MarketUpdateLFQueue;
-
-/// \typedef MDPMarketUpdateLFQueue
-/// \brief Lock free queue of market data publisher market update messages.
-typedef LockFreeQueue<MDPMarketUpdate> MDPMarketUpdateLFQueue;
 
 #endif  // SOLO_STRATEGY_SRC_MARKET_ORDERS_MARKET_UPDATE_H_

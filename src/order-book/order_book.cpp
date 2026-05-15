@@ -15,26 +15,26 @@
 #include "market-orders/market_update.h"
 #include "quill/Frontend.h"
 #include "quill/LogMacros.h"
-#include "quill/backend/ThreadUtilities.h"
 #include "utilities/types.h"
-
 
 OrderBook::OrderBook(TickerId ticker_id)
     : m_tickerId(ticker_id),
       m_ordersAtPricePool(ME_MAX_PRICE_LEVELS),
       m_orderPool(ME_MAX_ORDER_IDS) {
     auto* logger = quill::Frontend::get_logger("root");
-    if (logger)
+    if (static_cast<bool>(logger)) {
         LOG_INFO(logger, "Created Book: {} at: {}", m_tickerId,
                  static_cast<void*>(this));
+    }
 }
 
 OrderBook::~OrderBook() {
     // reset the internal data members
     auto* logger = quill::Frontend::get_logger("root");
-    if (logger)
+    if (static_cast<bool>(logger)) {
         LOG_INFO(logger, "Destroy Book: {} at: {}", m_tickerId,
                  static_cast<void*>(this));
+    }
     m_bidsByPrice = nullptr;
     m_asksByPrice = nullptr;
     m_orderIdToOrder.fill(nullptr);

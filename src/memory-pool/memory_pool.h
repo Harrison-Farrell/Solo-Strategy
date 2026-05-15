@@ -15,7 +15,6 @@
 #ifndef SOLO_STRATEGY_SRC_MEMORY_POOL_MEMORY_POOL_H_
 #define SOLO_STRATEGY_SRC_MEMORY_POOL_MEMORY_POOL_H_
 
-#include <cstdint>
 #include <string>
 #include <vector>
 

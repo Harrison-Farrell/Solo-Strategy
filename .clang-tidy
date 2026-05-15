@@ -34,6 +34,7 @@ ImplementationFileExtensions:
   - cpp
   - cxx
 CheckOptions:
+  cppcoreguidelines-avoid-do-while.IgnoreMacros: 'true'
   readability-identifier-naming.PrivateMemberPrefix: 'm_'
   readability-identifier-naming.PrivateMemberCase: 'CamelBack'
   readability-identifier-naming.ClassMemberCase: 'CamelCase'

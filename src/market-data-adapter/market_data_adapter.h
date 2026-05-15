@@ -14,7 +14,6 @@
 
 #include <memory>
 #include <thread>
-#include <variant>
 
 #include "itch-parser/messages/itch_messages.h"
 #include "lock-free-queue/lock_free_queue.h"
@@ -24,12 +23,13 @@
 /// objects that downstream order-book components can consume.
 class MarketDataAdapter {
    public:
-    MarketDataAdapter(std::shared_ptr<LockFreeQueue<ITCH::Message>>& input_queue,
-                      std::shared_ptr<LockFreeQueue<MarketUpdate>>& output_queue);
+    MarketDataAdapter(
+        std::shared_ptr<LockFreeQueue<ITCH::Message>> input_queue,
+        std::shared_ptr<LockFreeQueue<MarketUpdate>> output_queue);
 
     /// @brief Executes the Execute() function on the newly created thread
     /// @param core_id Core id to pin the thread affinity onto
-    std::shared_ptr<std::thread> Start(int core_id);
+    auto Start(int core_id) -> std::shared_ptr<std::thread>;
 
     /// @brief Continuously pulls ITCH messages and converts them to
     /// MarketUpdates
@@ -41,10 +41,10 @@ class MarketDataAdapter {
 
     /// @brief Maps a single ITCH Message to one or more MarketUpdate objects
     /// @param msg The ITCH Message to process
-    auto ProcessMessage(const ITCH::Message& msg) -> void;
+    inline auto ProcessMessage(const ITCH::Message& msg) -> void;
 
     /// @brief Helper to push an update to the lock-free output queue
-    inline void PushUpdate(const MarketUpdate& update);
+    inline auto PushUpdate(const MarketUpdate& update) -> void;
 };
 
 #endif  // SOLO_STRATEGY_SRC_MARKET_DATA_ADAPTER_H_
