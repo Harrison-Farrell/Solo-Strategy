@@ -15,10 +15,17 @@
 #ifndef SOLO_STRATEGY_SRC_ORDER_BOOK_ORDER_BOOK_H_
 #define SOLO_STRATEGY_SRC_ORDER_BOOK_ORDER_BOOK_H_
 
+// system includes
+#include <unordered_map>
+
+// local includes
 #include "market-orders/market_order.h"
 #include "market-orders/market_update.h"
 #include "memory-pool/memory_pool.h"
 #include "utilities/types.h"
+
+// 3rd party libraries
+#include "quill/Logger.h"
 
 /// @brief Represents the limit order book for a single trading instrument.
 class OrderBook final {
@@ -40,7 +47,7 @@ class OrderBook final {
     /// @brief Processes a market update and updates the order book accordingly.
     /// Handles ADD, MODIFY, CANCEL, and CLEAR operations.
     /// @param market_update Pointer to the market update message.
-    inline auto OnMarketUpdate(const MarketUpdate* market_update) noexcept;
+    auto OnMarketUpdate(const MarketUpdate* market_update) noexcept -> void;
 
     /// @brief Updates the BestBidOffer view based on the current state of the
     /// book.
@@ -71,6 +78,8 @@ class OrderBook final {
     BestBidOffer m_bestBidOffer;
     /// @brief Last update time string.
     std::string m_timeString;
+    /// @brief Logger for this order book.
+    quill::Logger* m_logger = nullptr;
 
     /// @brief Maps a price to an index for constant-time lookup.
     /// @param price The price value to map.

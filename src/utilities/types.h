@@ -29,7 +29,7 @@ constexpr size_t ME_MAX_PRICE_LEVELS = 256;
 constexpr size_t ME_MAX_NUM_CLIENTS = 256;
 
 /// \brief Maximum number of orders per trading client.
-constexpr size_t ME_MAX_ORDER_IDS = static_cast<size_t>(1024) * 1024 * 8;
+constexpr size_t ME_MAX_ORDER_IDS = static_cast<size_t>(1024) * 1024 * 16;
 
 /// \brief Maximum size of lock-free queues for client updates.
 constexpr size_t ME_MAX_CLIENT_UPDATES = static_cast<size_t>(256) * 1024;

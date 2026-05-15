@@ -16,7 +16,9 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <utility>
 // local includes
+#include "book-builder/book_builder.h"
 #include "buildinfo/buildinfo.h"
 #include "itch-parser/itch_parser.h"
 #include "itch-parser/messages/itch_messages.h"
@@ -25,6 +27,7 @@
 #include "market-orders/market_update.h"
 #include "memory-map/memory_map_file.h"
 #include "thread/thread.h"
+
 // 3rd party includes
 #include "quill/Backend.h"
 #include "quill/Frontend.h"
@@ -34,37 +37,6 @@
 
 namespace {
 void ExitSignal(int exit_value) { std::quick_exit(exit_value); }
-
-void PrintingPress(
-    const std::shared_ptr<LockFreeQueue<MarketUpdate>>& market_update_queue) {
-    using namespace std::literals::chrono_literals;
-    std::this_thread::sleep_for(1s);
-
-    auto market_sink = quill::Frontend::create_or_get_sink<quill::FileSink>(
-        "market_updates.log", []() {
-            quill::FileSinkConfig cfg;
-            cfg.set_open_mode('w');
-            return cfg;
-        }());
-    auto* market_logger =
-        quill::Frontend::create_or_get_logger("market", std::move(market_sink));
-
-    while (true) {
-        const auto* new_message = market_update_queue->GetNextRead();
-        if (static_cast<bool>(new_message)) {
-            if (new_message->type == MarketUpdateType::INVALID) {
-                market_update_queue->UpdateReadIndex();
-                break;
-            }
-            LOG_INFO(market_logger, "{}", new_message->ToString());
-            market_update_queue->UpdateReadIndex();
-        } else {
-            std::this_thread::yield();
-        }
-    }
-
-    LOG_INFO(market_logger, "PrintingPress Finishing");
-}
 
 void ReadingWorker(
     const std::string& input_file_path,
@@ -117,17 +89,29 @@ quill::Logger* SetupLogger() {
     const quill::BackendOptions backend_options;
     quill::Backend::start(backend_options);
 
-    auto main_sink =
-        quill::Frontend::create_or_get_sink<quill::FileSink>("main.log", []() {
-            quill::FileSinkConfig cfg;
-            cfg.set_open_mode('w');
-            return cfg;
-        }());
-    return quill::Frontend::create_or_get_logger("root", std::move(main_sink));
+    auto create_sink = [](std::string filename) {
+        return quill::Frontend::create_or_get_sink<quill::FileSink>(
+            filename, []() {
+                quill::FileSinkConfig cfg;
+                cfg.set_open_mode('w');
+                return cfg;
+            }());
+    };
+
+    auto order_sink = create_sink("order_book.log");
+    auto builder_sink = create_sink("book_builder.log");
+    auto market_sink = create_sink("market_data_adapter.log");
+    auto root_sink = create_sink("root.log");
+
+    quill::Frontend::create_or_get_logger("OrderBook", order_sink);
+    quill::Frontend::create_or_get_logger("BookBuilder", builder_sink);
+    quill::Frontend::create_or_get_logger("MarketDataAdapter", market_sink);
+
+    return quill::Frontend::create_or_get_logger("root", root_sink);
 }
 
 void RunSystem(const std::string& input_file_path, quill::Logger* root_logger) {
-    constexpr int buffer_size = 1024 * 1024 * 8;
+    constexpr int buffer_size = 1024 * 1024 * 64;
 
     // clang-format off
     auto input_queue = std::make_shared<LockFreeQueue<RawItchPacket>>(buffer_size);
@@ -144,8 +128,8 @@ void RunSystem(const std::string& input_file_path, quill::Logger* root_logger) {
     MarketDataAdapter adapter(msg_queue, market_update_queue);
     auto market_adapter_thread = adapter.Start(3);
 
-    auto printing_thread = CreateAndStartThread(
-        4, "Printing Worker", PrintingPress, market_update_queue);
+    BookBuilder book_builder(market_update_queue);
+    auto book_builder_thread = book_builder.Start(4);
 
     reading_thread->join();
     LOG_INFO(root_logger, "Reading Thread Joined");
@@ -156,8 +140,8 @@ void RunSystem(const std::string& input_file_path, quill::Logger* root_logger) {
     market_adapter_thread->join();
     LOG_INFO(root_logger, "Market Adapter Thread Joined");
 
-    printing_thread->join();
-    LOG_INFO(root_logger, "Printing Thread Joined");
+    book_builder_thread->join();
+    LOG_INFO(root_logger, "Book Builder Thread Joined");
 }
 
 }  // namespace

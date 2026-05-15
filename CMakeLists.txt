@@ -31,6 +31,17 @@ option(BUILD_TESTS "Build unit tests" ON)
 option(BUILD_BENCHMARKS "Build benchmarks" ON)
 option(BUILD_EXAMPLES "Build examples" ON)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
+endif()
+
+message(STATUS "SoloStrategy configuration:")
+message(STATUS "  Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "  BUILD_DOXYGEN: ${BUILD_DOXYGEN}")
+message(STATUS "  BUILD_TESTS: ${BUILD_TESTS}")
+message(STATUS "  BUILD_BENCHMARKS: ${BUILD_BENCHMARKS}")
+message(STATUS "  BUILD_EXAMPLES: ${BUILD_EXAMPLES}")
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Check the Compiler Type

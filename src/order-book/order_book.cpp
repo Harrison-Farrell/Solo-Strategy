@@ -13,31 +13,67 @@
 
 #include "market-orders/market_order.h"
 #include "market-orders/market_update.h"
+#include "utilities/types.h"
+
+// 3rd party includes
 #include "quill/Frontend.h"
 #include "quill/LogMacros.h"
-#include "utilities/types.h"
 
 OrderBook::OrderBook(TickerId ticker_id)
     : m_tickerId(ticker_id),
+      m_orderIdToOrder{},
       m_ordersAtPricePool(ME_MAX_PRICE_LEVELS),
+      m_priceOrdersAtPrice{},
       m_orderPool(ME_MAX_ORDER_IDS) {
-    auto* logger = quill::Frontend::get_logger("root");
-    if (static_cast<bool>(logger)) {
-        LOG_INFO(logger, "Created Book: {} at: {}", m_tickerId,
+    m_orderIdToOrder.reserve(ME_MAX_ORDER_IDS);
+    m_priceOrdersAtPrice.fill(nullptr);
+    m_logger = quill::Frontend::create_or_get_logger("OrderBook");
+    if (static_cast<bool>(m_logger)) {
+        LOG_INFO(m_logger, "Created Book: {} at: {}", m_tickerId,
                  static_cast<void*>(this));
     }
 }
 
 OrderBook::~OrderBook() {
     // reset the internal data members
-    auto* logger = quill::Frontend::get_logger("root");
-    if (static_cast<bool>(logger)) {
-        LOG_INFO(logger, "Destroy Book: {} at: {}", m_tickerId,
+    if (static_cast<bool>(m_logger)) {
+        LOG_INFO(m_logger, "Destroy Book: {} at: {}", m_tickerId,
                  static_cast<void*>(this));
     }
-    m_bidsByPrice = nullptr;
-    m_asksByPrice = nullptr;
-    m_orderIdToOrder.fill(nullptr);
+
+    // Perform a full clear to ensure all pool-allocated objects are returned
+    // This is critical if the book is destroyed while still containing orders.
+    for (auto& [id, order] : m_orderIdToOrder) {
+        if (order != nullptr) {
+            m_orderPool.Deallocate(order);
+        }
+    }
+    m_orderIdToOrder.clear();
+
+    if (m_bidsByPrice != nullptr) {
+        auto* current = m_bidsByPrice->m_nextEntry;
+        while (current != m_bidsByPrice) {
+            auto* next = current->m_nextEntry;
+            m_ordersAtPricePool.Deallocate(current);
+            current = next;
+        }
+        m_ordersAtPricePool.Deallocate(m_bidsByPrice);
+        m_bidsByPrice = nullptr;
+    }
+
+    if (m_asksByPrice != nullptr) {
+        auto* current = m_asksByPrice->m_nextEntry;
+        while (current != m_asksByPrice) {
+            auto* next = current->m_nextEntry;
+            m_ordersAtPricePool.Deallocate(current);
+            current = next;
+        }
+        m_ordersAtPricePool.Deallocate(m_asksByPrice);
+        m_asksByPrice = nullptr;
+    }
+
+    m_orderIdToOrder.clear();
+    m_priceOrdersAtPrice.fill(nullptr);
 }
 
 auto OrderBook::GetBestBidOffer() const noexcept -> const BestBidOffer* {
@@ -57,7 +93,7 @@ auto OrderBook::UpdateBestBidOffer(bool update_bid, bool update_ask) noexcept {
         } else {
             // There is no head the the m_bidsByPrice is nullptr
             m_bestBidOffer.m_bidPrice = Price_INVALID;
-            m_bestBidOffer.m_askQty = Qty_INVALID;
+            m_bestBidOffer.m_bidQty = Qty_INVALID;
         }
     }
 
@@ -147,10 +183,11 @@ auto OrderBook::AddOrder(MarketOrder* order) noexcept -> void {
         first_order->m_prevOrder = order;
     }
 
-    m_orderIdToOrder.at(order->m_orderId) = order;
+    m_orderIdToOrder[order->m_orderId] = order;
 }
 
-auto OrderBook::OnMarketUpdate(const MarketUpdate* market_update) noexcept {
+auto OrderBook::OnMarketUpdate(const MarketUpdate* market_update) noexcept
+    -> void {
     // Check if the bid price level was updated by comparing side and price
     const auto bid_updated =
         (static_cast<bool>(m_bidsByPrice) && market_update->side == Side::BUY &&
@@ -163,6 +200,13 @@ auto OrderBook::OnMarketUpdate(const MarketUpdate* market_update) noexcept {
     // Process the market update based on its type
     switch (market_update->type) {
         case MarketUpdateType::ADD: {
+            // Prevent leaking pool slots if an order with this ID already
+            // exists
+            auto it = m_orderIdToOrder.find(market_update->order_id);
+            if (it != m_orderIdToOrder.end()) [[unlikely]] {
+                RemoveOrder(it->second);
+            }
+
             // Allocate a new order from the memory pool with update details
             auto* order = m_orderPool.Allocate(
                 market_update->order_id, market_update->side,
@@ -172,46 +216,75 @@ auto OrderBook::OnMarketUpdate(const MarketUpdate* market_update) noexcept {
             AddOrder(order);
         } break;
         case MarketUpdateType::MODIFY: {
-            auto* order = m_orderIdToOrder.at(market_update->order_id);
-            order->m_qty = market_update->qty;
+            if (static_cast<bool>(m_logger)) {
+                LOG_INFO(m_logger, "OrderBook (Ticker: {}) MODIFY: {}",
+                         m_tickerId, market_update->ToString());
+            }
+            auto it = m_orderIdToOrder.find(market_update->order_id);
+            if (it != m_orderIdToOrder.end()) {
+                it->second->m_qty = market_update->qty;
+            }
         } break;
         case MarketUpdateType::CANCEL: {
-            auto* order = m_orderIdToOrder.at(market_update->order_id);
-            order->m_qty -= market_update->qty;
+            if (static_cast<bool>(m_logger)) {
+                LOG_INFO(m_logger, "OrderBook (Ticker: {}) CANCEL: {}",
+                         m_tickerId, market_update->ToString());
+            }
+            auto it = m_orderIdToOrder.find(market_update->order_id);
+            if (it != m_orderIdToOrder.end()) {
+                it->second->m_qty -= market_update->qty;
+            }
         } break;
         case MarketUpdateType::DELETED: {
-            auto* order = m_orderIdToOrder.at(market_update->order_id);
-            RemoveOrder(order);
+            if (static_cast<bool>(m_logger)) {
+                LOG_INFO(m_logger, "OrderBook (Ticker: {}) DELETED: {}",
+                         m_tickerId, market_update->ToString());
+            }
+            auto it = m_orderIdToOrder.find(market_update->order_id);
+            if (it != m_orderIdToOrder.end()) {
+                RemoveOrder(it->second);
+            }
         } break;
         case MarketUpdateType::CLEAR: {
+            if (static_cast<bool>(m_logger)) {
+                LOG_INFO(m_logger, "OrderBook (Ticker: {}) CLEAR: {}",
+                         m_tickerId, market_update->ToString());
+            }
             // Clear the full limit order book and Deallocate all resources
-            for (auto& order : m_orderIdToOrder) {
-                if (static_cast<bool>(order)) {
+            for (auto& [id, order] : m_orderIdToOrder) {
+                if (order != nullptr) {
                     m_orderPool.Deallocate(order);
                 }
             }
             // Reset the order ID mapping
-            m_orderIdToOrder.fill(nullptr);
+            m_orderIdToOrder.clear();
 
-            // Deallocate all bid price levels
-            if (static_cast<bool>(m_bidsByPrice)) {
-                for (auto* bid = m_bidsByPrice->m_nextEntry;
-                     bid != m_bidsByPrice; bid = bid->m_nextEntry) {
-                    m_ordersAtPricePool.Deallocate(bid);
+            // Deallocate all bid price levels safely
+            if (m_bidsByPrice != nullptr) {
+                auto* current = m_bidsByPrice->m_nextEntry;
+                while (current != m_bidsByPrice) {
+                    auto* next = current->m_nextEntry;
+                    m_ordersAtPricePool.Deallocate(current);
+                    current = next;
                 }
                 m_ordersAtPricePool.Deallocate(m_bidsByPrice);
+                m_bidsByPrice = nullptr;
             }
 
-            // Deallocate all ask price levels
-            if (static_cast<bool>(m_asksByPrice)) {
-                for (auto* ask = m_asksByPrice->m_nextEntry;
-                     ask != m_asksByPrice; ask = ask->m_nextEntry) {
-                    m_ordersAtPricePool.Deallocate(ask);
+            // Deallocate all ask price levels safely
+            if (m_asksByPrice != nullptr) {
+                auto* current = m_asksByPrice->m_nextEntry;
+                while (current != m_asksByPrice) {
+                    auto* next = current->m_nextEntry;
+                    m_ordersAtPricePool.Deallocate(current);
+                    current = next;
                 }
                 m_ordersAtPricePool.Deallocate(m_asksByPrice);
+                m_asksByPrice = nullptr;
             }
 
-            // Reset bid and ask pointers
+            // Reset pointers and internal arrays
+            m_priceOrdersAtPrice.fill(nullptr);
             m_bidsByPrice = m_asksByPrice = nullptr;
         } break;
         case MarketUpdateType::TRADE:
@@ -269,6 +342,6 @@ auto OrderBook::RemoveOrder(MarketOrder* order) noexcept -> void {
         order->m_prevOrder = order->m_nextOrder = nullptr;
     }
 
-    m_orderIdToOrder.at(order->m_orderId) = nullptr;
+    m_orderIdToOrder.erase(order->m_orderId);
     m_orderPool.Deallocate(order);
 }

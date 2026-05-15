@@ -12,12 +12,17 @@
 #ifndef SOLO_STRATEGY_SRC_MARKET_DATA_ADAPTER_H_
 #define SOLO_STRATEGY_SRC_MARKET_DATA_ADAPTER_H_
 
+// system includes
 #include <memory>
 #include <thread>
 
+// local includes
 #include "itch-parser/messages/itch_messages.h"
 #include "lock-free-queue/lock_free_queue.h"
 #include "market-orders/market_update.h"
+
+// 3rd party libraries
+#include "quill/Logger.h"
 
 /// @brief Translates raw ITCH protocol messages into normalised MarketUpdate
 /// objects that downstream order-book components can consume.
@@ -39,12 +44,15 @@ class MarketDataAdapter {
     std::shared_ptr<LockFreeQueue<ITCH::Message>> m_InputQueue;
     std::shared_ptr<LockFreeQueue<MarketUpdate>> m_OutputQueue;
 
+    /// @brief Logger for this adapter.
+    quill::Logger* m_logger = nullptr;
+
     /// @brief Maps a single ITCH Message to one or more MarketUpdate objects
     /// @param msg The ITCH Message to process
     inline auto ProcessMessage(const ITCH::Message& msg) -> void;
 
     /// @brief Helper to push an update to the lock-free output queue
-    inline auto PushUpdate(const MarketUpdate& update) -> void;
+    inline auto PushUpdate(MarketUpdate update) -> void;
 };
 
 #endif  // SOLO_STRATEGY_SRC_MARKET_DATA_ADAPTER_H_

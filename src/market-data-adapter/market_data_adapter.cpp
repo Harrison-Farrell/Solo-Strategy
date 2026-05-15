@@ -11,20 +11,23 @@
 
 #include "market_data_adapter.h"
 
+// Local includes
 #include "thread/thread.h"
 
 MarketDataAdapter::MarketDataAdapter(
     std::shared_ptr<LockFreeQueue<ITCH::Message>> input_queue,
     std::shared_ptr<LockFreeQueue<MarketUpdate>> output_queue)
     : m_InputQueue(std::move(input_queue)),
-      m_OutputQueue(std::move(output_queue)) {}
+      m_OutputQueue(std::move(output_queue)) {
+    m_logger = quill::Frontend::create_or_get_logger("MarketDataAdapter");
+}
 
 auto MarketDataAdapter::Start(int core_id) -> std::shared_ptr<std::thread> {
     return CreateAndStartThread(core_id, "MarketDataAdapter",
                                 &MarketDataAdapter::Execute, this);
 }
 
-auto MarketDataAdapter::PushUpdate(const MarketUpdate& update) -> void {
+auto MarketDataAdapter::PushUpdate(MarketUpdate update) -> void {
     while (!m_OutputQueue->Push(update)) {
         // Yield the thread to allow the consumer to drain the queue
         std::this_thread::yield();

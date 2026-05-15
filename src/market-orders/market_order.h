@@ -17,7 +17,7 @@
 #define SOLO_STRATEGY_SRC_MARKET_ORDERS_MARKET_ORDER_H_
 
 #include <array>
-#include <string>
+#include <unordered_map>
 
 #include "utilities/types.h"
 
@@ -65,7 +65,7 @@ class MarketOrder {
     auto ToString() const -> std::string;
 };
 
-using OrderArray = std::array<MarketOrder*, ME_MAX_ORDER_IDS>;
+using OrderArray = std::unordered_map<OrderId, MarketOrder*>;
 
 /// @brief Represents all market orders at a specific price level.
 class MarketOrderAtPrice {
