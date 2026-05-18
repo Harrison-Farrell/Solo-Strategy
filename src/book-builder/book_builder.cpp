@@ -11,6 +11,9 @@
 
 #include "book_builder.h"
 
+#include <algorithm>
+#include <chrono>
+#include <thread>
 #include <utility>
 
 // 3rd party includes
@@ -81,6 +84,10 @@ auto BookBuilder::ProcessMarketUpdate(
 
     if (order_book == nullptr) [[unlikely]] {
         order_book = new OrderBook(market_update->ticker_id);
+        {
+            std::lock_guard<std::mutex> lock(m_activeTickersMutex);
+            m_activeTickers.push_back(market_update->ticker_id);
+        }
         if (static_cast<bool>(m_logger)) {
             LOG_INFO(m_logger, "New OrderBook created for ticker_id: {}",
                      market_update->ticker_id);
@@ -88,4 +95,16 @@ auto BookBuilder::ProcessMarketUpdate(
     }
 
     order_book->OnMarketUpdate(market_update);
+}
+
+auto BookBuilder::GetActiveTickers() const -> std::vector<TickerId> {
+    std::lock_guard<std::mutex> lock(m_activeTickersMutex);
+    return m_activeTickers;
+}
+
+auto BookBuilder::GetOrderBook(TickerId ticker_id) const -> OrderBook* {
+    if (ticker_id >= ME_MAX_TICKERS) {
+        return nullptr;
+    }
+    return m_tickerOrderBook.at(ticker_id);
 }

@@ -10,14 +10,16 @@
 // -----------------------------------------------------------------------------
 
 // system includes
-#include <chrono>
+#include <stdint.h>
+
 #include <csignal>
 #include <cstdlib>
 #include <memory>
 #include <string>
 #include <thread>
-#include <utility>
+
 // local includes
+#include "book-builder-ui/book_builder_ui.h"
 #include "book-builder/book_builder.h"
 #include "buildinfo/buildinfo.h"
 #include "itch-parser/itch_parser.h"
@@ -34,6 +36,19 @@
 #include "quill/LogMacros.h"
 #include "quill/Logger.h"
 #include "quill/sinks/FileSink.h"
+
+// 3rd party libraries
+#include <GLFW/glfw3.h>
+#include <gl/GL.h>
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include "implot.h"
+
+static void glfw_error_callback(int error, const char* description) {
+    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+}
 
 namespace {
 void ExitSignal(int exit_value) { std::quick_exit(exit_value); }
@@ -89,7 +104,7 @@ quill::Logger* SetupLogger() {
     const quill::BackendOptions backend_options;
     quill::Backend::start(backend_options);
 
-    auto create_sink = [](std::string filename) {
+    auto create_sink = [](const std::string& filename) {
         return quill::Frontend::create_or_get_sink<quill::FileSink>(
             filename, []() {
                 quill::FileSinkConfig cfg;
@@ -113,6 +128,36 @@ quill::Logger* SetupLogger() {
 void RunSystem(const std::string& input_file_path, quill::Logger* root_logger) {
     constexpr int buffer_size = 1024 * 1024 * 64;
 
+    // Setup window
+    glfwSetErrorCallback(glfw_error_callback);
+    if (!glfwInit()) return;
+
+    const char* glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+    // Create window with graphics context
+    GLFWwindow* window = glfwCreateWindow(
+        1280, 720, "Solo-Strategy Trading System", nullptr, nullptr);
+    if (window == nullptr) return;
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);  // Enable vsync
+
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImPlot::CreateContext();
+    ImGuiIO& user_input = ImGui::GetIO();
+    (void)user_input;
+    user_input.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
     // clang-format off
     auto input_queue = std::make_shared<LockFreeQueue<RawItchPacket>>(buffer_size);
     auto msg_queue = std::make_shared<LockFreeQueue<ITCH::Message>>(buffer_size);
@@ -130,6 +175,40 @@ void RunSystem(const std::string& input_file_path, quill::Logger* root_logger) {
 
     BookBuilder book_builder(market_update_queue);
     auto book_builder_thread = book_builder.Start(4);
+
+    BookBuilderUI ui_window(&book_builder);
+
+    // UI Loop
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // Render the BookBuilder UI
+        ui_window.RenderUI();
+
+        // Rendering
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window);
+    }
+
+    // Cleanup UI
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
+    ImGui::DestroyContext();
+    glfwDestroyWindow(window);
+    glfwTerminate();
 
     reading_thread->join();
     LOG_INFO(root_logger, "Reading Thread Joined");
@@ -160,7 +239,6 @@ int main(int argc, char* argv[]) {
         std::quick_exit(1);
     }
 
-    // disable cppcoreguidelines-pro-bounds-pointer-arithmetic
     const std::string input_file_path(argv[1]);  // NOLINT
     LOG_INFO(root_logger, "File Path to read: {}", input_file_path);
 

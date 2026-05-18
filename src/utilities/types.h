@@ -20,7 +20,7 @@
 #include <string>
 
 /// \brief Maximum number of trading instruments/tickers.
-constexpr size_t ME_MAX_TICKERS = 100000;
+constexpr size_t ME_MAX_TICKERS = 6;
 
 /// \brief Maximum price level depth in the order books.
 constexpr size_t ME_MAX_PRICE_LEVELS = 256;

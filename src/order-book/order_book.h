@@ -16,7 +16,10 @@
 #define SOLO_STRATEGY_SRC_ORDER_BOOK_ORDER_BOOK_H_
 
 // system includes
+#include <atomic>
+#include <memory>
 #include <unordered_map>
+#include <vector>
 
 // local includes
 #include "market-orders/market_order.h"
@@ -59,6 +62,13 @@ class OrderBook final {
     /// @return Pointer to the BestBidOffer structure.
     auto GetBestBidOffer() const noexcept -> const BestBidOffer*;
 
+    /// @brief Retrieves the market depth for the book.
+    /// @param bids Vector to store bid depth levels.
+    /// @param asks Vector to store ask depth levels.
+    /// @param max_levels Maximum number of levels to retrieve.
+    auto GetDepth(std::vector<DepthLevel>& bids, std::vector<DepthLevel>& asks,
+                  int max_levels = 50) const noexcept -> void;
+
    private:
     /// @brief The ticker identifier for the instrument.
     const TickerId m_tickerId;
@@ -81,18 +91,25 @@ class OrderBook final {
     /// @brief Logger for this order book.
     quill::Logger* m_logger = nullptr;
 
-    /// @brief Maps a price to an index for constant-time lookup.
-    /// @param price The price value to map.
-    /// @return Index in the range [0, ME_MAX_PRICE_LEVELS).
-    static auto PriceToIndex(Price price) noexcept {
-        return price % ME_MAX_PRICE_LEVELS;
-    }
+    /// @brief Snapshot of the market depth for lock-free reading.
+    struct DepthSnapshot {
+        std::vector<DepthLevel> bids;
+        std::vector<DepthLevel> asks;
+    };
+    std::atomic<std::shared_ptr<const DepthSnapshot>> m_depthSnapshot{nullptr};
+
+    /// @brief Internal non-thread-safe version of GetDepth.
+    auto GetDepthInternal(std::vector<DepthLevel>& bids,
+                          std::vector<DepthLevel>& asks,
+                          int max_levels) const noexcept -> void;
+
 
     /// @brief Retrieves the price level container for a given price.
     /// @param price The price to look up.
     /// @return Pointer to MarketOrderAtPrice, or nullptr if none exists.
     auto GetOrdersAtPrice(Price price) const noexcept -> MarketOrderAtPrice* {
-        return m_priceOrdersAtPrice.at(PriceToIndex(price));
+        auto it = m_priceOrdersAtPrice.find(price);
+        return (it != m_priceOrdersAtPrice.end()) ? it->second : nullptr;
     }
 
     /// @brief Adds a new price level to the sorted linked list.

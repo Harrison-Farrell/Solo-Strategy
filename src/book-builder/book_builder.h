@@ -16,7 +16,9 @@
 #define SOLO_STRATEGY_SRC_BOOK_BUILDER_BOOK_BUILDER_H_
 
 #include <memory>
+#include <mutex>
 #include <thread>
+#include <vector>
 
 #include "lock-free-queue/lock_free_queue.h"
 #include "market-orders/market_update.h"
@@ -52,6 +54,15 @@ class BookBuilder final {
     auto ProcessMarketUpdate(const MarketUpdate* market_update) noexcept
         -> void;
 
+    /// @brief Returns the list of active tickers.
+    /// @return Vector of TickerIds.
+    auto GetActiveTickers() const -> std::vector<TickerId>;
+
+    /// @brief Returns the order book for a given ticker.
+    /// @param ticker_id Ticker identifier.
+    /// @return Pointer to the OrderBook, or nullptr if not found.
+    auto GetOrderBook(TickerId ticker_id) const -> OrderBook*;
+
    private:
     std::shared_ptr<LockFreeQueue<MarketUpdate>> m_InputQueue;
 
@@ -60,6 +71,12 @@ class BookBuilder final {
 
     /// @brief Logger for this BookBuilder.
     quill::Logger* m_logger = nullptr;
+
+    /// @brief List of active tickers that have an OrderBook.
+    std::vector<TickerId> m_activeTickers;
+
+    /// @brief Mutex to protect m_activeTickers.
+    mutable std::mutex m_activeTickersMutex;
 };
 
 #endif  // SOLO_STRATEGY_SRC_BOOK_BUILDER_BOOK_BUILDER_H_

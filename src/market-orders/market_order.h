@@ -104,7 +104,13 @@ class MarketOrderAtPrice {
     auto ToString() const -> std::string;
 };
 
-using OrdersAtPriceArray = std::array<MarketOrderAtPrice*, ME_MAX_PRICE_LEVELS>;
+using OrdersAtPriceArray = std::unordered_map<Price, MarketOrderAtPrice*>;
+/// @brief Represents a single price level in the depth view.
+struct DepthLevel {
+    Price price;
+    Qty qty;
+};
+
 /// @brief Represents the best bid and offer in the order book.
 class BestBidOffer {
     friend class OrderBook;

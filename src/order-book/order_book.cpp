@@ -26,7 +26,6 @@ OrderBook::OrderBook(TickerId ticker_id)
       m_priceOrdersAtPrice{},
       m_orderPool(ME_MAX_ORDER_IDS) {
     m_orderIdToOrder.reserve(ME_MAX_ORDER_IDS);
-    m_priceOrdersAtPrice.fill(nullptr);
     m_logger = quill::Frontend::create_or_get_logger("OrderBook");
     if (static_cast<bool>(m_logger)) {
         LOG_INFO(m_logger, "Created Book: {} at: {}", m_tickerId,
@@ -73,11 +72,99 @@ OrderBook::~OrderBook() {
     }
 
     m_orderIdToOrder.clear();
-    m_priceOrdersAtPrice.fill(nullptr);
+    m_priceOrdersAtPrice.clear();
 }
 
 auto OrderBook::GetBestBidOffer() const noexcept -> const BestBidOffer* {
     return &m_bestBidOffer;
+}
+
+auto OrderBook::GetDepth(std::vector<DepthLevel>& bids,
+                         std::vector<DepthLevel>& asks,
+                         int max_levels) const noexcept -> void {
+    auto snap = m_depthSnapshot.load(std::memory_order_acquire);
+    if (snap != nullptr) {
+        bids = snap->bids;
+        asks = snap->asks;
+        if (static_cast<int>(bids.size()) > max_levels) {
+            bids.resize(max_levels);
+        }
+        if (static_cast<int>(asks.size()) > max_levels) {
+            asks.resize(max_levels);
+        }
+    }
+}
+
+auto OrderBook::GetDepthInternal(std::vector<DepthLevel>& bids,
+                                 std::vector<DepthLevel>& asks,
+                                 int max_levels) const noexcept -> void {
+    bids.clear();
+    asks.clear();
+
+    // Bids - highest price first (m_bidsByPrice)
+    if (m_bidsByPrice != nullptr) {
+        auto* current = m_bidsByPrice;
+        int count = 0;
+        do {
+            Qty total_qty = 0;
+            auto* order = current->m_firstMarketOrder;
+            if (order != nullptr) {
+                do {
+                    total_qty += order->m_qty;
+                    order = order->m_nextOrder;
+                } while (order != current->m_firstMarketOrder);
+            }
+            bids.push_back({current->m_price, total_qty});
+            current = current->m_nextEntry;
+            count++;
+        } while (current != m_bidsByPrice && count < max_levels);
+    }
+
+    // Asks - lowest price first (m_asksByPrice)
+    if (m_asksByPrice != nullptr) {
+        auto* current = m_asksByPrice;
+        int count = 0;
+        do {
+            Qty total_qty = 0;
+            auto* order = current->m_firstMarketOrder;
+            if (order != nullptr) {
+                do {
+                    total_qty += order->m_qty;
+                    order = order->m_nextOrder;
+                } while (order != current->m_firstMarketOrder);
+            }
+            asks.push_back({current->m_price, total_qty});
+            current = current->m_nextEntry;
+            count++;
+        } while (current != m_asksByPrice && count < max_levels);
+    }
+
+    if (static_cast<bool>(m_logger)) {
+        size_t total_bids = 0;
+        if (m_bidsByPrice != nullptr) {
+            auto* current = m_bidsByPrice;
+            do {
+                total_bids++;
+                LOG_DEBUG(m_logger, "True BID Level: Price={}",
+                          current->m_price);
+                current = current->m_nextEntry;
+            } while (current != m_bidsByPrice);
+        }
+
+        size_t total_asks = 0;
+        if (m_asksByPrice != nullptr) {
+            auto* current = m_asksByPrice;
+            do {
+                total_asks++;
+                LOG_DEBUG(m_logger, "True ASK Level: Price={}",
+                          current->m_price);
+                current = current->m_nextEntry;
+            } while (current != m_asksByPrice);
+        }
+
+        LOG_INFO(m_logger, "OrderBook True Depth - Bids: {}, Asks: {}",
+                 total_bids, total_asks);
+    }
 }
 
 auto OrderBook::UpdateBestBidOffer(bool update_bid, bool update_ask) noexcept {
@@ -116,8 +203,7 @@ auto OrderBook::UpdateBestBidOffer(bool update_bid, bool update_ask) noexcept {
 
 auto OrderBook::AddOrdersAtPrice(
     MarketOrderAtPrice* new_orders_at_price) noexcept {
-    m_priceOrdersAtPrice.at(PriceToIndex(new_orders_at_price->m_price)) =
-        new_orders_at_price;
+    m_priceOrdersAtPrice[new_orders_at_price->m_price] = new_orders_at_price;
 
     MarketOrderAtPrice*& best_orders_by_price =
         (new_orders_at_price->m_side == Side::BUY ? m_bidsByPrice
@@ -216,40 +302,24 @@ auto OrderBook::OnMarketUpdate(const MarketUpdate* market_update) noexcept
             AddOrder(order);
         } break;
         case MarketUpdateType::MODIFY: {
-            if (static_cast<bool>(m_logger)) {
-                LOG_INFO(m_logger, "OrderBook (Ticker: {}) MODIFY: {}",
-                         m_tickerId, market_update->ToString());
-            }
             auto it = m_orderIdToOrder.find(market_update->order_id);
             if (it != m_orderIdToOrder.end()) {
                 it->second->m_qty = market_update->qty;
             }
         } break;
         case MarketUpdateType::CANCEL: {
-            if (static_cast<bool>(m_logger)) {
-                LOG_INFO(m_logger, "OrderBook (Ticker: {}) CANCEL: {}",
-                         m_tickerId, market_update->ToString());
-            }
             auto it = m_orderIdToOrder.find(market_update->order_id);
             if (it != m_orderIdToOrder.end()) {
                 it->second->m_qty -= market_update->qty;
             }
         } break;
         case MarketUpdateType::DELETED: {
-            if (static_cast<bool>(m_logger)) {
-                LOG_INFO(m_logger, "OrderBook (Ticker: {}) DELETED: {}",
-                         m_tickerId, market_update->ToString());
-            }
             auto it = m_orderIdToOrder.find(market_update->order_id);
             if (it != m_orderIdToOrder.end()) {
                 RemoveOrder(it->second);
             }
         } break;
         case MarketUpdateType::CLEAR: {
-            if (static_cast<bool>(m_logger)) {
-                LOG_INFO(m_logger, "OrderBook (Ticker: {}) CLEAR: {}",
-                         m_tickerId, market_update->ToString());
-            }
             // Clear the full limit order book and Deallocate all resources
             for (auto& [id, order] : m_orderIdToOrder) {
                 if (order != nullptr) {
@@ -284,7 +354,7 @@ auto OrderBook::OnMarketUpdate(const MarketUpdate* market_update) noexcept
             }
 
             // Reset pointers and internal arrays
-            m_priceOrdersAtPrice.fill(nullptr);
+            m_priceOrdersAtPrice.clear();
             m_bidsByPrice = m_asksByPrice = nullptr;
         } break;
         case MarketUpdateType::TRADE:
@@ -295,9 +365,18 @@ auto OrderBook::OnMarketUpdate(const MarketUpdate* market_update) noexcept
     }
 
     UpdateBestBidOffer(bid_updated, ask_updated);
+
+    // Publish a new snapshot for lock-free reading by the UI
+    auto new_snap = std::make_shared<DepthSnapshot>();
+    GetDepthInternal(new_snap->bids, new_snap->asks, 50);
+    m_depthSnapshot.store(std::move(new_snap), std::memory_order_release);
 }
 
 auto OrderBook::RemoveOrdersAtPrice(Side side, Price price) noexcept {
+    if (static_cast<bool>(m_logger)) {
+        LOG_INFO(m_logger, "RemoveOrdersAtPrice - Side: {}, Price: {}",
+                 (side == Side::BUY ? "BUY" : "SELL"), price);
+    }
     auto* const best_orders_by_price =
         (side == Side::BUY ? m_bidsByPrice : m_asksByPrice);
     auto* orders_at_price = GetOrdersAtPrice(price);
@@ -319,15 +398,24 @@ auto OrderBook::RemoveOrdersAtPrice(Side side, Price price) noexcept {
         orders_at_price->m_prevEntry = orders_at_price->m_nextEntry = nullptr;
     }
 
-    m_priceOrdersAtPrice.at(PriceToIndex(price)) = nullptr;
+    m_priceOrdersAtPrice.erase(price);
 
     m_ordersAtPricePool.Deallocate(orders_at_price);
 }
 
 auto OrderBook::RemoveOrder(MarketOrder* order) noexcept -> void {
+    if (static_cast<bool>(m_logger)) {
+        LOG_INFO(m_logger, "RemoveOrder - OrderId: {}, Price: {}, Side: {}",
+                 order->m_orderId, order->m_price,
+                 (order->m_side == Side::BUY ? "BUY" : "SELL"));
+    }
     auto* orders_at_price = GetOrdersAtPrice(order->m_price);
 
     if (order->m_prevOrder == order) {  // only one element.
+        if (static_cast<bool>(m_logger)) {
+            LOG_INFO(m_logger,
+                     "  Only one order at price, removing price level");
+        }
         RemoveOrdersAtPrice(order->m_side, order->m_price);
     } else {  // remove the link.
         auto* const order_before = order->m_prevOrder;
