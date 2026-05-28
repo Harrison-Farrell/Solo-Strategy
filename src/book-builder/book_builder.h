@@ -15,6 +15,7 @@
 #ifndef SOLO_STRATEGY_SRC_BOOK_BUILDER_BOOK_BUILDER_H_
 #define SOLO_STRATEGY_SRC_BOOK_BUILDER_BOOK_BUILDER_H_
 
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -43,10 +44,12 @@ class BookBuilder final {
 
     /// @brief Executes the Execute() function on the newly created thread
     /// @param core_id Core id to pin the thread affinity onto
-    auto Start(int core_id) -> std::shared_ptr<std::thread>;
+    /// @param flag atomic state flag to control execution state
+    auto Start(int core_id, std::atomic<uint8_t>& flag) -> std::shared_ptr<std::thread>;
 
     /// @brief Continuously pulls market updates and dispatches them.
-    auto Execute() -> void;
+    /// @param flag atomic state flag to control execution state
+    auto Execute(std::atomic<uint8_t>& flag) -> void;
 
     /// @brief Processes a market update and dispatches it to the
     /// corresponding OrderBook.

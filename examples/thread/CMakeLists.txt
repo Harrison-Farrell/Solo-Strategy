@@ -19,7 +19,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE solo_strategy::thread)
-target_link_libraries(${PROJECT_NAME} INTERFACE quill::quill)
+target_link_libraries(${PROJECT_NAME} PRIVATE quill::quill)
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES

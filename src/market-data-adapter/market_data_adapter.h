@@ -13,6 +13,7 @@
 #define SOLO_STRATEGY_SRC_MARKET_DATA_ADAPTER_H_
 
 // system includes
+#include <atomic>
 #include <memory>
 #include <thread>
 
@@ -34,11 +35,13 @@ class MarketDataAdapter {
 
     /// @brief Executes the Execute() function on the newly created thread
     /// @param core_id Core id to pin the thread affinity onto
-    auto Start(int core_id) -> std::shared_ptr<std::thread>;
+    /// @param flag atomic state flag to control execution state
+    auto Start(int core_id, std::atomic<uint8_t>& flag) -> std::shared_ptr<std::thread>;
 
     /// @brief Continuously pulls ITCH messages and converts them to
     /// MarketUpdates
-    auto Execute() -> void;
+    /// @param flag atomic state flag to control execution state
+    auto Execute(std::atomic<uint8_t>& flag) -> void;
 
    private:
     std::shared_ptr<LockFreeQueue<ITCH::Message>> m_InputQueue;

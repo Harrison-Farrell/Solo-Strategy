@@ -45,15 +45,24 @@ BookBuilder::~BookBuilder() {
     m_tickerOrderBook.fill(nullptr);
 }
 
-auto BookBuilder::Start(int core_id) -> std::shared_ptr<std::thread> {
-    return CreateAndStartThread(core_id, "BookBuilder", [this] { Execute(); });
+auto BookBuilder::Start(int core_id, std::atomic<uint8_t>& flag) -> std::shared_ptr<std::thread> {
+    return CreateAndStartThread(core_id, "BookBuilder", [this, &flag] { Execute(flag); });
 }
 
-auto BookBuilder::Execute() -> void {
+auto BookBuilder::Execute(std::atomic<uint8_t>& flag) -> void {
     if (static_cast<bool>(m_logger)) {
         LOG_INFO(m_logger, "BookBuilder Execute() started");
     }
     while (true) {
+        const uint8_t state = flag.load(std::memory_order_acquire);
+        if (state == ThreadState::Stop) [[unlikely]] {
+            break;
+        }
+        if (state == ThreadState::Pause) [[unlikely]] {
+            std::this_thread::yield();
+            continue;
+        }
+
         const auto* update = m_InputQueue->GetNextRead();
         if (static_cast<bool>(update)) {
             if (update->type == MarketUpdateType::INVALID) [[unlikely]] {

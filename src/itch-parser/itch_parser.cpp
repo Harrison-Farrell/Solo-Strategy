@@ -143,8 +143,17 @@ auto ITCH_Parser::RetailPriceImprovementIndicatorMessage(const uint8_t* buffer)
         const ITCH::RetailPriceImprovementIndicatorMessage*>(buffer);
 }
 
-auto ITCH_Parser::Execute() -> void {
+auto ITCH_Parser::Execute(std::atomic<uint8_t>& flag) -> void {
     while (true) {
+        const uint8_t state = flag.load(std::memory_order_acquire);
+        if (state == ThreadState::Stop) [[unlikely]] {
+            break;
+        }
+        if (state == ThreadState::Pause) [[unlikely]] {
+            std::this_thread::yield();
+            continue;
+        }
+
         const auto* packet = m_InputQueue->GetNextRead();
         if (packet) {
             // A length of 0 is our sentinel for termination
@@ -166,9 +175,9 @@ auto ITCH_Parser::Execute() -> void {
     }
 }
 
-std::shared_ptr<std::thread> ITCH_Parser::Start(int core_id) {
+std::shared_ptr<std::thread> ITCH_Parser::Start(int core_id, std::atomic<uint8_t>& flag) {
     return CreateAndStartThread(core_id, "ITCH Parser",
-                                [this]() { Execute(); });
+                                [this, &flag]() { Execute(flag); });
 }
 
 ITCH::Message ITCH_Parser::DecodeMessage(const uint8_t* buffer) {

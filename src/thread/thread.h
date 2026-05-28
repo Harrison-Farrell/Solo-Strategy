@@ -12,13 +12,12 @@
 #ifndef SOLO_STRATEGY_SRC_THREAD_AFFINITY_THREAD_AFFINITY_H_
 #define SOLO_STRATEGY_SRC_THREAD_AFFINITY_THREAD_AFFINITY_H_
 
-#include <atomic>
 #include <chrono>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <thread>
+
 #include "quill/Frontend.h"
 #include "quill/LogMacros.h"
 #include "quill/backend/ThreadUtilities.h"
@@ -30,6 +29,8 @@
     #include <sys/syscall.h>
     #include <unistd.h>
 #endif
+
+enum ThreadState : uint8_t { Run = 0, Pause = 1, Stop = 2 };
 
 /// \brief Set affinity for current thread to be pinned to the provided core_id.
 inline auto SetThreadCore(int core_id) noexcept {
@@ -61,14 +62,19 @@ inline auto CreateAndStartThread(int core_id, const std::string& name, T&& func,
     auto object_thread = std::make_shared<std::thread>(
         [core_id, name, func = std::forward<T>(func),
          ... args = std::forward<A>(args)]() mutable {
-
             if (core_id >= 0 && !SetThreadCore(core_id)) {
                 auto* logger = quill::Frontend::get_logger("root");
-                if (logger) LOG_CRITICAL(logger, "Failed to set core affinity for {} to core {}", name, core_id);
+                if (logger)
+                    LOG_CRITICAL(
+                        logger, "Failed to set core affinity for {} to core {}",
+                        name, core_id);
                 std::quick_exit(EXIT_FAILURE);
             }
             auto* logger = quill::Frontend::get_logger("root");
-            if (logger) LOG_INFO(logger, "Successfully set core affinity for {} to core {}", name, core_id);
+            if (logger)
+                LOG_INFO(logger,
+                         "Successfully set core affinity for {} to core {}",
+                         name, core_id);
 
             std::invoke(std::move(func), std::move(args)...);
         });

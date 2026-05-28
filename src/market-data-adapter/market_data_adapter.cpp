@@ -22,9 +22,9 @@ MarketDataAdapter::MarketDataAdapter(
     m_logger = quill::Frontend::create_or_get_logger("MarketDataAdapter");
 }
 
-auto MarketDataAdapter::Start(int core_id) -> std::shared_ptr<std::thread> {
+auto MarketDataAdapter::Start(int core_id, std::atomic<uint8_t>& flag) -> std::shared_ptr<std::thread> {
     return CreateAndStartThread(core_id, "MarketDataAdapter",
-                                &MarketDataAdapter::Execute, this);
+                                [this, &flag]() { Execute(flag); });
 }
 
 auto MarketDataAdapter::PushUpdate(MarketUpdate update) -> void {
@@ -34,9 +34,18 @@ auto MarketDataAdapter::PushUpdate(MarketUpdate update) -> void {
     }
 }
 
-auto MarketDataAdapter::Execute() -> void {
+auto MarketDataAdapter::Execute(std::atomic<uint8_t>& flag) -> void {
     ITCH::Message msg;
     while (true) {
+        const uint8_t state = flag.load(std::memory_order_acquire);
+        if (state == ThreadState::Stop) [[unlikely]] {
+            break;
+        }
+        if (state == ThreadState::Pause) [[unlikely]] {
+            std::this_thread::yield();
+            continue;
+        }
+
         if (m_InputQueue->Pop(msg)) {
             // Check for exit condition (e.g. monostate)
             if (std::holds_alternative<std::monostate>(msg)) {

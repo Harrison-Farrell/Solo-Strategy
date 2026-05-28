@@ -103,13 +103,12 @@ class OrderBook final {
                           std::vector<DepthLevel>& asks,
                           int max_levels) const noexcept -> void;
 
-
     /// @brief Retrieves the price level container for a given price.
     /// @param price The price to look up.
     /// @return Pointer to MarketOrderAtPrice, or nullptr if none exists.
     auto GetOrdersAtPrice(Price price) const noexcept -> MarketOrderAtPrice* {
-        auto it = m_priceOrdersAtPrice.find(price);
-        return (it != m_priceOrdersAtPrice.end()) ? it->second : nullptr;
+        auto iter = m_priceOrdersAtPrice.find(price);
+        return (iter != m_priceOrdersAtPrice.end()) ? iter->second : nullptr;
     }
 
     /// @brief Adds a new price level to the sorted linked list.

@@ -65,7 +65,6 @@ endif()
 include(Coverage)
 include(BuildInfo)
 include(Quill)
-include(ImGui)
 
 add_subdirectory(src)
 add_subdirectory(app)
